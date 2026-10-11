@@ -4,8 +4,16 @@ import os
 from aiogram import Router, F, types, Bot
 from aiogram.filters import Command
 from aiogram.types import FSInputFile, ReactionTypeEmoji
+import django
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+import html
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_note_bot.settings')
+django.setup()
 
 
+from users.models import TelegramUser
 from .db import Users
 from .logger import logger
 
@@ -13,37 +21,36 @@ from .logger import logger
 from .utils.cleanup import remove_temp_files
 from .utils.video_note import convert_to_video_note
 from .utils.audio_recognation import transcription
-
+from .utils.block_spam import usp
 
 router = Router()
+
+
 db = Users()
+
 
 
 
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
-    user_id = message.from_user.id
-    name = message.from_user.first_name
-    nickname = message.from_user.username
-
-    if db.is_banned(user_id):
+    if usp(message): # update, save, protect
         return
-
-    db.add_user(user_id, name, nickname)
 
 
     message_text = (
-        f"Hi, <b>{name}</b>! ✨\n\n"
-        "I'm a little bot that turns your videos into video notes! 🎥\n\n"
-        "No subscriptions and no ads - just send a video and enjoy! 🚀\n\n"
-        "☀️ <a href='https://github.com/platilich/Note-Mini-Bot'>GitHub</a>\n\n"
-        "<b>Send me a video to start!</b> 💫"
+        f"👋 Hey, <b>{message.from_user.first_name}</b>! ✨\n\n"
+        "Here's what I can do for you:\n"
+        "🎙️ Turn your voice messages into text\n"
+        "🎬 Transform your videos into awesome video notes\n\n"
+        "No subscriptions, no ads — just send me your content and I'll work my magic! ✨🚀\n\n"
+        "💡 Curious how I work? Check out my <a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>\n\n"
+        "<b>Ready to get started? Send me a video, audio, or sticker!</b> 💫"
     )
 
     await message.answer(
         text=message_text,
         parse_mode="HTML",
-        disable_web_page_preview=True
+        link_preview_is_disabled=True
     )
 
 
@@ -51,17 +58,9 @@ async def cmd_start(message: types.Message):
 @router.message(F.video | (F.document.mime_type.startswith("video/")))
 async def handle_video(message: types.Message, bot: Bot):
     user_id = message.from_user.id
-    name = message.from_user.first_name
-    nickname = message.from_user.username
 
-
-
-    if db.is_banned(user_id):
+    if usp(message):
         return
-
-
-
-    db.add_user(user_id, name, nickname)
 
 
     is_document = message.document is not None
@@ -71,7 +70,7 @@ async def handle_video(message: types.Message, bot: Bot):
 
 
     if not is_document and message.video.duration > 60:
-        await message.answer("❌ The video is too long. The maximum length is 1 minute.")
+        await message.answer("❌ The video is too long. The maximum length is 1 minute.") # time_limit
         return
 
 
@@ -92,7 +91,7 @@ async def handle_video(message: types.Message, bot: Bot):
         success = await asyncio.to_thread(convert_to_video_note, input_file, output_file)
 
         if not success:
-            await message.answer("Unable to process. Something went wrong.")
+            await message.answer("Unable to process. Something went wrong.") # error
             logger.error(f'Something went wrong')
             return
 
@@ -105,12 +104,12 @@ async def handle_video(message: types.Message, bot: Bot):
         await message.answer_video_note(video_note)
 
 
-        db.update_count(user_id)
+        db.increment_video_conversion_count(user_id)
 
 
 
     except Exception as e:
-        await message.answer("Unable to process. Something went wrong.")
+        await message.answer("Unable to process. Something went wrong.") # error
         logger.error(f'Something went wrong {e}')
 
 
@@ -126,17 +125,23 @@ async def handle_video(message: types.Message, bot: Bot):
 @router.message(F.voice | F.video_note)
 async def handle_video_note(message: types.Message, bot: Bot):
     user_id = message.from_user.id
-    name = message.from_user.first_name
-    nickname = message.from_user.username
 
-    if db.is_banned(user_id):
+    if usp(message):
         return
 
 
-    print('получили запрос на обработку видео заметки')
+    user = await asyncio.to_thread(TelegramUser.objects.get, user_id=user_id)
 
 
-    db.add_user(user_id, name, nickname)
+    current_time = datetime.now(ZoneInfo('UTC'))
+
+    if not await user.can_process_voice(limit=10):
+        time_left = user.voice_reset_time + timedelta(hours=1) - current_time
+        minutes = int(time_left.total_seconds() / 60)
+        await message.answer(f"⏳ The limit ended. Limit to update through: {minutes}")
+        return
+
+
 
 
     await message.react([ReactionTypeEmoji(emoji='❤️')])
@@ -158,12 +163,13 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     try:
         await message.reply(
-            f'<code>{result}</code>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
-            disable_web_page_preview=True,
+            f'<code>{html.escape(result)}</code>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
+            link_preview_is_disabled=True,
             parse_mode='HTML'
         )
 
-        db.update_count(user_id)
+        db.increment_recognition_count(user_id)
+
 
 
 

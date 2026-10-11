@@ -46,15 +46,15 @@ class Users:
 
 
 
-    def update_count(self, user_id):
+    def increment_video_conversion_count(self, user_id):
         try:
-            logger.info('DB | update_count')
+            logger.info('DB | increment_video_conversion_count')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
 
 
                 cursor.execute(
-                    'UPDATE users_telegramuser SET count = count + 1 WHERE user_id = ?',
+                    'UPDATE users_telegramuser SET count_video = count_video + 1 WHERE user_id = ?',
                     (user_id,)
                 )
 
@@ -64,6 +64,32 @@ class Users:
 
         except Exception as e:
             logger.error(f'DB | error when update count: {e}')
+
+
+
+
+    def increment_recognition_count(self, user_id):
+        try:
+            logger.info('DB | increment_recognition_count')
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+
+
+                cursor.execute(
+                    'UPDATE users_telegramuser SET count_recognise = count_recognise + 1 WHERE user_id = ?',
+                    (user_id,)
+                )
+
+
+                conn.commit()
+
+
+        except Exception as e:
+            logger.error(f'DB | error when update count: {e}')
+
+
+
+
 
 
 

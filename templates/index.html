@@ -4,13 +4,16 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Admin Panel - Note-Mini-Bot</title>
+        <title>Admin Panel - NoteCircle</title>
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet">
     </head>
 
     <body>
         <div class="header">
-            <div class="title">Note-Mini-Bot</div>
+            <div class="title">NoteCirle</div>
             <form action="/admin/logout/" method="post" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="logout-btn">Logout</button>
@@ -33,7 +36,9 @@
                         <h3>ID: {{ user.user_id }}</h3>
                         <p><strong>Name:</strong> {{ user.name|default:"-" }}</p>
                         <p><strong>Nickname:</strong> {{ user.nickname|default:"-" }}</p>
-                        <p><strong>Videos:</strong> {{ user.count }}</p>
+                        <p><strong>Videos processed:</strong> {{ user.count_video }}</p>
+                        <p><strong>Recognized voice/video notes:</strong> {{ user.count_recognise }}</p>
+                        <p><strong>Recognitions left this hour: </strong>{{ user.voice_requests_hour }} / 10</p>
                         <p><strong>Registered:</strong> {{ user.created_at|date:"Y-m-d H:i" }}</p>
                         <p><strong>Status:</strong> {% if user.is_banned %}Banned{% else %}Active{% endif %}</p>
                     </div>

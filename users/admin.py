@@ -1,9 +1,14 @@
 from django.contrib import admin
-from .models import TelegramUser
+from .models import TelegramUser, CustomizeMessages
+
 
 # Register your models here.
-@admin.register(TelegramUser)
-class TelegramUserAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'user_id', 'name', 'nickname', 'count', 'is_banned')
+admin.site.register(TelegramUser)
 
-    readonly_fields = ('created_at', 'user_id', 'name', 'nickname', 'count', )
+
+@admin.register(CustomizeMessages)
+class CustomMessage(admin.ModelAdmin):
+    list_display = ('command_start', 'time_limit', 'error')
+
+    def has_add_permission(self, request):
+        return self.model.objects.count() < 1
