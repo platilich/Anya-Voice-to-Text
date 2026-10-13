@@ -42,15 +42,15 @@ async def cmd_start(message: types.Message):
         "Here's what I can do for you:\n"
         "🎙️ Turn your voice messages into text\n"
         "🎬 Transform your videos into awesome video notes\n\n"
-        "No subscriptions, no ads — just send me your content and I'll work my magic! ✨🚀\n\n"
-        "💡 Curious how I work? Check out my <a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>\n\n"
-        "<b>Ready to get started? Send me a video, audio, or sticker!</b> 💫"
+        "No subscriptions and no ads - just send a video and enjoy! 🚀\n\n"
+        "<b>Ready to get started? Send me a video, audio, or sticker!</b> 💫\n\n"
+        "<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"
     )
 
     await message.answer(
         text=message_text,
         parse_mode="HTML",
-        link_preview_is_disabled=True
+        disable_web_page_preview=True
     )
 
 
@@ -164,7 +164,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
     try:
         await message.reply(
             f'<code>{html.escape(result)}</code>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
-            link_preview_is_disabled=True,
+            disable_web_page_preview=True,
             parse_mode='HTML'
         )
 

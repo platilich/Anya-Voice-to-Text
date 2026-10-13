@@ -1,0 +1,29 @@
+<div class="user-card {% if user.is_banned %}banned{% endif %}">
+    <div class="user-info">
+        <h3>ID: {{ user.user_id }}</h3>
+        <p><strong>Name:</strong> {{ user.name|default:"-" }}</p>
+        <p><strong>Nickname:</strong> {{ user.nickname|default:"-" }}</p>
+        <p><strong>Videos processed:</strong> {{ user.count_video }}</p>
+        <p><strong>Recognized voice/video notes:</strong> {{ user.count_recognise }}</p>
+        <p><strong>Registered:</strong> {{ user.created_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>Status:</strong> {% if user.is_banned %}Banned{% else %}Active{% endif %}</p>
+        </div>
+    <div class="user-actions">
+        {% if user.is_banned %}
+            <form hx-post="{% url 'custom_admin' %}" hx-target="closest .user-card" hx-swap="outerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="unban">
+                <input type="hidden" name="user_id" value="{{ user.user_id }}">
+                <button type="submit" class="unban-btn">Unban</button>
+            </form>
+
+        {% else %}
+            <form hx-post="{% url 'custom_admin' %}" hx-target="closest .user-card" hx-swap="outerHTML">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="ban">
+                <input type="hidden" name="user_id" value="{{ user.user_id }}">
+                <button type="submit" class="ban-btn">Ban</button>
+            </form>
+        {% endif %}
+    </div>
+</div>

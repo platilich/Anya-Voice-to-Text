@@ -20,7 +20,7 @@
             </form>
         </div>
 
-        <main>
+        <main id="main-content" hx-get="{% url 'custom_admin' %}" hx-trigger="every 1s" hx-select="#main-content" hx-swap="outerHTML">
             {% if messages %}
             <div class="messages">
                 {% for message in messages %}
@@ -31,35 +31,7 @@
 
             <div class="users-grid">
                 {% for user in users %}
-                <div class="user-card {% if user.is_banned %}banned{% endif %}">
-                    <div class="user-info">
-                        <h3>ID: {{ user.user_id }}</h3>
-                        <p><strong>Name:</strong> {{ user.name|default:"-" }}</p>
-                        <p><strong>Nickname:</strong> {{ user.nickname|default:"-" }}</p>
-                        <p><strong>Videos processed:</strong> {{ user.count_video }}</p>
-                        <p><strong>Recognized voice/video notes:</strong> {{ user.count_recognise }}</p>
-                        <p><strong>Recognitions left this hour: </strong>{{ user.voice_requests_hour }} / 10</p>
-                        <p><strong>Registered:</strong> {{ user.created_at|date:"Y-m-d H:i" }}</p>
-                        <p><strong>Status:</strong> {% if user.is_banned %}Banned{% else %}Active{% endif %}</p>
-                    </div>
-                    <div class="user-actions">
-                        {% if user.is_banned %}
-                        <form method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="unban">
-                            <input type="hidden" name="user_id" value="{{ user.user_id }}">
-                            <button type="submit" class="unban-btn">Unban</button>
-                        </form>
-                        {% else %}
-                        <form method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="ban">
-                            <input type="hidden" name="user_id" value="{{ user.user_id }}">
-                            <button type="submit" class="ban-btn">Ban</button>
-                        </form>
-                        {% endif %}
-                    </div>
-                </div>
+                    {% include 'user_card.html' %}
                 {% endfor %}
             </div>
         </main>
@@ -72,6 +44,7 @@
             </div>
         </div>
 
-        <script src="{% static 'js/script.js' %}"></script>
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
     </body>
 </html>
