@@ -193,7 +193,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
     print(result)
     try:
         await message.reply(
-            f'<code>{html.escape(result)}</code>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
+            f'<blockquote>{html.escape(result)}</blockquote>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
             disable_web_page_preview=True,
             parse_mode='HTML'
         )
