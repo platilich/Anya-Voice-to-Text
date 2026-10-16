@@ -4,6 +4,7 @@ from pathlib import Path
 from .logger import logger
 
 
+
 class Users:
     def __init__(self):
         self.db_path = Path(__file__).resolve().parent.parent / 'db.sqlite3'
@@ -11,6 +12,7 @@ class Users:
 
     def get_connection(self):
         return sqlite3.connect(self.db_path)
+
 
 
     def add_user(self, user_id, name, nickname):
@@ -113,4 +115,45 @@ class Users:
 
         except Exception as e:
             logger.error(f'DB | error when checking ban status: {e}')
+            return False
+
+
+
+    def get_custom_messages(self):
+        try:
+            logger.info('DB | get_custom_messages')
+
+
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+
+                cursor.execute('SELECT * FROM users_customizemessages')
+                rows = cursor.fetchone()
+
+                return rows
+
+        except Exception as e:
+            logger.error(f'DB | error when get_custom_messages: {e}')
+            return False
+
+
+
+
+    def get_api_keys(self):
+        try:
+
+            logger.info('DB | get_api_keys')
+
+
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+
+                cursor.execute('SELECT * FROM users_groqapikey')
+                rows = cursor.fetchall()
+
+                return rows
+
+
+        except Exception as e:
+            logger.error(f'DB | error when get_api_keys: {e}')
             return False

@@ -14,25 +14,17 @@
     <body>
         <div class="header">
             <div class="title">NoteCirle</div>
+
             <form action="/admin/logout/" method="post" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="logout-btn">Logout</button>
             </form>
         </div>
 
-        <main id="main-content" hx-get="{% url 'custom_admin' %}" hx-trigger="every 1s" hx-select="#main-content" hx-swap="outerHTML">
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message">{{ message }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="users-grid">
-                {% for user in users %}
-                    {% include 'user_card.html' %}
-                {% endfor %}
+        <main id="main-content">
+            <!-- every 5s the server sends fresh cards and this box is replaced -->
+            <div class="users-grid" id="users-grid" hx-get="{% url 'users_refresh' %}" hx-trigger="every 5s" hx-swap="innerHTML">
+                {% include 'users_list.html' %}
             </div>
         </main>
 
@@ -45,6 +37,5 @@
         </div>
 
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-
     </body>
 </html>

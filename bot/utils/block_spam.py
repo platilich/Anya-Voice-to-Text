@@ -24,12 +24,17 @@ def usp(message):
     user_id = message.from_user.id
     name = message.from_user.first_name
     nickname = message.from_user.username
+    is_bot = message.from_user.is_bot
 
     if db.is_banned(user_id):
         return True
 
 
     if is_spam(user_id):
+        return True
+
+
+    if is_bot:
         return True
 
 

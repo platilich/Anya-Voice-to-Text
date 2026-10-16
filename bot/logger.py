@@ -4,13 +4,14 @@ from pathlib import Path
 import os
 
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 logs_dir = BASE_DIR / "logs"
 os.makedirs(logs_dir, exist_ok=True)
 
 
 logger = logging.getLogger("VideoNoteBot")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 formatter = logging.Formatter(

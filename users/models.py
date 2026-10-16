@@ -59,3 +59,18 @@ class CustomizeMessages(models.Model):
 
     def __str__(self):
         return 'Customize Messages'
+
+
+
+class GroqAPIKey(models.Model):
+    name = models.CharField(max_length=30, blank=True, verbose_name='Key name')
+    api_key = models.CharField(max_length=255, blank=True, verbose_name='Insert a spare API key (from groq.com)')
+
+
+
+    class Meta:
+        verbose_name_plural = 'Groq API Keys'
+
+
+    def __str__(self):
+        return self.name

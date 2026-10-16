@@ -1,4 +1,4 @@
-<div class="user-card {% if user.is_banned %}banned{% endif %}">
+<div class="user-card {% if user.is_banned %}banned{% endif %}" id="user-card-{{ user.user_id }}">
     <div class="user-info">
         <h3>ID: {{ user.user_id }}</h3>
         <p><strong>Name:</strong> {{ user.name|default:"-" }}</p>
@@ -7,18 +7,17 @@
         <p><strong>Recognized voice/video notes:</strong> {{ user.count_recognise }}</p>
         <p><strong>Registered:</strong> {{ user.created_at|date:"Y-m-d H:i" }}</p>
         <p><strong>Status:</strong> {% if user.is_banned %}Banned{% else %}Active{% endif %}</p>
-        </div>
+    </div>
     <div class="user-actions">
         {% if user.is_banned %}
-            <form hx-post="{% url 'custom_admin' %}" hx-target="closest .user-card" hx-swap="outerHTML">
+            <form hx-post="{% url 'custom_admin' %}" hx-target="#user-card-{{ user.user_id }}" hx-swap="outerHTML">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="unban">
                 <input type="hidden" name="user_id" value="{{ user.user_id }}">
                 <button type="submit" class="unban-btn">Unban</button>
             </form>
-
         {% else %}
-            <form hx-post="{% url 'custom_admin' %}" hx-target="closest .user-card" hx-swap="outerHTML">
+            <form hx-post="{% url 'custom_admin' %}" hx-target="#user-card-{{ user.user_id }}" hx-swap="outerHTML">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="ban">
                 <input type="hidden" name="user_id" value="{{ user.user_id }}">

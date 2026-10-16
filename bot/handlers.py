@@ -20,7 +20,7 @@ from .logger import logger
 
 from .utils.cleanup import remove_temp_files
 from .utils.video_note import convert_to_video_note
-from .utils.audio_recognation import transcription
+from .utils.audio_recognation import recognize
 from .utils.block_spam import usp
 
 router = Router()
@@ -34,6 +34,20 @@ db = Users()
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
     if usp(message): # update, save, protect
+        return
+
+
+
+    custom_greeting = db.get_custom_messages()[1]
+
+    if custom_greeting:
+        await message.answer(
+            text=f'{html.escape(custom_greeting)}',
+            parse_mode="HTML",
+            disable_web_page_preview=True
+        )
+
+
         return
 
 
@@ -55,6 +69,7 @@ async def cmd_start(message: types.Message):
 
 
 
+
 @router.message(F.video | (F.document.mime_type.startswith("video/")))
 async def handle_video(message: types.Message, bot: Bot):
     user_id = message.from_user.id
@@ -70,9 +85,15 @@ async def handle_video(message: types.Message, bot: Bot):
 
 
     if not is_document and message.video.duration > 60:
+        custom_limiting = db.get_custom_messages()[2]
+
+        if custom_limiting:
+            await message.answer(custom_limiting)
+            return
+
+
         await message.answer("❌ The video is too long. The maximum length is 1 minute.") # time_limit
         return
-
 
 
     await message.react([ReactionTypeEmoji(emoji='❤️')])
@@ -109,8 +130,14 @@ async def handle_video(message: types.Message, bot: Bot):
 
 
     except Exception as e:
+        custom_error = db.get_custom_messages()[3]
+        if custom_error:
+            return
+
+
         await message.answer("Unable to process. Something went wrong.") # error
         logger.error(f'Something went wrong {e}')
+
 
 
     finally:
@@ -152,15 +179,18 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     os.makedirs('temp', exist_ok=True)
 
-    destination = f"temp/{message.from_user.id}_{message.message_id}.{ext}"
+    path = f"temp/{message.from_user.id}_{message.message_id}.{ext}"
 
     file_info = await bot.get_file(file_obj.file_id)
-    await bot.download_file(file_info.file_path, destination=destination)
+    await bot.download_file(file_info.file_path, destination=path)
 
     await bot.send_chat_action(chat_id=message.chat.id, action='typing')
 
-    result = await asyncio.to_thread(transcription,  destination)
+    logger.info(path)
+    result = await recognize(path)
 
+    logger.info(result)
+    print(result)
     try:
         await message.reply(
             f'<code>{html.escape(result)}</code>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
@@ -178,4 +208,4 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
     finally:
-        remove_temp_files([destination])
+        remove_temp_files([path])

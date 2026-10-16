@@ -1,10 +1,8 @@
 from django.contrib import admin
-from .models import TelegramUser, CustomizeMessages
+from .models import TelegramUser, CustomizeMessages, GroqAPIKey
 
 
 # Register your models here.
-admin.site.register(TelegramUser)
-
 
 @admin.register(CustomizeMessages)
 class CustomMessage(admin.ModelAdmin):
@@ -12,3 +10,7 @@ class CustomMessage(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return self.model.objects.count() < 1
+
+
+admin.site.register(TelegramUser)
+admin.site.register(GroqAPIKey)

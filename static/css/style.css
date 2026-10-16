@@ -13,15 +13,15 @@
     --color: #3D3D3D;
     --color_hover: #252525;
 
-
-
-
 }
+
+
 
 /* Basic layout */
 html, body {
     height: 100%;
 }
+
 
 body {
     display: flex;
@@ -46,10 +46,64 @@ body {
     margin-bottom: 20px;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 
     z-index: 10;
     top: 0;
     position: sticky;
+}
+
+
+.server-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    margin-bottom: 2%;
+
+}
+
+.stat {
+    background: white;
+    border: 2px solid var(--color);
+    border-radius: var(--card_radius);
+    padding: 6px 10px;
+    min-width: 120px;
+}
+
+
+.stat-name {
+    color: #555;
+    font-weight: bold;
+}
+
+.stat-value {
+    color: #555;
+    white-space: nowrap;
+}
+
+.bar {
+    margin-top: 6px;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--color);
+}
+
+.bar-fill.warn {
+    background: #b86e00;
+}
+
+.bar-fill.hot {
+    background: #a32020;
 }
 
 /* Title and logout button */
@@ -76,21 +130,6 @@ body {
     background: var(--color_hover); /* Darker blue */
 }
 
-.broadcast-btn {
-    margin-right: 10px;
-}
-
-/* Messages styles */
-.messages {
-    margin: 20px;
-    padding: 10px;
-    background: #e8f5e8;
-    border: 1px solid #b8e8b8;
-}
-
-.messages .message {
-    margin-bottom: 5px;
-}
 
 /* Main content - основной контент */
 main {
@@ -105,6 +144,11 @@ main {
     padding: 0 20px 20px;
 }
 
+.no-users {
+    color: #555;
+    padding: 10px;
+}
+
 /* User card styles */
 .user-card {
     background: white;
@@ -115,8 +159,7 @@ main {
 }
 
 .user-card.banned {
-    opacity: 0.7;
-    border-left: 3px solid #ff9999;
+    opacity: 0.5;
 }
 
 .user-info h3 {

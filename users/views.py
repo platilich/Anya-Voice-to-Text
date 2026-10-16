@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_GET
 from .models import TelegramUser
 
 
@@ -25,6 +26,14 @@ def custom_admin(request):
             except Exception as e:
                 print("Ошибка:", e)
 
-    # get every 5s
     users = TelegramUser.objects.all().order_by('-created_at')
     return render(request, 'index.html', {'users': users})
+
+
+
+@staff_member_required
+@require_GET
+def users_refresh(request):
+    # The page asks for this every 5 seconds and swaps the cards.
+    users = TelegramUser.objects.all().order_by('-created_at')
+    return render(request, 'users_list.html', {'users': users})
