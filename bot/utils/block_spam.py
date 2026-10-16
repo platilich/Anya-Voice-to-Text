@@ -1,9 +1,8 @@
 from time import time
-from bot.db import Users
+from users.models import TelegramUser
 
 
 
-db = Users()
 last_message_time = {}
 
 
@@ -20,15 +19,15 @@ def is_spam(user_id):
 
 
 
-def usp(message):
+async def usp(message):
     user_id = message.from_user.id
     name = message.from_user.first_name
     nickname = message.from_user.username
     is_bot = message.from_user.is_bot
 
-    if db.is_banned(user_id):
-        return True
 
+    if await TelegramUser.banned_user(user_id):
+        return True
 
     if is_spam(user_id):
         return True
@@ -38,7 +37,7 @@ def usp(message):
         return True
 
 
-    db.add_user(user_id, name, nickname)
+    await TelegramUser.save_or_update_user(user_id, name, nickname)
 
 
     return False

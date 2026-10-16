@@ -12,12 +12,10 @@ def custom_admin(request):
 
         if action and user_id:
             try:
+
                 user = TelegramUser.objects.get(user_id=user_id)
-                if action == 'ban':
-                    user.is_banned = True
-                elif action == 'unban':
-                    user.is_banned = False
-                user.save()
+                TelegramUser.change_status_banned(user_id, action)
+
 
                 # if from htmx, we send only user_card.html
                 if request.headers.get('HX-Request'):

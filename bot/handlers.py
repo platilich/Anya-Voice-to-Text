@@ -13,8 +13,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_note_bot.settings')
 django.setup()
 
 
-from users.models import TelegramUser
-from .db import Users
 from .logger import logger
 
 
@@ -23,22 +21,23 @@ from .utils.video_note import convert_to_video_note
 from .utils.audio_recognation import recognize
 from .utils.block_spam import usp
 
+
+from users.models import TelegramUser, CustomizeMessages
+
+
+
+
 router = Router()
-
-
-db = Users()
 
 
 
 
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
-    if usp(message): # update, save, protect
+    if await usp(message): # update, save, protect
         return
 
-
-
-    custom_greeting = db.get_custom_messages()[1]
+    custom_greeting = await CustomizeMessages.get_custom_messages()
 
     if custom_greeting:
         await message.answer(
@@ -52,7 +51,7 @@ async def cmd_start(message: types.Message):
 
 
     message_text = (
-        f"👋 Hey, <b>{message.from_user.first_name}</b>! ✨\n\n"
+        f"👋 Hey, <b>{html.escape(message.from_user.first_name)}</b>! ✨\n\n"
         "Here's what I can do for you:\n"
         "🎙️ Turn your voice messages into text\n"
         "🎬 Transform your videos into awesome video notes\n\n"
@@ -74,7 +73,7 @@ async def cmd_start(message: types.Message):
 async def handle_video(message: types.Message, bot: Bot):
     user_id = message.from_user.id
 
-    if usp(message):
+    if await usp(message):
         return
 
 
@@ -85,14 +84,14 @@ async def handle_video(message: types.Message, bot: Bot):
 
 
     if not is_document and message.video.duration > 60:
-        custom_limiting = db.get_custom_messages()[2]
+        custom_limiting = await CustomizeMessages.get_custom_messages()
 
-        if custom_limiting:
-            await message.answer(custom_limiting)
+        if custom_limiting[2]:
+            await message.answer(custom_limiting[2])
             return
 
 
-        await message.answer("❌ The video is too long. The maximum length is 1 minute.") # time_limit
+        await message.answer("❌ The video is too long. The maximum length is 1 minute.")
         return
 
 
@@ -112,7 +111,7 @@ async def handle_video(message: types.Message, bot: Bot):
         success = await asyncio.to_thread(convert_to_video_note, input_file, output_file)
 
         if not success:
-            await message.answer("Unable to process. Something went wrong.") # error
+            await message.answer("Unable to process. Something went wrong.")
             logger.error(f'Something went wrong')
             return
 
@@ -125,13 +124,14 @@ async def handle_video(message: types.Message, bot: Bot):
         await message.answer_video_note(video_note)
 
 
-        db.increment_video_conversion_count(user_id)
+        await TelegramUser.increase_count_video(user_id)
 
 
 
     except Exception as e:
-        custom_error = db.get_custom_messages()[3]
-        if custom_error:
+        custom_error = await CustomizeMessages.get_custom_messages()
+        if custom_error[3]:
+            await message.answer(f'{html.escape(custom_error)}', parse_mode='HTML', disable_web_page_preview=True)
             return
 
 
@@ -148,19 +148,18 @@ async def handle_video(message: types.Message, bot: Bot):
 
 
 
-
 @router.message(F.voice | F.video_note)
 async def handle_video_note(message: types.Message, bot: Bot):
     user_id = message.from_user.id
 
-    if usp(message):
+    if await usp(message):
         return
 
 
     user = await asyncio.to_thread(TelegramUser.objects.get, user_id=user_id)
 
-
     current_time = datetime.now(ZoneInfo('UTC'))
+
 
     if not await user.can_process_voice(limit=10):
         time_left = user.voice_reset_time + timedelta(hours=1) - current_time
@@ -190,7 +189,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
     result = await recognize(path)
 
     logger.info(result)
-    print(result)
+
+
     try:
         await message.reply(
             f'<blockquote>{html.escape(result)}</blockquote>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
@@ -198,7 +198,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
             parse_mode='HTML'
         )
 
-        db.increment_recognition_count(user_id)
+
+        await TelegramUser.increase_count_video(user_id)
 
 
 

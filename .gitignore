@@ -3,3 +3,9 @@
 db.sqlite3
 .idea
 logs
+bot/temp/
+.DS_Store
+__pycache__/
+*.pyc
+
+
