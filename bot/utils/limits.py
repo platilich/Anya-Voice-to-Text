@@ -40,7 +40,8 @@ async def if_process_limit_allowed(user_id, message):
         text = (
             f"📊 <b>Limits:</b> {get_allowed_processing_per_hour}/{get_allowed_processing_per_hour} requests left\n"
             f"⏳ <b>Reset in:</b> {minutes_left} min\n\n"
-            f"⭐ <b>Upgrade to Plus</b> for higher limits!"
+            f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
+            '👉 <b>/get_plus</b>'
         )
 
 

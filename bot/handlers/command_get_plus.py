@@ -29,7 +29,8 @@ async def cmd_get_plus(message: types.Message):
         provider_token="",                    # Для Telegram Stars ОСТАВЛЯЕМ ПУСТЫМ!
         currency="XTR",                       # Код валюты Telegram Stars
         prices=prices,
-        start_parameter="get-premium"
+        start_parameter="get-premium",
+        is_testing=True
     )
 
 

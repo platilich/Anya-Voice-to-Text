@@ -52,6 +52,15 @@ class TelegramUser(models.Model):
 
 
     @classmethod
+    async def get_statistic(cls, user_id):
+        user_data = await TelegramUser.objects.filter(user_id=user_id).aget()
+
+        return [user_data.count_recognise, user_data.count_video, user_data.created_at]
+
+
+
+
+    @classmethod
     async def banned_user(cls, user_id):
         user = await TelegramUser.objects.filter(user_id=user_id).aget()
 
@@ -89,7 +98,7 @@ class TelegramUser(models.Model):
 
 
 class SubscribePlus(models.Model):
-    user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, primary_key=True)
     is_plus = models.BooleanField(default=False)
     subscribe_ending = DateTimeField(null=True, blank=True)
 
@@ -111,7 +120,7 @@ class SubscribePlus(models.Model):
         await SubscribePlus.get_or_create_plus(user_id)
 
         current_time = datetime.now(timezone.utc)
-        subscribe_ending_date = current_time + relativedelta(month=1)
+        subscribe_ending_date = current_time + relativedelta(months=1)
         await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
 
 
@@ -140,7 +149,7 @@ class SubscribePlus(models.Model):
         ending_subscribe_date = user_data.subscribe_ending
 
 
-        if ending_subscribe_date > current_data:
+        if ending_subscribe_date and ending_subscribe_date > current_data:
             time_left = ending_subscribe_date - current_data
             days_left = time_left.days  # Полных оставшихся дней
 
@@ -159,15 +168,14 @@ class SubscribePlus(models.Model):
 
         if left_days:
             if left_days == 0:
-                return 'Ваша подписка Plus истекает сегодня. Не забудьте продлить!'
+                return '⏰ <b>Your Plus subscription expires today!</b> Don\'t forget to renew it! ✨\n\n'
 
 
-            return f'Осталось дней подписки Plus: {left_days}'
+            return f'⭐ <b>Plus Subscription:</b> {left_days} days left\n\n'
 
 
         else:
-            message = 'Оформите Plus, чтобы расширить лимиты до 50 в час, вместо 10'
-            return message
+            return '✨ <b>Want more limits?</b>\n🚀 Upgrade to Plus for 5х higher limits (50 req/hr)!\n👉 <b>/get_plus</b>'
 
 
 
@@ -193,6 +201,10 @@ class SubscribePlus(models.Model):
 
 
         return 10
+
+
+
+
 
 
 
@@ -262,9 +274,14 @@ class Limits(models.Model):
 
 
 
-"""    @classmethod
-    async def is_plus(cls, user_id):
-        await cls.get_or_create_limit(user_id)"""
+    @classmethod
+    async def get_data_about_user_limits(cls, user_id):
+        await cls.get_or_create_limit(user_id)
+
+        user_data = await Limits.objects.filter(user_id=user_id).aget()
+
+        return [user_data.processed_per_hour, user_data.reset_time]
+
 
 
 

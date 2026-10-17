@@ -18,13 +18,17 @@ async def cmd_start(message: types.Message):
     await message.answer_sticker(sticker=sticker_file_id)
 
 
+    name = html.escape(message.from_user.first_name or "Friend")
+
+
     message_text = (
-        f"👋 Hey, <b>{html.escape(message.from_user.first_name)}</b>! ✨\n\n"
-        "Here's what I can do for you:\n"
-        "🎙️ Turn your voice messages into text\n"
-        "🎬 Transform your videos into awesome video notes\n\n"
-        "No subscriptions and no ads - just send a video and enjoy! 🚀\n\n"
-        "<b>Ready to get started? Send me a video, audio, or sticker!</b> 💫\n\n"
+        f"👋 Hey, <b>{name}</b>! I'm <b>Anya</b> ✨\n\n"
+        "I'm here to instantly transcribe your audio & video into clear text! 🎧\n\n"
+        "<b>Here is what I can do:</b>\n"
+        "🎙️ Convert voice notes & audio files to text\n"
+        "🎥 Transcribe Telegram video messages (circles)\n\n"
+        "⚡ Fast, accurate, and super easy to use!\n\n"
+        "<b>Ready to get started?</b> Just send or forward me any voice note or video message! 💫\n\n"
         "<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"
     )
 
