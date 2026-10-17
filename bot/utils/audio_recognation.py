@@ -1,22 +1,19 @@
 from bot.logger import logger
 from groq import AsyncGroq, RateLimitError, AuthenticationError
-from bot.db import Users
+from users.models import GroqAPIKey
 
-
-
-db = Users()
-
-keys = db.get_api_keys()
 
 
 async def recognize(file_path):
+    keys = await GroqAPIKey.get_api_keys()
+
     if keys is None:
         return 'Add at least one groq key to the admin panel'
 
 
     for key in keys:
         try:
-            groq_client = AsyncGroq(api_key=key[2])
+            groq_client = AsyncGroq(api_key=key.api_key)
 
 
             logger.info('audio_recognition | recognition')
@@ -31,7 +28,6 @@ async def recognize(file_path):
 
 
             return result.text
-
 
 
         except (RateLimitError,  AuthenticationError):

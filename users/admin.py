@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TelegramUser, CustomizeMessages, GroqAPIKey
+from .models import TelegramUser, CustomizeMessages, GroqAPIKey, Limits
 
 
 # Register your models here.
@@ -14,3 +14,4 @@ class CustomMessage(admin.ModelAdmin):
 
 admin.site.register(TelegramUser)
 admin.site.register(GroqAPIKey)
+admin.site.register(Limits)

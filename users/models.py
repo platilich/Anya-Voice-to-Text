@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.db.models import F
-from sympy.physics.units import us
+from datetime import datetime, timedelta, timezone
+
 
 
 # Create your models here.
@@ -13,9 +14,6 @@ class TelegramUser(models.Model):
     count_recognise = models.PositiveIntegerField(default=0, verbose_name='Number of processed voice messages/video notes into text')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Registered')
     is_banned = models.BooleanField(default=False, verbose_name='Banned')
-
-    voice_requests_hour = models.PositiveIntegerField(default=0)
-    voice_reset_time = models.DateTimeField(default=timezone.now)
 
 
     class Meta:
@@ -79,6 +77,7 @@ class TelegramUser(models.Model):
         await TelegramUser.objects.filter(pk=cls.pk).aupdate(
             voice_requests_hour=F("voice_requests_hour") + 1
         )
+
         cls.voice_requests_hour += 1
         return True
 
@@ -91,12 +90,59 @@ class TelegramUser(models.Model):
 class Limits(models.Model):
     user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     processed_per_hour = models.IntegerField(default=0)
-    reset_time = models.DateTimeField()
+    reset_time = models.DateTimeField(null=True, blank=True)
+
+
+    @classmethod
+    async def get_or_create_limit(cls, user_id):
+        """Вспомогательный метод: находит или автоматически создаёт лимиты для юзера"""
+        user_obj = await TelegramUser.objects.aget(pk=user_id)
+        limit_obj, _ = await cls.objects.aget_or_create(
+            user_id=user_obj,
+            defaults={'processed_per_hour': 0, 'reset_time': None}
+        )
+        return limit_obj
 
 
     @classmethod
     async def increase_processed_per_hour(cls, user_id):
-        await Limits.objects.filter(user_id=user_id).aupdate(processed_per_hou
+        await cls.get_or_create_limit(user_id)
+        await Limits.objects.filter(user_id=user_id).aupdate(processed_per_hour=F('processed_per_hour') + 1)
+
+
+    @classmethod
+    async def get_processed_per_hour(cls, user_id):
+        await cls.get_or_create_limit(user_id)
+        processed_per_hour = await Limits.objects.filter(user_id=user_id).aget()
+        return processed_per_hour.processed_per_hour
+
+
+    @classmethod
+    async def reset_processed_per_hour(cls, user_id):
+        await cls.get_or_create_limit(user_id)
+        await Limits.objects.filter(user_id=user_id).aupdate(processed_per_hour=0)
+
+
+    @classmethod
+    async def set_reset_time(cls, user_id):
+        await cls.get_or_create_limit(user_id)
+        reset_time = datetime.now(timezone.utc) + timedelta(hours=1)
+        await Limits.objects.filter(user_id=user_id).aupdate(reset_time=reset_time)
+
+
+    @classmethod
+    async def reset_limit_time(cls, user_id):
+        await cls.get_or_create_limit(user_id)
+        await Limits.objects.filter(user_id=user_id).aupdate(reset_time=None)
+
+
+
+    @classmethod
+    async def get_reset_time(cls, user_id):
+        await cls.get_or_create_limit(user_id)
+        reset_time = await Limits.objects.filter(user_id=user_id).aget()
+        return reset_time.reset_time
+
 
 
 
@@ -110,7 +156,7 @@ class CustomizeMessages(models.Model):
 
     @classmethod
     async def get_custom_messages(cls):
-        return CustomizeMessages.objects.all()
+        return await CustomizeMessages.objects.aget()
 
 
 
@@ -131,7 +177,10 @@ class GroqAPIKey(models.Model):
 
     @classmethod
     async def get_api_keys(cls):
-        keys = list(GroqAPIKey.objects.all())
+        keys = []
+        # async for автоматически выполнит асинхронный запрос к БД
+        async for key in cls.objects.all():
+            keys.append(key)
 
         return keys
 

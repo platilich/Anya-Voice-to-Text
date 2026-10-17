@@ -1,20 +1,20 @@
 from time import time
-from users.models import TelegramUser
+from users.models import TelegramUser, Limits
 
 
 
-last_message_time = {}
 
 
-def is_spam(user_id):
-    if not user_id:
-        return True
+"""
+Сюда бы очень хорошо, было бы встроить лимиты сразу сюда
 
-    current_time = time()
-    last = last_message_time.get(user_id)
-    last_message_time[user_id] = current_time
 
-    return last is not None and current_time - last < 2.0
+async def limit(message):
+    user_id = message.from_user.id
+    
+    
+    
+"""
 
 
 
@@ -29,11 +29,12 @@ async def usp(message):
     if await TelegramUser.banned_user(user_id):
         return True
 
-    if is_spam(user_id):
+    #if is_spam(user_id):
         return True
 
 
     if is_bot:
+        await TelegramUser.banned_user(user_id)
         return True
 
 
