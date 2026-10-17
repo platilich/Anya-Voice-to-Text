@@ -1,8 +1,8 @@
 from django.db import models
 from django.utils import timezone
-from django.db.models import F
+from django.db.models import F, DateTimeField
 from datetime import datetime, timedelta, timezone
-
+from dateutil.relativedelta import relativedelta
 
 
 # Create your models here.
@@ -87,10 +87,127 @@ class TelegramUser(models.Model):
 
 
 
+
+class SubscribePlus(models.Model):
+    user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+    is_plus = models.BooleanField(default=False)
+    subscribe_ending = DateTimeField(null=True, blank=True)
+
+
+    @classmethod
+    async def get_or_create_plus(cls, user_id):
+        """Вспомогательный метод: находит или автоматически создаёт юзара в таблице Subscribe Plus с отсутсвием подписки (False) и датой истечением None"""
+        user_obj = await TelegramUser.objects.aget(pk=user_id)
+        subscribe_obj, _ = await cls.objects.aget_or_create(
+            user_id=user_obj,
+            defaults={'is_plus': False, 'subscribe_ending': None}
+        )
+        return subscribe_obj
+
+
+
+    @classmethod
+    async def give_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id)
+
+        current_time = datetime.now(timezone.utc)
+        subscribe_ending_date = current_time + relativedelta(month=1)
+        await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
+
+
+
+    @classmethod
+    async def end_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id)
+        user_data = await SubscribePlus.objects.filter(user_id=user_id).aget()
+
+        if user_data.is_plus:
+            await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False, subscribe_ending=None)
+            return 'Ваша подписка закончилась\nТеперь ваши лимиты в час: 10\nОформите Plus для того, чтобы расширить лимиты до 50 в час'
+
+        else:
+            return 'Ваш лимит в час: 10\nОформите Plus для того, чтобы расширить лимиты до 50 в час'
+
+
+
+    @classmethod
+    async def left_days_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id)
+        user_data = await SubscribePlus.objects.aget(user_id=user_id)
+
+
+        current_data = datetime.now(timezone.utc)
+        ending_subscribe_date = user_data.subscribe_ending
+
+
+        if ending_subscribe_date > current_data:
+            time_left = ending_subscribe_date - current_data
+            days_left = time_left.days  # Полных оставшихся дней
+
+            return days_left
+
+
+        return None
+
+
+
+    @classmethod
+    async def user_message_status_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id)
+
+        left_days = await SubscribePlus.left_days_subscribe(user_id)
+
+        if left_days:
+            if left_days == 0:
+                return 'Ваша подписка Plus истекает сегодня. Не забудьте продлить!'
+
+
+            return f'Осталось дней подписки Plus: {left_days}'
+
+
+        else:
+            message = 'Оформите Plus, чтобы расширить лимиты до 50 в час, вместо 10'
+            return message
+
+
+
+
+
+
+    @classmethod
+    async def get_allowed_processing_per_hour(cls, user_id):
+        user_data = await SubscribePlus.objects.aget(user_id=user_id)
+
+
+        current_data = datetime.now(timezone.utc)
+        ending_subscribe_date = user_data.subscribe_ending
+
+
+
+        if ending_subscribe_date:
+            if ending_subscribe_date > current_data:
+                return 50
+
+            else:
+                return 10
+
+
+        return 10
+
+
+
+
+
+
+
+
+
+
 class Limits(models.Model):
     user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     processed_per_hour = models.IntegerField(default=0)
     reset_time = models.DateTimeField(null=True, blank=True)
+    is_plus = models.BooleanField(default=False)
 
 
     @classmethod
@@ -145,6 +262,13 @@ class Limits(models.Model):
 
 
 
+"""    @classmethod
+    async def is_plus(cls, user_id):
+        await cls.get_or_create_limit(user_id)"""
+
+
+
+
 
 # тут настройка сообщений во всех сообщениях
 class CustomizeMessages(models.Model):
@@ -156,7 +280,10 @@ class CustomizeMessages(models.Model):
 
     @classmethod
     async def get_custom_messages(cls):
-        return await CustomizeMessages.objects.aget()
+        custom_messages = await CustomizeMessages.objects.aget_or_create()
+
+        return custom_messages
+
 
 
 

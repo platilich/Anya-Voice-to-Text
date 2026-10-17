@@ -1,20 +1,4 @@
-from time import time
-from users.models import TelegramUser, Limits
-
-
-
-
-
-"""
-Сюда бы очень хорошо, было бы встроить лимиты сразу сюда
-
-
-async def limit(message):
-    user_id = message.from_user.id
-    
-    
-    
-"""
+from users.models import TelegramUser
 
 
 

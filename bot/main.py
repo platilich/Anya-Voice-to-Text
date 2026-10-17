@@ -2,20 +2,29 @@ import asyncio
 import sys
 from pathlib import Path
 import os
+import django
+
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_note_bot.settings')
+django.setup()
+
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
-from bot.handlers import router
+
+
+
+from bot.handlers import register_all_handlers
+
 
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 load_dotenv(BASE_DIR / '.env')
+
 
 token = str(os.getenv('TOKEN'))
 
@@ -24,7 +33,9 @@ async def main():
     bot = Bot(token=token)
     dp = Dispatcher()
 
-    dp.include_router(router)
+
+    register_all_handlers(dp)
+
     await dp.start_polling(bot)
 
 
