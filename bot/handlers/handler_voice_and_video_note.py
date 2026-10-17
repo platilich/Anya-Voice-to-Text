@@ -14,7 +14,6 @@ from bot.logger import logger
 
 
 
-
 router = Router(name='handler_video')
 
 

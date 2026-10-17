@@ -1,4 +1,3 @@
-import html
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from bot.utils.block_spam import usp

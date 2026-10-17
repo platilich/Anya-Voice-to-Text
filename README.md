@@ -185,3 +185,5 @@ ___
 
 
 ### I would appreciate it if you starred this repository.
+
+© 2026 NoteCircle / Anya
