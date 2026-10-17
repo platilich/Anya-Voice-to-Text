@@ -6,6 +6,7 @@ import html
 
 from users.models import TelegramUser, Limits, SubscribePlus
 
+
 router = Router(name='command_profile')
 
 
@@ -57,6 +58,7 @@ async def profile(message: types.Message):
 
     if minutes_left:
         limit_text = f'⏳ The limit will be updated in: {minutes_left} min.\n\n'
+
 
     elif minutes_left == 0:
         limit_text = (
