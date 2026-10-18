@@ -10,7 +10,6 @@ from bot.utils.send_sticker import send_sticker_with_anya, send_message
 router = Router(name='command_profile')
 
 
-
 def get_reset_minutes(reset_datetime) -> int | None:
     if not reset_datetime:
         return None
@@ -82,8 +81,7 @@ async def profile(message: types.Message):
         ' you: 🎧\n\n'
         f'🆔 <b>Telegram ID:</b> <code>{user_id}</code>\n\n'
         '📊 <b>Your Activity:</b>\n'
-        f' - Voice/Video notes recognised: <b>{user_data[0]}</b> 🎙️\n'
-        f' - Video processed into video notes: <b>{user_data[1]}</b> 🎥\n\n'
+        f' - Voice/Video notes recognised: <b>{user_data[0]}</b> 🎙️\n\n'
         f'{limit_text}'
         f'{status_message_subscribe}'
         "<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"

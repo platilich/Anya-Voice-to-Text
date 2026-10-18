@@ -26,7 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 
-token = str(os.getenv('TOKEN'))
+token = (os.getenv('TOKEN') or '').strip()
+if not token:
+    raise SystemExit(
+        "Заполните TOKEN в файле .env\n\n"
+        "Пример:\n"
+        "TOKEN=123456789:AAExampleTokenFromBotFather"
+    )
 
 
 async def main():

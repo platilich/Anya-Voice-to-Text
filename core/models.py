@@ -3,10 +3,10 @@ from django.db import models
 
 # Create your models here.
 class Messages(models.Model):
-    hello = models.CharField(max_length=255, blank=True, verbose_name='/start')
+    hello = models.TextField(blank=True, verbose_name='/start')
 
-    plus_ending_today = models.CharField(max_length=255, blank=True, verbose_name='plus_ending_today')
-    user_did_not_buy_subscribe = models.CharField(max_length=255, blank=True, verbose_name='user_did_not_buy_subscribe')
+    plus_ending_today = models.TextField(blank=True, verbose_name='plus_ending_today')
+    user_did_not_buy_subscribe = models.TextField(blank=True, verbose_name='user_did_not_buy_subscribe')
 
 
     @classmethod

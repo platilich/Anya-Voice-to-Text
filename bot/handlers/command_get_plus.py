@@ -1,3 +1,5 @@
+import html
+
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from bot.utils.block_spam import usp
@@ -30,7 +32,12 @@ async def cmd_get_plus(message: types.Message):
     # Отправка счета в Telegram Stars
     await message.answer_invoice(
         title="Project Support (50 Stars)",
-        description="Voluntary donation to support the bot. Includes 30-day Premium perk.",
+        description=(
+            "Support Anya's development & unlock Plus perks for 30 days! "
+            "Enjoy expanded limits (50 req/hour)."
+            f"Terms of Service: {TERMS_URL}"
+        ),
+
         payload="premium_donation_50_stars",  # Уникальный ID платежа
         provider_token="",                    # Для Telegram Stars ОСТАВЛЯЕМ ПУСТЫМ!
         currency="XTR",                       # Код валюты Telegram Stars
@@ -55,10 +62,6 @@ async def process_successful_payment(message: types.Message):
     payment_info = message.successful_payment
 
     if payment_info.invoice_payload == "premium_donation_50_stars":
-        # TODO: Добавьте здесь логику выдачи подписки/лимитов на 30 дней в вашей базе данных
-
-
-
         try:
             await send_sticker_with_anya(message, 'love')
 
@@ -67,12 +70,11 @@ async def process_successful_payment(message: types.Message):
             logger.info(f'Поле с стикером похоже не было заполненно или такого ID нет: {e}')
 
 
-
         await SubscribePlus.give_subscribe(user_id)
 
 
         await message.answer(
-            f"🎉 <b><i>{name}</i>, thank you for your support!</b>\n\n"
+            f"🎉 <b><i>{html.escape(name)}</i>, thank you for your support!</b>\n\n"
             f"Received: {payment_info.total_amount} ⭐\n"
             f"Your limit has been upgraded to up to 50 processings per hour for 1 month."
         )

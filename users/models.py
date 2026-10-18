@@ -9,7 +9,6 @@ class TelegramUser(models.Model):
     user_id = models.BigIntegerField(unique=True, primary_key=True)
     name = models.CharField(max_length=255, blank=True, verbose_name='Name')
     nickname = models.CharField(max_length=255, blank=True, null=True, verbose_name='Nickname')
-    count_video = models.PositiveIntegerField(default=0, verbose_name='The number of videos converted into video notes.')
     count_recognise = models.PositiveIntegerField(default=0, verbose_name='Number of processed voice messages/video notes into text')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Registered')
     is_banned = models.BooleanField(default=False, verbose_name='Banned')
@@ -35,11 +34,6 @@ class TelegramUser(models.Model):
 
 
     @classmethod
-    async def increase_count_video(cls, user_id):
-        await TelegramUser.objects.filter(user_id=user_id).aupdate(count_video=F('count_video') + 1)
-
-
-    @classmethod
     async def increase_count_recognise(cls, user_id):
         await TelegramUser.objects.filter(user_id=user_id).aupdate(count_recognise=F('count_recognise') + 1)
 
@@ -54,19 +48,19 @@ class TelegramUser(models.Model):
     async def get_statistic(cls, user_id):
         user_data = await TelegramUser.objects.filter(user_id=user_id).aget()
 
-        return [user_data.count_recognise, user_data.count_video, user_data.created_at]
+        return [user_data.count_recognise]
 
 
 
 
     @classmethod
     async def banned_user(cls, user_id):
-        user = await TelegramUser.objects.filter(user_id=user_id).aget()
+        try:
+            user = await TelegramUser.objects.filter(user_id=user_id).aget()
+        except cls.DoesNotExist:
+            return False
 
-        if user.is_banned:
-            return True
-
-        return False
+        return user.is_banned
 
 
 
@@ -96,10 +90,15 @@ class SubscribePlus(models.Model):
 
     @classmethod
     async def give_subscribe(cls, user_id):
-        await SubscribePlus.get_or_create_plus(user_id)
+        subscribe = await SubscribePlus.get_or_create_plus(user_id)
 
-        current_time = datetime.now(timezone.utc)
-        subscribe_ending_date = current_time + relativedelta(months=1)
+        now = datetime.now(timezone.utc)
+        start = now
+        # если плюс ещё действует, прибавляем месяц к концу, а не затираем его
+        if subscribe.subscribe_ending and subscribe.subscribe_ending > now:
+            start = subscribe.subscribe_ending
+
+        subscribe_ending_date = start + relativedelta(months=1)
         await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
 
 
@@ -126,15 +125,8 @@ class SubscribePlus(models.Model):
 
     @classmethod
     async def user_message_status_subscribe(cls, user_id):
-        await SubscribePlus.get_or_create_plus(user_id)
-
-        left_days = await SubscribePlus.left_days_subscribe(user_id)
-
-        if left_days:
-            return left_days
-
-        else:
-            return None
+        # 0 тоже валиден: подписка кончается сегодня
+        return await SubscribePlus.left_days_subscribe(user_id)
 
 
 
@@ -143,19 +135,18 @@ class SubscribePlus(models.Model):
 
     @classmethod
     async def get_allowed_processing_per_hour(cls, user_id):
-        user_data = await SubscribePlus.objects.aget(user_id=user_id)
+        user_data = await cls.get_or_create_plus(user_id)
 
 
         current_data = datetime.now(timezone.utc)
         ending_subscribe_date = user_data.subscribe_ending
 
-        if ending_subscribe_date:
-            if ending_subscribe_date > current_data:
-                return 50
+        if ending_subscribe_date and ending_subscribe_date > current_data:
+            return 50
 
-            else:
-                return 10
 
+        if user_data.is_plus:
+            await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False)
 
         return 10
 
@@ -171,7 +162,7 @@ class SubscribePlus(models.Model):
 
 
 class Limits(models.Model):
-    user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+    user_id = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
     processed_per_hour = models.IntegerField(default=0)
     reset_time = models.DateTimeField(null=True, blank=True)
     is_plus = models.BooleanField(default=False)

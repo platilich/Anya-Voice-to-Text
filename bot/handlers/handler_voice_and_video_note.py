@@ -49,7 +49,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
 
-        recognising_sticker = await bot.download_file(str(file_info.file_path), destination=path)
+        await bot.download_file(str(file_info.file_path), destination=path)
         await bot.send_chat_action(chat_id=message.chat.id, action='typing')
 
 

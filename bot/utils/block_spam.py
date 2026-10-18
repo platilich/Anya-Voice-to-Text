@@ -10,12 +10,13 @@ async def usp(message):
     is_bot = message.from_user.is_bot
 
 
-    if await TelegramUser.banned_user(user_id):
+    if is_bot:
+        await TelegramUser.save_or_update_user(user_id, name, nickname)
+        await TelegramUser.change_status_banned(user_id, True)
         return True
 
 
-    if is_bot:
-        await TelegramUser.banned_user(user_id)
+    if await TelegramUser.banned_user(user_id):
         return True
 
 

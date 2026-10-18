@@ -4,9 +4,9 @@ from bot.logger import logger
 
 
 def remove_temp_files(files):
-    try:
-        for file in files:
+    for file in files:
+        try:
             remove(file)
 
-    except Exception as e:
-        logger.info(e)
+        except Exception as e:
+            logger.info(e)

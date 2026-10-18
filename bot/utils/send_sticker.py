@@ -10,7 +10,8 @@ async def send_message(message, message_name):
 
         message_text = await Messages.get_message_text(message_name)
 
-        if name in message_text:
+        # в тексте приветствия стоит слово name, его и меняем на имя
+        if 'name' in message_text:
             message_text = message_text.replace('name', name)
 
         await message.answer(

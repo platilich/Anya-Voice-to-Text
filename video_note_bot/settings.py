@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,13 +24,48 @@ load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+# Если чего-то нет в .env — останавливаемся и показываем пример.
+SECRET_KEY = (os.getenv('SECRET_KEY') or '').strip()
+_debug_raw = (os.getenv('DEBUG') or '').strip().lower()
+_hosts = [host.strip() for host in (os.getenv('ALLOWED_HOSTS') or '').split(',') if host.strip()]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
+_missing = []
+_invalid = []
 
-ALLOWED_HOSTS = [os.getenv('ALLOWED_HOSTS')]
+
+if not SECRET_KEY:
+    _missing.append('SECRET_KEY')
+
+if not _debug_raw:
+    _missing.append('DEBUG')
+
+elif _debug_raw not in ('true', 'false', '1', '0', 'yes', 'no'):
+    _invalid.append('DEBUG')
+
+if not _hosts:
+    _missing.append('ALLOWED_HOSTS')
+
+if _missing or _invalid:
+    text = "Заполните файл .env в корне проекта.\n"
+
+    if _missing:
+        text += "Не заполнено: " + ", ".join(_missing) + "\n"
+
+    if _invalid:
+        text += "Неверное значение: " + ", ".join(_invalid) + ". DEBUG пишите True или False.\n"
+
+    text += (
+        "\nПример:\n"
+        "SECRET_KEY=change-me-to-a-long-random-string\n"
+        "DEBUG=True\n"
+        "ALLOWED_HOSTS=127.0.0.1,localhost\n"
+    )
+
+    raise ImproperlyConfigured(text)
+
+# Строка "False" из .env не должна включать debug.
+DEBUG = _debug_raw in ('true', '1', 'yes')
+ALLOWED_HOSTS = _hosts
 
 
 # Application definition
