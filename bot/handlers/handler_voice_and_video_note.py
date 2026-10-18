@@ -6,6 +6,7 @@ import html
 import os
 
 
+from users.models import TelegramUser
 from bot.utils.limits import if_process_limit_allowed, increase_processed
 from bot.utils.block_spam import usp
 from bot.utils.cleanup import remove_temp_files
@@ -61,6 +62,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
             await increase_processed(user_id)
+            await TelegramUser.increase_count_recognise(user_id)
 
 
 

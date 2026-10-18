@@ -56,6 +56,16 @@ async def profile(message: types.Message):
     minutes_left = get_reset_minutes(reset_time)
 
 
+    if user_message_subscribe == 0:
+        status_message_subscribe =  '⏰ <b>Your Plus subscription expires today!</b> Don\'t forget to renew it! ✨\n\n'
+
+    elif user_message_subscribe is None:
+        status_message_subscribe = '✨ <b>Want more limits?</b>\n🚀 Upgrade to Plus for 5х higher limits (50 req/hr)!\n👉 <b>/get_plus</b>'
+
+    else:
+        status_message_subscribe = f'⭐ <b>Plus Subscription:</b> {user_message_subscribe} days left\n\n'
+
+
     if minutes_left:
         limit_text = f'⏳ The limit will be updated in: {minutes_left} min.\n\n'
 
@@ -77,7 +87,7 @@ async def profile(message: types.Message):
         f' - Voice notes processed: <b>{user_data[0]}</b> 🎙️\n'
         f' - Video notes processed: <b>{user_data[1]}</b> 🎥\n\n'
         f'{limit_text}'
-        f'{user_message_subscribe}'
+        f'{status_message_subscribe}'
         "\n\n<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"
     )
 

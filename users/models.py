@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 from django.db.models import F, DateTimeField
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
@@ -41,8 +40,8 @@ class TelegramUser(models.Model):
 
 
     @classmethod
-    async def increase_count_count_recognise(cls, user_id):
-        await TelegramUser.objects.filter(user_id=user_id).aupdate(count_video=F('count_recognise') + 1)
+    async def increase_count_recognise(cls, user_id):
+        await TelegramUser.objects.filter(user_id=user_id).aupdate(count_recognise=F('count_recognise') + 1)
 
 
     @classmethod
@@ -69,26 +68,6 @@ class TelegramUser(models.Model):
 
         return False
 
-
-
-
-    async def can_process_voice(cls, limit=10):
-        now = timezone.now()
-
-        if (now - cls.voice_reset_time).total_seconds() > 3600:
-            cls.voice_requests_hour = 0
-            cls.voice_reset_time = now
-            cls.asave(update_fields=["voice_requests_hour", "voice_reset_time"])
-
-        if cls.voice_requests_hour >= limit:
-            return False
-
-        await TelegramUser.objects.filter(pk=cls.pk).aupdate(
-            voice_requests_hour=F("voice_requests_hour") + 1
-        )
-
-        cls.voice_requests_hour += 1
-        return True
 
 
     def __str__(self):
@@ -124,21 +103,6 @@ class SubscribePlus(models.Model):
         await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
 
 
-
-    @classmethod
-    async def end_subscribe(cls, user_id):
-        await SubscribePlus.get_or_create_plus(user_id)
-        user_data = await SubscribePlus.objects.filter(user_id=user_id).aget()
-
-        if user_data.is_plus:
-            await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False, subscribe_ending=None)
-            return 'Ваша подписка закончилась\nТеперь ваши лимиты в час: 10\nОформите Plus для того, чтобы расширить лимиты до 50 в час'
-
-        else:
-            return 'Ваш лимит в час: 10\nОформите Plus для того, чтобы расширить лимиты до 50 в час'
-
-
-
     @classmethod
     async def left_days_subscribe(cls, user_id):
         await SubscribePlus.get_or_create_plus(user_id)
@@ -151,7 +115,7 @@ class SubscribePlus(models.Model):
 
         if ending_subscribe_date and ending_subscribe_date > current_data:
             time_left = ending_subscribe_date - current_data
-            days_left = time_left.days  # Полных оставшихся дней
+            days_left = time_left.days  # полных оставшихся дней
 
             return days_left
 
@@ -167,15 +131,10 @@ class SubscribePlus(models.Model):
         left_days = await SubscribePlus.left_days_subscribe(user_id)
 
         if left_days:
-            if left_days == 0:
-                return '⏰ <b>Your Plus subscription expires today!</b> Don\'t forget to renew it! ✨\n\n'
-
-
-            return f'⭐ <b>Plus Subscription:</b> {left_days} days left\n\n'
-
+            return left_days
 
         else:
-            return '✨ <b>Want more limits?</b>\n🚀 Upgrade to Plus for 5х higher limits (50 req/hr)!\n👉 <b>/get_plus</b>'
+            return None
 
 
 
@@ -190,8 +149,6 @@ class SubscribePlus(models.Model):
         current_data = datetime.now(timezone.utc)
         ending_subscribe_date = user_data.subscribe_ending
 
-
-
         if ending_subscribe_date:
             if ending_subscribe_date > current_data:
                 return 50
@@ -201,17 +158,6 @@ class SubscribePlus(models.Model):
 
 
         return 10
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -287,21 +233,19 @@ class Limits(models.Model):
 
 
 
-# тут настройка сообщений во всех сообщениях
-class CustomizeMessages(models.Model):
+# тут настройка бота
+class ManageBot(models.Model):
     command_start = models.CharField(max_length=255, blank=True, verbose_name='Command /start')
     time_limit = models.CharField(max_length=255, blank=True, verbose_name='Response to video time limit')
-    error = models.CharField(max_length=255, blank=True, verbose_name='Error') # Unable to process. Something went wrong.
-
-
+    error = models.CharField(max_length=255, blank=True, verbose_name='Error')
 
     @classmethod
     async def get_custom_messages(cls):
-        custom_messages = await CustomizeMessages.objects.aget_or_create()
-
+        custom_messages, _ = await cls.objects.aget_or_create(
+            pk=1,
+            defaults={'command_start': '', 'time_limit': '', 'error': ''}
+        )
         return custom_messages
-
-
 
 
     class Meta:
