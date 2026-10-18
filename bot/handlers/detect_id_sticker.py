@@ -10,5 +10,5 @@ router = Router(name='detect_id_sticker')
 async def get_sticker_id(message: Message):
     sticker_id = message.sticker.file_id
     await message.answer(
-      f'📦 <b>Sticker File ID:</b>\n`{sticker_id}`', parse_mode='HTML'
+      f'📦 <b>Sticker File ID:</b>\n<code>{sticker_id}</code>', parse_mode='HTML'
     )

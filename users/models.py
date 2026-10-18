@@ -1,4 +1,3 @@
-from django.contrib.staticfiles.views import serve
 from django.db import models
 from django.db.models import F, DateTimeField
 from datetime import datetime, timedelta, timezone
@@ -72,7 +71,7 @@ class TelegramUser(models.Model):
 
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} ({self.user_id})"
 
 
 
@@ -162,6 +161,15 @@ class SubscribePlus(models.Model):
 
 
 
+
+    class Meta:
+        verbose_name_plural = 'Subscription Plus'
+
+
+    def __str__(self):
+        return str(self.user_id)
+
+
 class Limits(models.Model):
     user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     processed_per_hour = models.IntegerField(default=0)
@@ -238,102 +246,3 @@ class Limits(models.Model):
 
     def __str__(self):
         return str(self.user_id)
-
-
-
-
-
-
-# тут настройка бота
-class ManageBot(models.Model):
-    command_start = models.CharField(max_length=255, blank=True, verbose_name='Command /start')
-    time_limit = models.CharField(max_length=255, blank=True, verbose_name='Response to video time limit')
-    error = models.CharField(max_length=255, blank=True, verbose_name='Error')
-
-    @classmethod
-    async def get_custom_messages(cls):
-        custom_messages, _ = await cls.objects.aget_or_create(
-            pk=1,
-            defaults={'command_start': '', 'time_limit': '', 'error': ''}
-        )
-        return custom_messages
-
-
-    class Meta:
-        verbose_name_plural = 'Customize Messages'
-
-
-    def __str__(self):
-        return 'Customize Messages'
-
-
-
-class Stickers(models.Model):
-    hello = models.CharField(max_length=255, blank=True, verbose_name='Hello sticker ID')
-    profile = models.CharField(max_length=255, blank=True, verbose_name='Profile sticker ID')
-    recognising = models.CharField(max_length=255, blank=True, verbose_name='Recognising sticker ID')
-    limits = models.CharField(max_length=255, blank=True, verbose_name='Limits sticker ID')
-    oops = models.CharField(max_length=255, blank=True, verbose_name='Error sticker ID')
-    love = models.CharField(max_length=255, blank=True, verbose_name='Love sticker ID')
-
-
-    @classmethod
-    async def get_sticker(cls, sticker_name):
-        default_values = {
-            'hello': 'CAACAgIAAxkBAAEHrdZq1JhcL9T5pa77J9Z7uBg3DjgP0AACU68AAmxMqEoJDeJY8k3EKD0E',
-            'profile': 'CAACAgIAAxkBAAEHra1q1JOTVPzR0LDIs3LZ7FEDVdohxQAC8K8AAt34mUqEkU5x5QKCez0E',
-            'recognising': 'CAACAgIAAxkBAAEHratq1JONrnju-xz1U08jxiEiXcW45AACRLQAAuPjoEqTDdiunLpJ3z0E',
-            'limits': 'CAACAgIAAxkBAAEHralq1JN0DTsk_Rhphofplj2-aWkRLwACSK8AAvqWoUpMTkweD7RZIz0E',
-            'oops': 'CAACAgIAAxkBAAEHraJq1JNYhLGDx5ipkjrueaEbX-2tiwAC_bAAAsc-oUr5baKLCQtl5z0E',
-            'love': 'CAACAgIAAxkBAAEHrZFq1I7ory-A1g1vXaHuR-dWECe9dgACjKcAAtzWmEq2xPHDumnrbz0E',
-        }
-
-        """Получаем или создаем запись с дефолтными значениями"""
-        stickers, _ = await cls.objects.aget_or_create(
-            pk=1,
-            defaults=default_values
-        )
-
-
-        """Проверяем нужное поле: если оно пустое, возвращаем дефолт и сохраняем в бд"""
-        val = getattr(stickers, sticker_name, None)
-        if not val:
-            val = default_values.get(sticker_name, '')
-            setattr(stickers, sticker_name, val)
-            await stickers.asave(update_fields=[sticker_name])
-
-        return val
-
-
-    class Meta:
-        verbose_name_plural = 'Stickers'
-
-    def __str__(self):
-        return 'Stickers'
-
-
-
-
-
-class GroqAPIKey(models.Model):
-    name = models.CharField(max_length=30, blank=True, verbose_name='Key name')
-    api_key = models.CharField(max_length=255, blank=True, verbose_name='Insert a spare API key (from groq.com)')
-
-
-
-    @classmethod
-    async def get_api_keys(cls):
-        keys = []
-        # async for автоматически выполнит асинхронный запрос к БД
-        async for key in cls.objects.all():
-            keys.append(key)
-
-        return keys
-
-
-    class Meta:
-        verbose_name_plural = 'Groq API Keys'
-
-
-    def __str__(self):
-        return self.name

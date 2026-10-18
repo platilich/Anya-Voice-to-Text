@@ -1,20 +1,26 @@
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from bot.utils.block_spam import usp
-from users.models import Stickers
 from bot.utils.send_sticker import send_sticker_with_anya
 from users.models import SubscribePlus
 from bot.logger import logger
 
+
 router = Router(name='command_get_plus')
 
+
 TERMS_URL = "https://telegra.ph/Terms-of-Service--Refund-Policy-10-17"
+
 
 
 @router.message(Command("get_plus"))
 async def cmd_get_plus(message: types.Message):
     if await usp(message):  # update, save, protect
         return
+
+
+
+    await send_sticker_with_anya(message, 'plus')
 
 
 
@@ -29,8 +35,7 @@ async def cmd_get_plus(message: types.Message):
         provider_token="",                    # Для Telegram Stars ОСТАВЛЯЕМ ПУСТЫМ!
         currency="XTR",                       # Код валюты Telegram Stars
         prices=prices,
-        start_parameter="get-premium",
-        is_testing=True
+        start_parameter="get-premium"
     )
 
 

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import html
 
 from users.models import TelegramUser, Limits, SubscribePlus
-from bot.utils.send_sticker import send_sticker_with_anya
+from bot.utils.send_sticker import send_sticker_with_anya, send_message
 
 router = Router(name='command_profile')
 
@@ -55,10 +55,10 @@ async def profile(message: types.Message):
 
 
     if user_message_subscribe == 0:
-        status_message_subscribe =  '⏰ <b>Your Plus subscription expires today!</b> Don\'t forget to renew it! ✨\n\n'
+        await send_message(message, 'plus_ending_today')
 
     elif user_message_subscribe is None:
-        status_message_subscribe = '✨ <b>Want more limits?</b>\n🚀 Upgrade to Plus for 5х higher limits (50 req/hr)!\n👉 <b>/get_plus</b>'
+        await send_message(message, 'user_did_not_buy_subscibe')
 
     else:
         status_message_subscribe = f'⭐ <b>Plus Subscription:</b> {user_message_subscribe} days left\n\n'
@@ -82,11 +82,11 @@ async def profile(message: types.Message):
         ' you: 🎧\n\n'
         f'🆔 <b>Telegram ID:</b> <code>{user_id}</code>\n\n'
         '📊 <b>Your Activity:</b>\n'
-        f' - Voice notes processed: <b>{user_data[0]}</b> 🎙️\n'
-        f' - Video notes processed: <b>{user_data[1]}</b> 🎥\n\n'
+        f' - Voice/Video notes recognised: <b>{user_data[0]}</b> 🎙️\n'
+        f' - Video processed into video notes: <b>{user_data[1]}</b> 🎥\n\n'
         f'{limit_text}'
         f'{status_message_subscribe}'
-        "\n\n<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"
+        "<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"
     )
 
     await message.answer(

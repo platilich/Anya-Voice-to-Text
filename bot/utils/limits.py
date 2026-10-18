@@ -1,7 +1,6 @@
-from users.models import Limits, SubscribePlus, TelegramUser
+from users.models import Limits, SubscribePlus
 
 from datetime import datetime, timezone
-import html
 
 
 
@@ -56,5 +55,4 @@ async def if_process_limit_allowed(user_id, message):
 
 
 async def increase_processed(user_id):
-    await TelegramUser.increase_count_video(user_id)
     await Limits.increase_processed_per_hour(user_id)
