@@ -4,8 +4,7 @@ from bot.utils.block_spam import usp
 from datetime import datetime, timezone
 import html
 
-from users.models import TelegramUser, Limits, SubscribePlus, Stickers
-from bot.logger import logger
+from users.models import TelegramUser, Limits, SubscribePlus
 from bot.utils.send_sticker import send_sticker_with_anya
 
 router = Router(name='command_profile')

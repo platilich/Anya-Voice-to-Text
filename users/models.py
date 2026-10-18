@@ -231,6 +231,16 @@ class Limits(models.Model):
 
 
 
+    class Meta:
+        verbose_name_plural = 'Limits'
+
+
+
+    def __str__(self):
+        return str(self.user_id)
+
+
+
 
 
 
@@ -270,7 +280,7 @@ class Stickers(models.Model):
     @classmethod
     async def get_sticker(cls, sticker_name):
         default_values = {
-            'hello': 'CAACAgIAAxkBAAEHraVq1JNeIPfkeFCEjsqolZCvyLO_EAAC7bUAAuI0oEqwRxRS0CJwxj0E',
+            'hello': 'CAACAgIAAxkBAAEHrdZq1JhcL9T5pa77J9Z7uBg3DjgP0AACU68AAmxMqEoJDeJY8k3EKD0E',
             'profile': 'CAACAgIAAxkBAAEHra1q1JOTVPzR0LDIs3LZ7FEDVdohxQAC8K8AAt34mUqEkU5x5QKCez0E',
             'recognising': 'CAACAgIAAxkBAAEHratq1JONrnju-xz1U08jxiEiXcW45AACRLQAAuPjoEqTDdiunLpJ3z0E',
             'limits': 'CAACAgIAAxkBAAEHralq1JN0DTsk_Rhphofplj2-aWkRLwACSK8AAvqWoUpMTkweD7RZIz0E',
