@@ -18,11 +18,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from users.views import custom_admin
 
 urlpatterns = [
-    path('', custom_admin, name='custom_admin'),
-    path('admin/', admin.site.urls),
-    path('custom/', custom_admin, name='custom_admin'),
-    path('custom/users_refresh', custom_admin, name='users_refresh')
+    path('admin_panel/', admin.site.urls)
 ]

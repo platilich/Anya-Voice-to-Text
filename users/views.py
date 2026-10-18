@@ -2,36 +2,3 @@ from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_GET
 from .models import TelegramUser
-
-
-@staff_member_required
-def custom_admin(request):
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        user_id = request.POST.get('user_id')
-
-        if action and user_id:
-            try:
-
-                user = TelegramUser.objects.get(user_id=user_id)
-                TelegramUser.change_status_banned(user_id, action)
-
-
-                # if from htmx, we send only user_card.html
-                if request.headers.get('HX-Request'):
-                    return render(request, 'user_card.html', {'user': user})
-
-            except Exception as e:
-                print("Ошибка:", e)
-
-    users = TelegramUser.objects.all().order_by('-created_at')
-    return render(request, 'index.html', {'users': users})
-
-
-
-@staff_member_required
-@require_GET
-def users_refresh(request):
-    # The page asks for this every 5 seconds and swaps the cards.
-    users = TelegramUser.objects.all().order_by('-created_at')
-    return render(request, 'users_list.html', {'users': users})
