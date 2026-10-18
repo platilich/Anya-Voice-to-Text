@@ -7,6 +7,7 @@ import os
 
 
 from users.models import TelegramUser
+from bot.utils.send_sticker import send_sticker_with_anya
 from bot.utils.limits import if_process_limit_allowed, increase_processed
 from bot.utils.block_spam import usp
 from bot.utils.cleanup import remove_temp_files
@@ -32,8 +33,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
     if await if_process_limit_allowed(user_id, message):
         await message.react([ReactionTypeEmoji(emoji='❤️')])
 
-        sticker_file_id = 'CAACAgIAAxkBAAIBu2rTv6jBQfA-LxikLNPG8pbRcpGSAAJEtAAC4-OgSpMN2K6cuknfPQQ'
-        await message.answer_sticker(sticker=sticker_file_id)
+
+        await send_sticker_with_anya(message, 'recognising')
 
         ext = 'ogg' if message.voice else 'mp4'
         file_obj = message.voice or message.video_note
@@ -67,6 +68,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
         except Exception as e:
+            await send_sticker_with_anya(message, 'oops')
+
             sticker_file_id = 'CAACAgIAAxkBAAIBv2rTv6olJPP9MtxJMTs7TqMuT7OIAAL9sAACxz6hSvltoosJC2XnPQQ'
             await message.answer_sticker(sticker=sticker_file_id)
             await message.answer('Something went wrong...')

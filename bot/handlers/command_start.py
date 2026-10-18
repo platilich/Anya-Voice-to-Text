@@ -1,6 +1,9 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 from bot.utils.block_spam import usp
+from users.models import Stickers
+from bot.logger import logger
+from bot.utils.send_sticker import send_sticker_with_anya
 import html
 
 
@@ -14,8 +17,7 @@ async def cmd_start(message: types.Message):
 
 
 
-    sticker_file_id = 'CAACAgIAAxkBAAIBtWrTv6W42k8UUnhLJcVJaz9aV8JQAALttQAC4jSgSrBHFFLQInDGPQQ'
-    await message.answer_sticker(sticker=sticker_file_id)
+    await send_sticker_with_anya(message, 'hello')
 
 
     name = html.escape(message.from_user.first_name or "Friend")

@@ -4,8 +4,9 @@ from bot.utils.block_spam import usp
 from datetime import datetime, timezone
 import html
 
-from users.models import TelegramUser, Limits, SubscribePlus
-
+from users.models import TelegramUser, Limits, SubscribePlus, Stickers
+from bot.logger import logger
+from bot.utils.send_sticker import send_sticker_with_anya
 
 router = Router(name='command_profile')
 
@@ -41,9 +42,7 @@ async def profile(message: types.Message):
         return
 
 
-
-    sticker_file_id = 'CAACAgIAAxkBAAIBt2rTv6dPtOrpK2YSF0I8AAHLQObtwgAC8K8AAt34mUqEkU5x5QKCez0E'
-    await message.answer_sticker(sticker=sticker_file_id)
+    await send_sticker_with_anya(message, 'profile')
 
 
 

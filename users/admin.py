@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import TelegramUser, CustomizeMessages, GroqAPIKey, Limits, SubscribePlus
+from .models import TelegramUser, ManageBot, GroqAPIKey, Limits, SubscribePlus, Stickers
 
 
 # Register your models here.
 
-@admin.register(CustomizeMessages)
+@admin.register(ManageBot)
 class CustomMessage(admin.ModelAdmin):
     list_display = ('command_start', 'time_limit', 'error')
 
@@ -15,4 +15,5 @@ class CustomMessage(admin.ModelAdmin):
 admin.site.register(TelegramUser)
 admin.site.register(SubscribePlus)
 admin.site.register(GroqAPIKey)
+admin.site.register(Stickers)
 admin.site.register(Limits)

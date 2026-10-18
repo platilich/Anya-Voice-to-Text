@@ -1,14 +1,13 @@
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from bot.utils.block_spam import usp
-
-
-from users.models import CustomizeMessages, SubscribePlus
-
+from users.models import Stickers
+from bot.utils.send_sticker import send_sticker_with_anya
+from users.models import SubscribePlus
+from bot.logger import logger
 
 router = Router(name='command_get_plus')
 
-# Ссылка на вашу оферту (опубликованный текст на Telegra.ph или сайте)
 TERMS_URL = "https://telegra.ph/Terms-of-Service--Refund-Policy-10-17"
 
 
@@ -16,6 +15,7 @@ TERMS_URL = "https://telegra.ph/Terms-of-Service--Refund-Policy-10-17"
 async def cmd_get_plus(message: types.Message):
     if await usp(message):  # update, save, protect
         return
+
 
 
     # Цена в Telegram Stars
@@ -51,7 +51,17 @@ async def process_successful_payment(message: types.Message):
 
     if payment_info.invoice_payload == "premium_donation_50_stars":
         # TODO: Добавьте здесь логику выдачи подписки/лимитов на 30 дней в вашей базе данных
-        # await User.set_plus_subscription(user_id=message.from_user.id, days=30)
+
+
+
+        try:
+            await send_sticker_with_anya(message, 'love')
+
+
+        except Exception as e:
+            logger.info(f'Поле с стикером похоже не было заполненно или такого ID нет: {e}')
+
+
 
         await SubscribePlus.give_subscribe(user_id)
 
