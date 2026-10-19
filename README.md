@@ -1,61 +1,92 @@
+<img src='screenshots/anya.png' alt='anya' width="200">
+
+
 # Anya-Voice-to-Text
 
-Launching a bot on a VPS with systemd settings
+Telegram bot: send a voice or a video note → get text.
 
+This guide shows how to run the bot and the Django admin on a Linux server.
 
-## Features
-- Send a voice message or video note and get text
+☕ Make a cup of coffee. It takes about 15–20 minutes.
 
-## Screenshots
+---
+
+## ✨ Features
+
+- Voice -> text
+- Video notes (circles) → text
+- Limits + Plus (Telegram Stars)
+- Django admin (texts, stickers, Groq keys)
+
+---
+
+## 📸 Screenshots
+
 <table>
   <tr>
-    <td><img src="screenshots/start.png" alt="Photo showing how the /start command works" width="400"/></td>
-    <td align="center"><img src="screenshots/conversion.jpeg" alt="Example: send a media file and get a transcript" width="400"/></td>
+    <td><img src="screenshots/greeting.png" alt="/start" width="400"/></td>
+    <td><img src="screenshots/recognsing.png" alt="Voice to text" width="400"/></td>
   </tr>
   <tr>
-    <td align="center"><b>/start</b></td>
-    <td align="center"><b>Send media → Get a transcript</b></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="screenshots/fourth.jpeg" alt="Example of voice message transcription" width="400"/></td>
-    <td align="center"><img src="screenshots/third.png" alt="Example of transcription output" width="400"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Voice message Transcription</b></td>
-    <td align="center"><b>Transcription Output</b></td>
+    <td align="center"><b>Greeting</b></td>
+    <td align="center"><b>Voice → text</b></td>
   </tr>
 </table>
 
-## Dependencies
+---
 
-- A Linux server (Ubuntu 20.04+, Debian 11+, etc.)
-- SSH access to the server
-- Python3
-- FFmpeg
+## What you need
 
-## Frameworks
+- Linux server (Ubuntu 20.04+, Debian 11+, or similar)
+- SSH access
+- Python 3
+- Git
+- A free [Groq API](https://console.groq.com) key (for voice recognition)
 
-- Aiogram
-- Sqlite3
-- Django
+---
 
-
-## Step 1: Connect to your server
+## 1. Connect to the server
 
 ```bash
 ssh username@your_server_ip
 ```
 
-Replace `username` and `your_server_ip` with your actual values.
+Change `username` and `your_server_ip` to your data.
 
-## Step 2: Install requirements
+---
+
+## 2. Install packages
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y python3 python3-venv python3-pip ffmpeg git
+sudo apt install -y python3 python3-venv python3-pip git
 ```
 
-## Step 3: Clone the bot
+### Cloudflared (HTTPS for admin)
+
+**Normal VPS (amd64):**
+
+```bash
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -O cloudflared.deb
+sudo dpkg -i cloudflared.deb
+```
+
+**Raspberry Pi 5 (arm64):**
+
+```bash
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb -O cloudflared.deb
+sudo dpkg -i cloudflared.deb
+```
+
+Check path:
+
+```bash
+which cloudflared
+```
+
+---
+
+## 3. Download the project
 
 ```bash
 cd /home/your_username
@@ -63,9 +94,15 @@ git clone https://github.com/platilich/Anya-Voice-to-Text.git
 cd Anya-Voice-to-Text
 ```
 
-Replace `your_username` with your actual server username.
+Show full path (save it):
 
-## Step 4: Create virtual environment
+```bash
+pwd
+```
+
+---
+
+## 4. Virtual environment
 
 ```bash
 python3 -m venv venv
@@ -73,50 +110,103 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Step 5: Create .env file
+Every time you open a new terminal:
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+## 5. Create `.env`
+
+Get bot token: [@BotFather](https://t.me/BotFather)
+
+Create secret key:
+
+```bash
+openssl rand -base64 32
+```
+
+Create file:
 
 ```bash
 nano .env
 ```
 
-Paste this:
+Paste:
 
-```
+```env
 TOKEN=your_telegram_bot_token_here
-API_KEY=your_api_key_from_service
+DEBUG=False
+SECRET_KEY=paste_openssl_key_here
+ALLOWED_HOSTS=*
 ```
 
-Get your bot token from [@BotFather](https://t.me/BotFather) on Telegram.
-Get your api key from your service provider.
+Save: `Ctrl + X` → `Y` → `Enter`.
 
-Save: press `Ctrl + X`, then `Y`, then `Enter`.
+---
 
+## 6. Database + CSS (do not skip!)
 
-## Step 6: Create DB
+**Order matters.** First create tables, then apply them, then collect CSS.
 
-```
+Without this step the bot often crashes and the admin looks broken (no style).
+
+```bash
+source venv/bin/activate
+python manage.py makemigrations
 python manage.py migrate
+python manage.py collectstatic --noinput
 ```
 
-## Step 7: Systemd
+Create admin user:
 
-The bot will start automatically when the server starts.
+```bash
+python manage.py createsuperuser
+```
 
-### Create service file
+Type username, email (can skip), password.
+
+---
+
+## 7. Admin panel — first steps
+
+<img src="screenshots/admin_panel.png" alt="Django admin panel" width="700"/>
+
+### What you do here
+
+1. Open admin in the browser (see Step 8 for the link)
+2. Log in with the user from Step 6
+3. Open **Groq API Keys**
+4. Add at least one key from [console.groq.com](https://console.groq.com)
+5. Save
+
+! Without a Groq key, voice recognition will not work.
+
+You can also edit texts and stickers in admin later.
+
+---
+
+## 8. Systemd (auto start)
+
+You need 3 services: bot, Django, Cloudflared.
+
+```bash
+whoami
+pwd
+which cloudflared
+```
+
+### Bot
 
 ```bash
 sudo nano /etc/systemd/system/anya-voice-to-text.service
 ```
 
-### Paste this text
-
-Replace these:
-- `your_username` — your server username
-- `/home/your_username/Anya-Voice-to-Text` — full path to the bot directory you can see your directory with command ```pwd```
-
 ```ini
 [Unit]
-Description=Anya-Voice-to-Text
+Description=Anya-Voice-to-Text bot
 After=network.target
 
 [Service]
@@ -132,55 +222,139 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Save: press `Ctrl + X`, then `Y`, then `Enter`.
+### Django
 
-### Enable auto start
+```bash
+sudo nano /etc/systemd/system/anya-django.service
+```
+
+```ini
+[Unit]
+Description=Anya Django admin
+After=network.target
+
+[Service]
+Type=simple
+User=your_username
+WorkingDirectory=/home/your_username/Anya-Voice-to-Text
+EnvironmentFile=/home/your_username/Anya-Voice-to-Text/.env
+ExecStart=/home/your_username/Anya-Voice-to-Text/venv/bin/python manage.py runserver 127.0.0.1:8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Cloudflared
+
+```bash
+sudo nano /etc/systemd/system/cloudflared.service
+```
+
+Use path from `which cloudflared`:
+
+```ini
+[Unit]
+Description=Cloudflared tunnel
+After=network.target anya-django.service
+
+[Service]
+Type=simple
+User=your_username
+ExecStart=/usr/bin/cloudflared tunnel --url http://127.0.0.1:8000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Start all
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable anya-voice-to-text
-sudo systemctl start anya-voice-to-text
+sudo systemctl enable anya-voice-to-text anya-django cloudflared
+sudo systemctl start anya-voice-to-text anya-django cloudflared
 ```
 
-Done. The bot now runs in the background and restarts automatically.
-
-___
-
-## Useful commands
-
-### Check status
+Check:
 
 ```bash
 sudo systemctl status anya-voice-to-text
+sudo systemctl status anya-django
+sudo systemctl status cloudflared
 ```
 
-You should see: `active (running)`.
+You want: `active (running)`.
 
-### See live logs
+### Find admin link
 
 ```bash
+sudo journalctl -u cloudflared -n 50 --no-pager
+```
+
+Look for `https://....trycloudflare.com`  
+Then open: `https://....trycloudflare.com/admin/`
+
+---
+
+## 9. django-axes (login protection)
+
+`axes` blocks people who try many wrong passwords on `/admin/`.
+
+- Use a strong password
+- If you get locked: wait a bit, or check logs
+
+---
+
+## Useful commands
+
+```bash
+# bot logs
 sudo journalctl -u anya-voice-to-text -f
+
+# django logs
+sudo journalctl -u anya-django -f
+
+# admin URL
+sudo journalctl -u cloudflared -n 50 --no-pager
+
+# restart all
+sudo systemctl restart anya-voice-to-text anya-django cloudflared
 ```
 
-Stop viewing: press `Ctrl + C`.
+---
 
+## If something breaks
 
+| Problem | Fix |
+|--------|-----|
+| Bot crashes | Run again: `makemigrations` → `migrate` → check `TOKEN` in `.env` |
+| Admin has no CSS | `python manage.py collectstatic --noinput` |
+| Voice does not work | Add Groq key in admin |
+| No admin URL | `sudo journalctl -u cloudflared -n 50 --no-pager` |
+| Service down | `sudo systemctl status name-of-service` |
 
-### Stop the bot
+Always turn on venv first:
 
 ```bash
-sudo systemctl stop anya-voice-to-text
+source venv/bin/activate
+python manage.py makemigrations
+python manage.py migrate
+python manage.py collectstatic --noinput
 ```
 
-### Start the bot
+---
 
-```bash
-sudo systemctl start anya-voice-to-text
-```
+## 🔒 Security
 
-___
+- `DEBUG=False` on the server
+- Do not put `.env` on GitHub
+- trycloudflare link is public — share only with people you trust
 
+---
 
-### I would appreciate it if you starred this repository.
+If this project helps you, a ⭐ on GitHub is appreciated.
 
 © 2026 Anya-Voice-to-Text

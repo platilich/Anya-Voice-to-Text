@@ -12,6 +12,38 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_note_bot.settings')
 django.setup()
 
 
+def ensure_database_ready():
+    """Stop early if migrate was not run. Otherwise the first message crashes the bot."""
+    from django.db import connection
+    from django.db.utils import OperationalError
+
+    needed = (
+        'core_groqapikey',
+        'core_messages',
+        'core_stickersanya',
+        'users_telegramuser',
+        'users_limits',
+        'users_subscribeplus',
+        'axes_accessattempt',
+    )
+
+    try:
+        tables = set(connection.introspection.table_names())
+    except OperationalError:
+        tables = set()
+
+    if any(name not in tables for name in needed):
+        raise SystemExit(
+            'База данных ещё не создана, поэтому бот падает.\n\n'
+            'В папке проекта выполните по порядку:\n'
+            'python manage.py makemigrations\n'
+            'python manage.py migrate\n'
+        )
+
+
+ensure_database_ready()
+
+
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 

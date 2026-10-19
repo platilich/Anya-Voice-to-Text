@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
@@ -71,6 +72,8 @@ ALLOWED_HOSTS = _hosts
 # Application definition
 
 INSTALLED_APPS = [
+    'axes',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -84,15 +87,39 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # Must stay last. It blocks a locked-out admin login.
+    'axes.middleware.AxesMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
+def _axes_client_ip(request):
+    # cloudflared sends the real visitor IP in this header.
+    # On a local run there is no header, so Django uses REMOTE_ADDR.
+    forwarded = (request.META.get('HTTP_CF_CONNECTING_IP') or '').split(',')[0].strip()
+    if forwarded:
+        return forwarded
+    return request.META.get('REMOTE_ADDR')
+
+
+# 5 wrong passwords for the same username and IP lock the login for 1 hour.
+# A correct password clears the counter (AXES_RESET_ON_SUCCESS).
+AXES_FAILURE_LIMIT = 3
+AXES_COOLOFF_TIME = timedelta(hours=5)
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_CLIENT_IP_CALLABLE = _axes_client_ip
 
 ROOT_URLCONF = 'video_note_bot.urls'
 
@@ -161,7 +188,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# collectstatic copies admin CSS here. WhiteNoise serves this folder when DEBUG=False.
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
