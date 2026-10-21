@@ -3,6 +3,7 @@ from aiogram.types import ReactionTypeEmoji
 
 import html
 import os
+from pathlib import Path
 
 
 from users.models import TelegramUser
@@ -12,13 +13,15 @@ from bot.utils.block_spam import usp
 from bot.utils.cleanup import remove_temp_files
 from bot.utils.audio_recognation import recognize, AllGroqKeysFailedError
 from bot.logger import logger
-
+from core.models import Messages
 from dotenv import load_dotenv
 
 
 
 load_dotenv()
 
+# bot/handlers/this_file.py -> корень проекта, не зависит от cwd
+TEMP_DIR = Path(__file__).resolve().parents[2] / "temp"
 
 
 router = Router(name='handler_video')
@@ -42,8 +45,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
         ext = 'ogg' if message.voice else 'mp4'
         file_obj = message.voice or message.video_note
-        os.makedirs('../temp', exist_ok=True)
-        path = f"temp/{message.from_user.id}_{message.message_id}.{ext}"
+        TEMP_DIR.mkdir(parents=True, exist_ok=True)
+        path = str(TEMP_DIR / f"{message.from_user.id}_{message.message_id}.{ext}")
         file_info = await bot.get_file(file_obj.file_id)
         logger.info(path)
 
@@ -60,7 +63,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
             await message.reply(
-                f'<blockquote>{html.escape(result)}</blockquote>\n\n\n<b><a href="https://github.com/platilich/NoteCircle">GitHub</a></b>',
+                f'<blockquote>{html.escape(result)}</blockquote>'
+                f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
                 disable_web_page_preview=True,
                 parse_mode='HTML'
             )
@@ -76,14 +80,13 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
             # Отправка уведомления админу
             admin_id = os.getenv("ADMIN_ID")
+
+            message_for_admin = await Messages.get_message_text('error_zero_groq_api_keys_for_admin')
             if admin_id:
                 try:
                     await bot.send_message(
                         chat_id=int(admin_id),
-                        text=(
-                            "All Groq API keys are invalid, blocked, or have reached the limit..\n"
-                            "👉 <i>Add a new key to your new Groq account or top up your account balance in the admin area!</i>"
-                        ),
+                        text=message_for_admin,
                         parse_mode="HTML",
                     )
 
@@ -95,18 +98,19 @@ async def handle_video_note(message: types.Message, bot: Bot):
             await message.react([ReactionTypeEmoji(emoji="😢")])
             await send_sticker_with_anya(message, "oops")
 
-            await message.answer(
-                "Sorry, the audio recognition service is currently unavailable."
-                " Please try again later."
-            )
+            sorry_error = await Messages.get_message_text('something_went_wrong')
+            await message.answer(sorry_error)
 
 
         except Exception as e:
             # обработка любых других рандомных ошибок
-            logger.error(f"Error during video/voice processing: {e}")
+            logger.critical(f"Error during video/voice processing: {e}")
+
             await message.react([ReactionTypeEmoji(emoji="😢")])
             await send_sticker_with_anya(message, "oops")
-            await message.answer("Something went wrong...")
+
+            sorry_error = await Messages.get_message_text('something_went_wrong')
+            await message.answer(sorry_error)
 
 
         finally:

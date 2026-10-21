@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
 
-from . import command_start, command_profile, command_get_plus, handler_voice_and_video_note, handler_video, detect_id_sticker
+from . import command_start, command_profile, command_get_plus, handler_voice_and_video_note, detect_id_sticker
 
 
 def register_all_handlers(dp: Dispatcher) -> None:
@@ -20,6 +20,5 @@ __all__ = [
     "command_profile",
     "command_get_plus",
     "handler_voice_and_video_note",
-    #'handler_video',
     'detect_id_sticker'
 ]

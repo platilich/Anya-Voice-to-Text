@@ -5,13 +5,11 @@ from aiogram.filters import Command
 from bot.utils.block_spam import usp
 from bot.utils.send_sticker import send_sticker_with_anya
 from users.models import SubscribePlus
+from core.models import Messages
 from bot.logger import logger
 
 
 router = Router(name='command_get_plus')
-
-
-TERMS_URL = "https://telegra.ph/Terms-of-Service--Refund-Policy-10-17"
 
 
 
@@ -24,19 +22,18 @@ async def cmd_get_plus(message: types.Message):
 
     await send_sticker_with_anya(message, 'plus')
 
+    label_price = await Messages.get_message_text('invoice_title')
 
 
-    # Цена в Telegram Stars
-    prices = [types.LabeledPrice(label="Voluntary Donation (Premium Perk)", amount=50)]
+    prices = [types.LabeledPrice(label=label_price, amount=50)]
+
+
+    description_price = await Messages.get_message_text('invoice_description')
 
     # Отправка счета в Telegram Stars
     await message.answer_invoice(
         title="Project Support (50 Stars)",
-        description=(
-            "Support Anya's development & unlock Plus perks for 30 days! "
-            "Enjoy expanded limits (50 req/hour)."
-            f"Terms of Service: {TERMS_URL}"
-        ),
+        description=description_price,
 
         payload="premium_donation_50_stars",  # Уникальный ID платежа
         provider_token="",                    # Для Telegram Stars ОСТАВЛЯЕМ ПУСТЫМ!
@@ -44,6 +41,7 @@ async def cmd_get_plus(message: types.Message):
         prices=prices,
         start_parameter="get-premium"
     )
+
 
 
 # 1. ОБРАБОТЧИК ПРЕДВАРИТЕЛЬНОЙ ПРОВЕРКИ (PreCheckoutQuery)
@@ -73,8 +71,7 @@ async def process_successful_payment(message: types.Message):
         await SubscribePlus.give_subscribe(user_id)
 
 
-        await message.answer(
-            f"🎉 <b><i>{html.escape(name)}</i>, thank you for your support!</b>\n\n"
-            f"Received: {payment_info.total_amount} ⭐\n"
-            f"Your limit has been upgraded to up to 50 processings per hour for 1 month."
-        )
+        label_thanks = await Messages.get_message_text('user_bought_subscribe')
+        label_thanks = label_thanks.replace('{name}', html.escape(name)).replace('{payment_info.total_amount}', payment_info.total_amount)
+
+        await message.answer(label_thanks)

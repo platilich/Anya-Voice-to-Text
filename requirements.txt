@@ -14,6 +14,7 @@ deptry==0.25.1
 distro==1.9.0
 Django==6.1.2
 django-axes==8.3.1
+django-solo==2.5.1
 filelock==4.0.12
 frozenlist==1.8.0
 fsspec==2026.9.0

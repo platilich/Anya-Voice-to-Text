@@ -73,6 +73,7 @@ ALLOWED_HOSTS = _hosts
 
 INSTALLED_APPS = [
     'axes',
+    'solo',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -94,7 +95,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Must stay last. It blocks a locked-out admin login.
+    # must stay last. It blocks a locked-out admin login.
     'axes.middleware.AxesMiddleware',
 ]
 

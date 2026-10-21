@@ -14,4 +14,4 @@ async def cmd_start(message: types.Message):
 
 
     await send_sticker_with_anya(message, 'hello')
-    await send_message(message, 'hello')
+    await send_message(message, 'start')

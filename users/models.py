@@ -29,6 +29,7 @@ class TelegramUser(models.Model):
             }
         )
 
+
         return user, created
 
 
@@ -57,7 +58,8 @@ class TelegramUser(models.Model):
     async def banned_user(cls, user_id):
         try:
             user = await TelegramUser.objects.filter(user_id=user_id).aget()
-        except cls.DoesNotExist:
+
+        except TelegramUser.DoesNotExist:
             return False
 
         return user.is_banned
@@ -148,6 +150,9 @@ class SubscribePlus(models.Model):
         if user_data.is_plus:
             await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False)
 
+
+
+
         return 10
 
 
@@ -158,7 +163,7 @@ class SubscribePlus(models.Model):
 
 
     def __str__(self):
-        return str(self.user_id)
+        return f'Subscription for {self.user_id}'
 
 
 class Limits(models.Model):
