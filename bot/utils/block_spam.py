@@ -2,7 +2,6 @@ from users.models import TelegramUser
 
 
 
-
 async def usp(message):
     user_id = message.from_user.id
     name = message.from_user.first_name

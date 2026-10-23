@@ -5,7 +5,7 @@ from core.models import GroqAPIKey
 
 
 class AllGroqKeysFailedError(Exception):
-  """Вызывается, когда все API-ключи Groq невалидны, заблокированы или превысили лимит."""
+  # It is triggered when all Groq API keys are unavailable
   pass
 
 

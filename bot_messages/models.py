@@ -3,9 +3,32 @@ from solo.models import SingletonModel
 
 
 
-class StartMessages(SingletonModel):
-    #Texts for /start command and welcome screen
 
+
+class BaseSingletonMessage(SingletonModel):
+    """Базовый класс для всех одиночных моделей с текстами,
+    чтобы автоматически поддерживать асинхронное получение полей."""
+
+    @classmethod
+    async def get_message_text(cls, field_name: str, **kwargs) -> str:
+        # aget_or_create — асинхронный метод Django ORM для получения или создания записи
+        config, _ = await cls.objects.aget_or_create(pk=1)
+
+        if not hasattr(config, field_name):
+            raise AttributeError(f"{cls.__name__} has no field '{field_name}'")
+
+        value = getattr(config, field_name)
+
+        # подставляем переменные ({name}, {recognised} и т. д.), если они переданы
+        return value.format(**kwargs) if kwargs else value
+
+    class Meta:
+        abstract = True
+
+
+
+class StartMessages(BaseSingletonMessage):
+    # texts for /start command and welcome screen
     start_text = models.TextField(
         default=(
             f"👋 Hey, <b>{{name}}</b>! I'm <b>Anya</b> ✨\n\n"
@@ -15,7 +38,7 @@ class StartMessages(SingletonModel):
             "🎥 Transcribe your Telegram video messages (circles)\n\n"
             "⚡ Fast, accurate, and super easy to use!\n\n"
             "<b>Ready?</b> Just send or forward me any voice note or video message and I'll handle the rest! 💫\n\n"
-            "<a href='https://github.com/platilich/NoteCircle'><b>GitHub</b></a>"
+            "<a href='https://github.com/platilich/Anya-voice-to-text'><b>GitHub</b></a>"
         ),
         verbose_name='Start Message Text'
     )
@@ -28,7 +51,9 @@ class StartMessages(SingletonModel):
         verbose_name_plural = 'Start Command'
 
 
-class ProfileMessages(SingletonModel):
+
+
+class ProfileMessages(BaseSingletonMessage):
     """Texts for user profile header and stats"""
 
     header = models.TextField(
@@ -57,7 +82,9 @@ class ProfileMessages(SingletonModel):
         verbose_name_plural = 'Profile Messages'
 
 
-class SubscriptionStatusMessages(SingletonModel):
+
+
+class SubscriptionStatusMessages(BaseSingletonMessage):
     """Texts for user subscription status inside profile"""
 
     active_plus = models.TextField(
@@ -86,7 +113,9 @@ class SubscriptionStatusMessages(SingletonModel):
         verbose_name_plural = 'Subscription Status Texts'
 
 
-class LimitMessages(SingletonModel):
+
+
+class LimitMessages(BaseSingletonMessage):
     """Texts for hourly limit refresh timers"""
 
     update_timer = models.TextField(
@@ -109,7 +138,9 @@ class LimitMessages(SingletonModel):
         verbose_name_plural = 'Limit Texts'
 
 
-class SubscriptionPlusMessages(SingletonModel):
+
+
+class SubscriptionPlusMessages(BaseSingletonMessage):
     """Texts for invoicing and successful payments"""
 
     invoice_title = models.TextField(
@@ -141,7 +172,9 @@ class SubscriptionPlusMessages(SingletonModel):
         verbose_name_plural = 'Subscription Payments'
 
 
-class ErrorMessages(SingletonModel):
+
+
+class ErrorMessages(BaseSingletonMessage):
     """Texts for errors and system notices"""
 
     admin_no_groq_keys = models.TextField(
@@ -164,17 +197,33 @@ class ErrorMessages(SingletonModel):
         verbose_name_plural = 'Error Texts'
 
 
-class Other(SingletonModel):
 
+
+class Other(BaseSingletonMessage):
     sticker_file_id = models.TextField(
         max_length=50,
         default='ⓘ Sticker ID: {sticker_id}',
         verbose_name='Sticker Template ({sticker_id})'
     )
 
+
     def __str__(self):
         return 'Other Texts'
 
+
     class Meta:
+        # миграция создала таблицу как GeneralMessages, класс потом переименовали
+        db_table = 'bot_messages_generalmessages'
         verbose_name = 'Other Text'
         verbose_name_plural = 'Other Texts'
+
+
+
+
+
+
+async def get_text(model, key):
+    text = await model.get_message_text(key)
+
+
+    return text

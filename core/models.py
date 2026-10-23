@@ -2,7 +2,6 @@ from django.db import models
 from solo.models import SingletonModel
 
 
-
 # Create your models here.
 class StickersAnya(SingletonModel):
     hello = models.CharField(

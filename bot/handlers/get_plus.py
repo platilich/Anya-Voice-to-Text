@@ -3,10 +3,13 @@ import html
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from bot.utils.block_spam import usp
-from bot.utils.send_sticker import send_sticker_with_anya
+
 from users.models import SubscribePlus
-from core.models import Messages
+from bot.sticker import send
 from bot.logger import logger
+
+
+from bot_messages.models import get_text
 
 
 router = Router(name='command_get_plus')
@@ -20,20 +23,24 @@ async def cmd_get_plus(message: types.Message):
 
 
 
-    await send_sticker_with_anya(message, 'plus')
-
-    label_price = await Messages.get_message_text('invoice_title')
+    await send(message, 'plus')
 
 
-    prices = [types.LabeledPrice(label=label_price, amount=50)]
 
 
-    description_price = await Messages.get_message_text('invoice_description')
+    text_title = await get_text('SubscriptionPlusMessages', 'invoice_title')
+    text_description = await get_text('SubscriptionPlusMessages', 'invoice_description')
+
+
+
+
+    prices = [types.LabeledPrice(label=text_title, amount=50)]
+
 
     # Отправка счета в Telegram Stars
     await message.answer_invoice(
         title="Project Support (50 Stars)",
-        description=description_price,
+        description=text_description,
 
         payload="premium_donation_50_stars",  # Уникальный ID платежа
         provider_token="",                    # Для Telegram Stars ОСТАВЛЯЕМ ПУСТЫМ!
@@ -61,17 +68,17 @@ async def process_successful_payment(message: types.Message):
 
     if payment_info.invoice_payload == "premium_donation_50_stars":
         try:
-            await send_sticker_with_anya(message, 'love')
+            await send(message, 'love')
 
 
         except Exception as e:
-            logger.info(f'Поле с стикером похоже не было заполненно или такого ID нет: {e}')
+            logger.info(f"The field with the sticker didn't seem to be filled in or there is no such ID.: {e}")
 
 
         await SubscribePlus.give_subscribe(user_id)
 
+        text = await get_text('SubscriptionPlusMessages', 'success_purchase')
 
-        label_thanks = await Messages.get_message_text('user_bought_subscribe')
-        label_thanks = label_thanks.replace('{name}', html.escape(name)).replace('{payment_info.total_amount}', payment_info.total_amount)
+        response = text.replace('{name}', html.escape(name)).replace('{payment_info.total_amount}', payment_info.total_amount)
 
-        await message.answer(label_thanks)
+        await message.answer(response)

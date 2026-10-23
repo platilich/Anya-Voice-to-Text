@@ -1,9 +1,10 @@
 from aiogram import Router, types
 from aiogram.filters import Command
+
+
+from bot.sticker import send
 from bot.utils.block_spam import usp
 from bot import profile_form
-
-from bot.utils.send_sticker import send_sticker_with_anya
 
 
 
@@ -21,7 +22,8 @@ async def profile(message: types.Message):
         return
 
 
-    await send_sticker_with_anya(message, 'profile')
+    await send(message, 'profile')
+
 
     message_text = await profile_form.profile_message(user_id, name)
 

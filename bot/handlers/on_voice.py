@@ -7,18 +7,22 @@ from pathlib import Path
 
 
 from users.models import TelegramUser
-from bot.utils.send_sticker import send_sticker_with_anya
+
+
 from bot.utils.limits import if_process_limit_allowed, increase_processed
 from bot.utils.block_spam import usp
 from bot.utils.cleanup import remove_temp_files
 from bot.utils.audio_recognation import recognize, AllGroqKeysFailedError
 from bot.logger import logger
-from core.models import Messages
 from dotenv import load_dotenv
 
 
+from bot.sticker import send
+from bot_messages.models import get_text
+
 
 load_dotenv()
+
 
 # bot/handlers/this_file.py -> корень проекта, не зависит от cwd
 TEMP_DIR = Path(__file__).resolve().parents[2] / "temp"
@@ -39,7 +43,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     if await if_process_limit_allowed(user_id, message):
         await message.react([ReactionTypeEmoji(emoji='❤️')])
-        await send_sticker_with_anya(message, 'recognising')
+        await send(message, 'recognising')
 
 
 
@@ -81,12 +85,14 @@ async def handle_video_note(message: types.Message, bot: Bot):
             # Отправка уведомления админу
             admin_id = os.getenv("ADMIN_ID")
 
-            message_for_admin = await Messages.get_message_text('error_zero_groq_api_keys_for_admin')
+            text = await get_text(model='ErrorMessages', key='admin_no_groq_keys')
+
+
             if admin_id:
                 try:
                     await bot.send_message(
                         chat_id=int(admin_id),
-                        text=message_for_admin,
+                        text=text,
                         parse_mode="HTML",
                     )
 
@@ -94,12 +100,15 @@ async def handle_video_note(message: types.Message, bot: Bot):
                     logger.error(f"Failed to notify admin: {admin_err}")
 
 
-            # Ответ пользователю с извинениями
-            await message.react([ReactionTypeEmoji(emoji="😢")])
-            await send_sticker_with_anya(message, "oops")
 
-            sorry_error = await Messages.get_message_text('something_went_wrong')
-            await message.answer(sorry_error)
+
+            await message.react([ReactionTypeEmoji(emoji="😢")])
+            await send(message, "oops")
+
+
+            text = await get_text('something_went_wrong')
+            await message.answer(text)
+
 
 
         except Exception as e:
@@ -107,10 +116,12 @@ async def handle_video_note(message: types.Message, bot: Bot):
             logger.critical(f"Error during video/voice processing: {e}")
 
             await message.react([ReactionTypeEmoji(emoji="😢")])
-            await send_sticker_with_anya(message, "oops")
+            await send(message, "oops")
 
-            sorry_error = await Messages.get_message_text('something_went_wrong')
-            await message.answer(sorry_error)
+
+            text = await get_text('something_went_wrong')
+            await message.answer(text)
+
 
 
         finally:
