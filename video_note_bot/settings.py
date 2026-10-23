@@ -25,7 +25,8 @@ load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# Если чего-то нет в .env — останавливаемся и показываем пример.
+
+# if something is missing in .env, we stop and show an example.
 SECRET_KEY = (os.getenv('SECRET_KEY') or '').strip()
 _debug_raw = (os.getenv('DEBUG') or '').strip().lower()
 _hosts = [host.strip() for host in (os.getenv('ALLOWED_HOSTS') or '').split(',') if host.strip()]
@@ -47,16 +48,16 @@ if not _hosts:
     _missing.append('ALLOWED_HOSTS')
 
 if _missing or _invalid:
-    text = "Заполните файл .env в корне проекта.\n"
+    text = "Fill in the file.env at the root of the project.\n"
 
     if _missing:
-        text += "Не заполнено: " + ", ".join(_missing) + "\n"
+        text += "Not filled in: " + ", ".join(_missing) + "\n"
 
     if _invalid:
-        text += "Неверное значение: " + ", ".join(_invalid) + ". DEBUG пишите True или False.\n"
+        text += "Incorrect value: " + ", ".join(_invalid) + ". DEBUG write True or False.\n"
 
     text += (
-        "\nПример:\n"
+        "\nExample:\n"
         "SECRET_KEY=change-me-to-a-long-random-string\n"
         "DEBUG=True\n"
         "ALLOWED_HOSTS=127.0.0.1,localhost\n"
@@ -84,6 +85,7 @@ INSTALLED_APPS = [
 
     'users',
     'core',
+    'bot_messages',
 ]
 
 MIDDLEWARE = [
