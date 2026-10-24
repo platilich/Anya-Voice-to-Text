@@ -8,6 +8,8 @@ from users.models import SubscribePlus
 from bot.sticker import send
 from bot.logger import logger
 
+from bot_messages.models import SubscriptionPlusMessages
+
 
 from bot_messages.models import get_text
 
@@ -28,8 +30,8 @@ async def cmd_get_plus(message: types.Message):
 
 
 
-    text_title = await get_text('SubscriptionPlusMessages', 'invoice_title')
-    text_description = await get_text('SubscriptionPlusMessages', 'invoice_description')
+    text_title = await get_text(model=SubscriptionPlusMessages, key='invoice_title')
+    text_description = await get_text(model=SubscriptionPlusMessages, key='invoice_description')
 
 
 
@@ -77,7 +79,7 @@ async def process_successful_payment(message: types.Message):
 
         await SubscribePlus.give_subscribe(user_id)
 
-        text = await get_text('SubscriptionPlusMessages', 'success_purchase')
+        text = await get_text(model=SubscriptionPlusMessages, key='success_purchase')
 
         response = text.replace('{name}', html.escape(name)).replace('{payment_info.total_amount}', payment_info.total_amount)
 

@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 
 
+import math
+
 # Create your models here.
 class TelegramUser(models.Model):
     user_id = models.BigIntegerField(unique=True, primary_key=True)
@@ -134,30 +136,6 @@ class SubscribePlus(models.Model):
 
 
 
-
-    @classmethod
-    async def get_allowed_processing_per_hour(cls, user_id):
-        user_data = await cls.get_or_create_plus(user_id)
-
-
-        current_data = datetime.now(timezone.utc)
-        ending_subscribe_date = user_data.subscribe_ending
-
-        if ending_subscribe_date and ending_subscribe_date > current_data:
-            return 50
-
-
-        if user_data.is_plus:
-            await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False)
-
-
-
-
-        return 10
-
-
-
-
     class Meta:
         verbose_name_plural = 'Subscription Plus'
 
@@ -168,70 +146,86 @@ class SubscribePlus(models.Model):
 
 class Limits(models.Model):
     user_id = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
-    processed_per_hour = models.IntegerField(default=0)
-    reset_time = models.DateTimeField(null=True, blank=True)
+    seconds_used = models.IntegerField()
+    usage_date = models.DateField(null=True, blank=True)
     is_plus = models.BooleanField(default=False)
 
 
     @classmethod
     async def get_or_create_limit(cls, user_id):
-        """Вспомогательный метод: находит или автоматически создаёт лимиты для юзера"""
+        # auxiliary method: finds or automatically creates user limits
         user_obj = await TelegramUser.objects.aget(pk=user_id)
         limit_obj, _ = await cls.objects.aget_or_create(
             user_id=user_obj,
-            defaults={'processed_per_hour': 0, 'reset_time': None}
+            defaults={'seconds_used': 0}
         )
         return limit_obj
 
 
-    @classmethod
-    async def increase_processed_per_hour(cls, user_id):
-        await cls.get_or_create_limit(user_id)
-        await Limits.objects.filter(user_id=user_id).aupdate(processed_per_hour=F('processed_per_hour') + 1)
-
 
     @classmethod
-    async def get_processed_per_hour(cls, user_id):
-        await cls.get_or_create_limit(user_id)
-        processed_per_hour = await Limits.objects.filter(user_id=user_id).aget()
-        return processed_per_hour.processed_per_hour
+    async def maybe_reset(cls, user_id: int):
+        limit = await cls.get_or_create_limit(user_id)
+        today = datetime.now(timezone.utc).date()
 
-
-    @classmethod
-    async def reset_processed_per_hour(cls, user_id):
-        await cls.get_or_create_limit(user_id)
-        await Limits.objects.filter(user_id=user_id).aupdate(processed_per_hour=0)
-
-
-    @classmethod
-    async def set_reset_time(cls, user_id):
-        await cls.get_or_create_limit(user_id)
-        reset_time = datetime.now(timezone.utc) + timedelta(hours=1)
-        await Limits.objects.filter(user_id=user_id).aupdate(reset_time=reset_time)
-
-
-    @classmethod
-    async def reset_limit_time(cls, user_id):
-        await cls.get_or_create_limit(user_id)
-        await Limits.objects.filter(user_id=user_id).aupdate(reset_time=None)
+        if limit.usage_date != today:
+            limit.seconds_used = 0
+            limit.usage_date = today
+            await limit.asave(update_fields=["seconds_used", "usage_date"])
 
 
 
     @classmethod
-    async def get_reset_time(cls, user_id):
-        await cls.get_or_create_limit(user_id)
-        reset_time = await Limits.objects.filter(user_id=user_id).aget()
-        return reset_time.reset_time
+    async def get_seconds_used(cls, user_id: int): # возращает количество использованных сегодня минут
+        limit = await cls.get_or_create_limit(user_id)
+
+        return limit.seconds_used
 
 
 
     @classmethod
-    async def get_data_about_user_limits(cls, user_id):
-        await cls.get_or_create_limit(user_id)
+    async def get_daily_limit_time(cls, user_id):
+        status = await SubscribePlus.get_or_create_plus(user_id=user_id)
 
-        user_data = await Limits.objects.filter(user_id=user_id).aget()
 
-        return [user_data.processed_per_hour, user_data.reset_time]
+        if status.is_plus:
+            return f"{30:02d}:{00:02d}"
+
+        else:
+            return f"{15:02d}:{00:02d}"
+
+
+
+
+
+    @classmethod
+    async def spend_seconds(cls, user_id, duration_seconds):
+        await cls.maybe_reset(user_id) # проверяем дату если дата совпадет то сбрасываем
+
+
+        await cls.objects.filter(user_id=user_id).aupdate(
+            seconds_used=F("seconds_used") + duration_seconds
+        )
+
+
+
+    @classmethod
+    async def get_usage_for_profile(cls, user_id):
+        await cls.maybe_reset(user_id) # получаем лимит сколько мы можем использовали
+
+
+        time_used = await cls.get_seconds_used(user_id)
+        max_minutes = await cls.get_daily_limit_time(user_id)
+
+
+        minutes = time_used // 60
+        seconds = time_used % 60
+
+        time_formatted = f"{minutes:02d}:{seconds:02d}"
+
+
+        return time_formatted, max_minutes
+
 
 
 

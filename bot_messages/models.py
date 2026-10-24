@@ -58,7 +58,7 @@ class ProfileMessages(BaseSingletonMessage):
 
     header = models.TextField(
         max_length=255,
-        default='👋 Hey {name}! Here is everything I know about your stats so far: 🎧\n\n',
+        default='👋 Hey {name}! Here is everything I know about your stats so far: 🎧\n',
         verbose_name='Header ({name})'
     )
 
@@ -66,12 +66,6 @@ class ProfileMessages(BaseSingletonMessage):
         max_length=255,
         default='🎙 Total items recognized by me: {recognised}',
         verbose_name='Recognized Count ({recognised})'
-    )
-
-    limit_info = models.TextField(
-        max_length=255,
-        default='🔄 Your current hourly limit: {recognised}/{allowed_per_hour}',
-        verbose_name='Limit Info ({recognised}, {allowed_per_hour})'
     )
 
     def __str__(self):
@@ -116,19 +110,25 @@ class SubscriptionStatusMessages(BaseSingletonMessage):
 
 
 class LimitMessages(BaseSingletonMessage):
-    """Texts for hourly limit refresh timers"""
-
-    update_timer = models.TextField(
+    # texts for hourly limit refresh timers
+    limit = models.TextField(
         max_length=255,
-        default='🕜 I will refresh your limits in: {minutes} min.',
-        verbose_name='Update Timer in Minutes ({minutes})'
+        default=(
+            "📊 <b>Limits:</b> {free_minutes}/{allowed} minutes\n"
+            f"⏳ <b>The limits will be updated tomorrow</b> min\n\n"
+            f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
+            '👉 <b>/get_plus</b>'
+        ),
+        verbose_name='A message telling you that the voice message is too long'
     )
 
-    updating_now = models.TextField(
+
+    too_long = models.TextField(
         max_length=255,
-        default='Almost there! Limits will refresh in ~30 seconds ⏱️',
-        verbose_name='Updating Now (< 0 min)'
+        default='⌛ Oh, what a long voice message! 🙈 My servers might run out of RAM from a marathon like that. Let’s keep it under 15 minutes max, alright? ✨',
+        verbose_name='A message telling you that the voice message is too long'
     )
+
 
     def __str__(self):
         return 'Limit Texts'
@@ -141,7 +141,7 @@ class LimitMessages(BaseSingletonMessage):
 
 
 class SubscriptionPlusMessages(BaseSingletonMessage):
-    """Texts for invoicing and successful payments"""
+    # texts for invoicing and successful payments
 
     invoice_title = models.TextField(
         max_length=255,
@@ -175,7 +175,8 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
 
 
 class ErrorMessages(BaseSingletonMessage):
-    """Texts for errors and system notices"""
+    # texts for errors and system notices
+
 
     admin_no_groq_keys = models.TextField(
         max_length=500,
@@ -195,29 +196,6 @@ class ErrorMessages(BaseSingletonMessage):
     class Meta:
         verbose_name = 'Error Text'
         verbose_name_plural = 'Error Texts'
-
-
-
-
-class Other(BaseSingletonMessage):
-    sticker_file_id = models.TextField(
-        max_length=50,
-        default='ⓘ Sticker ID: {sticker_id}',
-        verbose_name='Sticker Template ({sticker_id})'
-    )
-
-
-    def __str__(self):
-        return 'Other Texts'
-
-
-    class Meta:
-        # миграция создала таблицу как GeneralMessages, класс потом переименовали
-        db_table = 'bot_messages_generalmessages'
-        verbose_name = 'Other Text'
-        verbose_name_plural = 'Other Texts'
-
-
 
 
 

@@ -4,8 +4,7 @@ from .models import (StartMessages,
                      SubscriptionPlusMessages,
                      LimitMessages,
                      SubscriptionStatusMessages,
-                     ErrorMessages,
-                     Other)
+                     ErrorMessages)
 
 
 
@@ -21,8 +20,7 @@ class NativeSingletonAdmin(SingletonModelAdmin):
 
 models = [StartMessages, ProfileMessages,
           SubscriptionPlusMessages, LimitMessages,
-          SubscriptionStatusMessages, ErrorMessages,
-          Other
+          SubscriptionStatusMessages, ErrorMessages
         ]
 
 
