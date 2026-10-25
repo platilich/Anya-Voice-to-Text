@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
 
-from . import start, profile, get_plus, on_voice
+from . import start, profile, get_plus, on_voice, callback
 
 
 def register_all_handlers(dp: Dispatcher) -> None:
@@ -8,6 +8,7 @@ def register_all_handlers(dp: Dispatcher) -> None:
     dp.include_router(profile.router)
     dp.include_router(on_voice.router)
     dp.include_router(get_plus.router)
+    dp.include_router(callback.router)
 
 
 
@@ -17,5 +18,6 @@ __all__ = [
     'start',
     "profile",
     "on_voice",
-    "get_plus"
+    "get_plus",
+    'callback'
 ]

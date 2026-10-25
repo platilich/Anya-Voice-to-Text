@@ -114,7 +114,7 @@ class LimitMessages(BaseSingletonMessage):
     limit = models.TextField(
         max_length=255,
         default=(
-            "📊 <b>Limits:</b> {free_minutes}/{allowed} minutes\n"
+            "📊 <b>Limits:</b> {used_time}/{allowed} minutes\n"
             f"⏳ <b>The limits will be updated tomorrow</b> min\n\n"
             f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
             '👉 <b>/get_plus</b>'

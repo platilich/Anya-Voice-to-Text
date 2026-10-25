@@ -4,9 +4,9 @@ from core.models import GroqAPIKey
 
 
 
+# --- it is triggered when all Groq API keys are unavailable ---
 class AllGroqKeysFailedError(Exception):
-  # It is triggered when all Groq API keys are unavailable
-  pass
+    pass
 
 
 
@@ -46,6 +46,11 @@ async def recognize(file_path):
             continue
 
 
+
+        except OSError:
+            # The file was never saved, or the disk read failed. That is not
+            # a bad key, so do not walk the rest of the key list.
+            raise
 
         except Exception as e:
             logger.error(f"audio_recognition | unexpected error with key: {e}")
