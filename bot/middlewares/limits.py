@@ -2,8 +2,6 @@
 from users.models import Limits
 from bot_messages.models import LimitMessages, get_text
 
-# --- send stickers using a key ---
-from bot.sticker import send
 
 
 # --- function that checks whether the message can be processed ---

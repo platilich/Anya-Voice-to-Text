@@ -2,8 +2,8 @@ from aiogram import Router, types
 from aiogram.filters import Command
 
 # --- bot/ ---
-from bot.utils.block_spam import usp
-from bot.sticker import send
+from bot.middlewares.block_spam import usp
+from bot.utils.sticker import send
 
 # --- models ---
 from bot_messages.models import get_text, StartMessages

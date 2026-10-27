@@ -2,11 +2,9 @@ from aiogram import Router, types
 from aiogram.filters import Command
 
 # --- bot/ ---
-from bot.sticker import send
-from bot.utils.block_spam import usp
-from bot import profile_form
-
-
+from bot.utils.sticker import send
+from bot.middlewares.block_spam import usp
+from bot.utils import profile_form
 
 router = Router(name='command_profile')
 

@@ -2,8 +2,8 @@ from users.models import TelegramUser
 from bot_messages.models import LimitMessages, get_text
 
 
-from bot.utils.limits import if_can_process
-from bot.sticker import send
+from bot.middlewares.limits import if_can_process
+from bot.utils.sticker import send
 from bot.logger import logger
 
 

@@ -3,8 +3,8 @@ from aiogram.filters import Command
 
 
 # --- bot/ ---
-from bot.utils.block_spam import usp
-from bot.sticker import send
+from bot.middlewares.block_spam import usp
+from bot.utils.sticker import send
 from bot.logger import logger
 
 
@@ -41,13 +41,13 @@ async def cmd_get_plus(message: types.Message):
 
 
 
-    prices = [types.LabeledPrice(label=text_title, amount=50)]
+    prices = [types.LabeledPrice(label=text_title, amount=5)]
 
     # --- sending an invoice to telegram stars ---
     await message.answer_invoice(
-        title="Project Support (50 Stars)",
+        title="Project Support (5 Stars)",
         description=text_description,
-        payload="premium_donation_50_stars",
+        payload="premium_donation_5_stars",
         provider_token="",
         currency="XTR",
         prices=prices,
@@ -71,7 +71,7 @@ async def process_successful_payment(message: types.Message):
     payment_info = message.successful_payment
 
     # --- if the payment was successful ---
-    if payment_info.invoice_payload == "premium_donation_50_stars":
+    if payment_info.invoice_payload == "premium_donation_5_stars":
         try:
             await send(message, 'love')
 

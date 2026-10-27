@@ -3,11 +3,10 @@ from solo.models import SingletonModel
 
 
 
-
-
 class BaseSingletonMessage(SingletonModel):
-    """Базовый класс для всех одиночных моделей с текстами,
-    чтобы автоматически поддерживать асинхронное получение полей."""
+    """Base class for all single models with texts,
+        to automatically support asynchronous field retrieval.
+    """
 
     @classmethod
     async def get_message_text(cls, field_name: str, **kwargs) -> str:
@@ -109,6 +108,9 @@ class SubscriptionStatusMessages(BaseSingletonMessage):
 
 
 
+
+
+
 class LimitMessages(BaseSingletonMessage):
     # texts for hourly limit refresh timers
     limit = models.TextField(
@@ -170,6 +172,20 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
     class Meta:
         verbose_name = 'Subscription Payment'
         verbose_name_plural = 'Subscription Payments'
+
+
+
+
+class ButtonSummarize(BaseSingletonMessage):
+    button_title = models.TextField(
+        max_length=255,
+        default='✨ Summarize',
+        verbose_name='The name of the summary button (shorten the text, for voice messages where there are > 50 words)'
+    )
+
+
+    def __str__(self):
+        return 'ButtonSummarize'
 
 
 

@@ -3,7 +3,7 @@ from groq import AsyncGroq, RateLimitError, AuthenticationError
 from core.models import GroqAPIKey
 from groq.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from system_prompt import SYSTEM_PROMPT
+from services.system_prompt import SYSTEM_PROMPT
 
 
 

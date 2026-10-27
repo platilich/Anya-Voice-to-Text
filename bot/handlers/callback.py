@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
 
-from bot.audio.cutback import make_text_shorter
+from bot.services.cutback import make_text_shorter
 
 import html
 
@@ -10,7 +10,7 @@ router = Router(name='callback')
 
 
 
-@router.callback_query(F.data == "cut_back")
+@router.callback_query(F.data == "summarize")
 async def handle_cut_back(callback: CallbackQuery):
     message_text = callback.message.text
 
@@ -18,7 +18,7 @@ async def handle_cut_back(callback: CallbackQuery):
     # --- remove button ---
     await callback.message.edit_reply_markup(reply_markup=None)
 
-    # --- отвечаем на callback ---
+    # --- answer on callback ---
     await callback.answer()
 
 

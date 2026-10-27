@@ -1,25 +1,28 @@
 from aiogram import Router, F, Bot, types
-from aiogram.types import ReactionTypeEmoji, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReactionTypeEmoji
 
 # --- for a safe name stand ---
 import html
 
 
-# --- different models ---
+# --- models ---
 from users.models import TelegramUser
 
 
 # --- bot/utils/ ----
-from bot.utils.limits import increase_used
-from bot.utils.block_spam import usp_on_voice
+from bot.middlewares.limits import increase_used
+from bot.middlewares.block_spam import usp_on_voice
 from bot.utils.cleanup import remove_temp_files
-from bot.audio.recognition import recognize, AllGroqKeysFailedError
+from bot.services.recognition import recognize, AllGroqKeysFailedError
 
+
+# -- keyboards ---
+from bot.keyboards.shorten import keyboard_summarize
 
 # --- functions bot/ ---
 from bot.logger import logger
-from bot.sticker import send
-from bot.utils.voice_helper import download_file, failed_message, notify_admin
+from bot.utils.sticker import send
+from bot.utils.download import download_file, failed_message, notify_admin
 
 
 
@@ -42,6 +45,10 @@ async def handle_video_note(message: types.Message, bot: Bot):
         return
 
 
+    # --- increasing the time used for the limits ---
+    await increase_used(user_id, time_voice_message)
+
+
     # --- sending reaction ---
     await message.react([ReactionTypeEmoji(emoji='❤️')])
     await send(message, 'recognising')
@@ -51,6 +58,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     # --- attempt to recognize a voice message ---
     path = None
+
     try:
         # --- download the file ---
         path = await download_file(bot, message, file_obj)
@@ -59,39 +67,33 @@ async def handle_video_note(message: types.Message, bot: Bot):
         result = await recognize(path)
         logger.info(result)
 
+        count_words = len(result.split())
 
-        # --- updating the data ---
-        # --- increasing the time used for the limits ---
-        await increase_used(user_id, time_voice_message)
+
+        if count_words < 50:
+            # --- send result to user without button (summarize) ---
+            await message.reply(
+                f'<blockquote>{html.escape(result)}</blockquote>'
+                f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
+                disable_web_page_preview=True,
+                parse_mode='HTML'
+            )
+
+
+        else:
+            keyboard = await keyboard_summarize()
+            # --- send result to user with button ---
+            await message.reply(
+                f'<blockquote>{html.escape(result)}</blockquote>'
+                f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
+                disable_web_page_preview=True,
+                parse_mode='HTML',
+                reply_markup=keyboard
+            )
 
 
         # --- increase statistic ---
         await TelegramUser.increase_count_recognise(user_id)
-
-
-
-
-
-
-
-        # --- creating keyboard ---
-        cut_back = InlineKeyboardButton(text="Cut back", callback_data="cut_back")
-
-        keyboard_inline = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [cut_back],
-            ]
-        )
-
-
-        # --- send result to user ---
-        await message.reply(
-            f'<blockquote>{html.escape(result)}</blockquote>'
-            f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
-            disable_web_page_preview=True,
-            parse_mode='HTML',
-            reply_markup=keyboard_inline
-        )
 
 
 

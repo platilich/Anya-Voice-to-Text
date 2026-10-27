@@ -9,7 +9,7 @@ import os
 # --- functions bot/ ---
 from bot.logger import logger
 from bot_messages.models import get_text
-from bot.sticker import send
+from bot.utils.sticker import send
 
 
 # --- model ErrorMessages ---

@@ -13,8 +13,8 @@ This guide shows how to run the bot and the Django admin on a Linux server.
 
 ## ✨ Features
 
-- Voice -> text
-- Video notes (circles) → text
+- Voice message / Video notes → text
+- The summarize button (if the voice message contains more than 50 words)
 - Limits + Plus (Telegram Stars)
 - Django admin (texts, stickers, Groq keys)
 
