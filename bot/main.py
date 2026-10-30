@@ -15,7 +15,6 @@ from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
 
-from middlewares.filters import get_rest_time
 
 from bot.handlers import register_all_handlers
 
@@ -46,7 +45,6 @@ async def main():
     register_all_handlers(dp)
 
 
-    await get_rest_time()
 
     await dp.start_polling(bot)
 

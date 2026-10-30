@@ -17,7 +17,7 @@ class Protection(SingletonModel):
         decimal_places=1,
         blank=True,
         default=2.0,
-        verbose_name='Flood protection. The time of ignoring the user during spam'
+        verbose_name='Flood protection. The time of ignoring the user during spam. (Updated within 2 minutes)'
     )
 
 
@@ -42,9 +42,9 @@ async def get_rest_time():
     result = await Protection.objects.aget()
 
     # --- cached to reduce database load ---
-    rest_cache["rest"] = result.rest_time
+    rest_cache["rest"] = float(result.rest_time)
 
-    return result.rest_time
+    return float(result.rest_time)
 
 
 

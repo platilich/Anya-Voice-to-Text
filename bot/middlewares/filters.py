@@ -21,21 +21,8 @@ from bot.logger import logger
 
 
 
-seconds = 2.0
-
-
-async def init_rest_time():
-    global seconds
-
-    seconds = await get_rest_time()
-
-
-
 
 rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
-rest = timedelta(seconds=seconds)
-
-
 
 
 
@@ -62,6 +49,11 @@ async def anti_bot(user_id, is_bot):
 
 
 async def anti_flood(user_id):
+    rest_seconds = await get_rest_time()
+
+    rest = timedelta(seconds=rest_seconds)
+
+
     now = datetime.now(timezone.utc)
     last_message_time = rate_limit_cache.get(user_id)
 
