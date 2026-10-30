@@ -1,7 +1,7 @@
 from django.contrib import admin
 from solo.admin import SingletonModelAdmin
 
-from .models import GroqAPIKey, StickersAnya, Protection
+from .models import GroqAPIKey, StickersAnya, Protection, SubscriptionPrice
 
 
 
@@ -17,6 +17,11 @@ class NativeSingletonAdmin(SingletonModelAdmin):
 class StickerAnyaAdmin(NativeSingletonAdmin):
     pass
 
+
+
+@admin.register(SubscriptionPrice)
+class SubscriptionPrice(NativeSingletonAdmin):
+    pass
 
 
 @admin.register(Protection)

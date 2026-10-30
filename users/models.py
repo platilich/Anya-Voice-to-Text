@@ -81,7 +81,6 @@ class SubscribePlus(models.Model):
 
     @classmethod
     async def get_or_create_plus(cls, user_id):
-        """Вспомогательный метод: находит или автоматически создаёт юзара в таблице Subscribe Plus с отсутсвием подписки (False) и датой истечением None"""
         user_obj = await TelegramUser.objects.aget(pk=user_id)
         subscribe_obj, _ = await cls.objects.aget_or_create(
             user_id=user_obj,

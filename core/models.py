@@ -6,8 +6,44 @@ from cachetools import TTLCache
 
 
 
-# --- we store the data for 2 minutes ---
-rest_cache = TTLCache(maxsize=1, ttl=120)
+# --- we store the data ---
+
+# --- for 2 minutes ---
+cache_subscription = TTLCache(maxsize=1, ttl=120)
+
+# --- for 3 minutes ---
+cache_protection = TTLCache(maxsize=1, ttl=180)
+
+
+
+class SubscriptionPrice(SingletonModel):
+    price = models.IntegerField(
+        blank=True,
+        default=3,
+        verbose_name='Subscription price Plus. (Updated within 2 minutes)'
+    )
+
+
+    class Meta:
+        verbose_name_plural = 'SubscriptionPrice'
+
+
+    def __str__(self):
+        return 'SubscriptionPlus'
+
+
+async def get_price_subscription():
+    # --- if the value is in the cache, we return it ---
+    if "price" in cache_subscription:
+        return cache_subscription["price"]
+
+    # --- getting a new value from the database ---
+    result = await SubscriptionPrice.objects.aget()
+
+    # --- cached to reduce database load ---
+    cache_subscription["price"] = result.price
+
+    return result.price
 
 
 
@@ -17,7 +53,7 @@ class Protection(SingletonModel):
         decimal_places=1,
         blank=True,
         default=2.0,
-        verbose_name='Flood protection. The time of ignoring the user during spam. (Updated within 2 minutes)'
+        verbose_name='Flood protection. The time of ignoring the user during spam. (Updated within 3 minutes)'
     )
 
 
@@ -34,15 +70,15 @@ class Protection(SingletonModel):
 
 async def get_rest_time():
     # --- if the value is in the cache, we return it ---
-    if "rest" in rest_cache:
-        return rest_cache["rest"]
+    if "rest" in cache_protection:
+        return cache_protection["rest"]
 
 
     # --- getting a new value from the database ---
     result = await Protection.objects.aget()
 
     # --- cached to reduce database load ---
-    rest_cache["rest"] = float(result.rest_time)
+    cache_protection["rest"] = float(result.rest_time)
 
     return float(result.rest_time)
 

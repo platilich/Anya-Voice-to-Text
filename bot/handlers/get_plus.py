@@ -12,7 +12,7 @@ from bot.logger import logger
 from bot_messages.models import SubscriptionPlusMessages
 from bot_messages.models import get_text
 from users.models import SubscribePlus
-
+from core.models import get_price_subscription
 
 # --- insert the name safety ---
 import html
@@ -33,21 +33,24 @@ async def cmd_get_plus(message: types.Message):
     await send(message, name_sticker='plus')
 
 
-
     # --- getting texts from models ---
     text_title = await get_text(model=SubscriptionPlusMessages, key='invoice_title')
     text_description = await get_text(model=SubscriptionPlusMessages, key='invoice_description')
 
 
 
+    # --- getting the current subscription price ---
+    price = await get_price_subscription()
 
-    prices = [types.LabeledPrice(label=text_title, amount=5)]
+
+    prices = [types.LabeledPrice(label=text_title, amount=price)]
+
 
     # --- sending an invoice to telegram stars ---
     await message.answer_invoice(
-        title="Project Support (5 Stars)",
+        title=f"Project Support ({price} Stars)",
         description=text_description,
-        payload="premium_donation_5_stars",
+        payload=f"premium_donation_{price}_stars",
         provider_token="",
         currency="XTR",
         prices=prices,
@@ -63,6 +66,7 @@ async def process_pre_checkout(pre_checkout_query: types.PreCheckoutQuery):
     await pre_checkout_query.answer(ok=True)
 
 
+
 # --- successful payment handler ---
 @router.message(F.successful_payment)
 async def process_successful_payment(message: types.Message):
@@ -70,8 +74,13 @@ async def process_successful_payment(message: types.Message):
     name = message.from_user.first_name
     payment_info = message.successful_payment
 
+
+    # --- getting the current subscription price ---
+    price = await get_price_subscription()
+
+
     # --- if the payment was successful ---
-    if payment_info.invoice_payload == "premium_donation_5_stars":
+    if payment_info.invoice_payload == f"premium_donation_{price}_stars":
         try:
             await send(message, 'love')
 
