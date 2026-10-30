@@ -26,6 +26,9 @@ from bot.utils.sticker import send
 from bot.utils.download import download_file, failed_message, notify_admin
 
 
+from core.models import is_active_summarize_button
+
+
 
 
 router = Router(name='handler_video')
@@ -69,20 +72,12 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
         count_words = len(result.split())
 
+        is_active = await is_active_summarize_button()
 
-        if count_words < 50:
-            # --- send result to user without button (summarize) ---
-            await message.reply(
-                f'<blockquote>{html.escape(result)}</blockquote>'
-                f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
-                disable_web_page_preview=True,
-                parse_mode='HTML'
-            )
-
-
-        else:
-            keyboard = await keyboard_summarize()
+        if count_words > 50 and is_active:
             # --- send result to user with button ---
+            keyboard = await keyboard_summarize()
+
             await message.reply(
                 f'<blockquote>{html.escape(result)}</blockquote>'
                 f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
@@ -91,6 +86,14 @@ async def handle_video_note(message: types.Message, bot: Bot):
                 reply_markup=keyboard
             )
 
+        else:
+            # --- send result to user without button (summarize) ---
+            await message.reply(
+                f'<blockquote>{html.escape(result)}</blockquote>'
+                f'\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>',
+                disable_web_page_preview=True,
+                parse_mode='HTML'
+            )
 
         # --- increase statistic ---
         await TelegramUser.increase_count_recognise(user_id)

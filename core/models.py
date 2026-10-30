@@ -12,7 +12,8 @@ from cachetools import TTLCache
 cache_subscription = TTLCache(maxsize=1, ttl=120)
 
 # --- for 3 minutes ---
-cache_protection = TTLCache(maxsize=1, ttl=180)
+cache_antiflood = TTLCache(maxsize=1, ttl=180)
+cache_summarize_button = TTLCache(maxsize=1, ttl=180)
 
 
 
@@ -70,17 +71,64 @@ class Protection(SingletonModel):
 
 async def get_rest_time():
     # --- if the value is in the cache, we return it ---
-    if "rest" in cache_protection:
-        return cache_protection["rest"]
+    if "rest" in cache_antiflood:
+        return cache_antiflood["rest"]
 
 
     # --- getting a new value from the database ---
     result = await Protection.objects.aget()
 
     # --- cached to reduce database load ---
-    cache_protection["rest"] = float(result.rest_time)
+    cache_antiflood["rest"] = float(result.rest_time)
 
     return float(result.rest_time)
+
+
+
+
+class SummarizeButtonSettings(SingletonModel):
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Enable summarize button'
+    )
+
+    class Meta:
+        verbose_name = 'Summarize Settings'
+        verbose_name_plural = 'Summarize Settings'
+
+
+    def __str__(self):
+        return 'Summarize Settings'
+
+
+    def save(self, *args, **kwargs):
+        # Если это самая первая запись (pk=None или pk=1) и объекта еще не было,
+        # или если поле явно не задано — принудительно делаем True при создании
+        if not self.pk:
+            self.is_active = True
+
+        super().save(*args, **kwargs)
+
+        if "is_active" in cache_summarize_button:
+            del cache_summarize_button["is_active"]
+
+
+
+async def is_active_summarize_button():
+    # --- if the value is in the cache, we return it ---
+    if "is_active" in cache_summarize_button:
+        return cache_summarize_button["is_active"]
+
+
+    # --- getting a new value from the database ---
+    result = await SummarizeButtonSettings.objects.aget()
+
+    # --- cached to reduce database load ---
+    cache_summarize_button["is_active"] = result.is_active
+
+    return result.is_active
+
+
 
 
 
