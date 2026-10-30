@@ -33,7 +33,6 @@ async def if_can_process(user_id, message):
     # --- informing you that we cannot process it ---
     else:
         # --- send sticker ---
-
         sticker_file_id = 'CAACAgIAAxkBAAIBvWrTv6l-cN3DX2w_FqR-KE10qtMCAAJIrwAC-pahSkxOTB4PtFkjPQQ'
         await message.answer_sticker(sticker=sticker_file_id)
 
@@ -48,9 +47,3 @@ async def if_can_process(user_id, message):
         )
 
         return False
-
-
-
-# --- increasing the counter of minutes spent ---
-async def increase_used(user_id, seconds_used):
-    await Limits.spend_seconds(user_id, seconds_used)

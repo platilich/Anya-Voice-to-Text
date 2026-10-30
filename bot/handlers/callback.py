@@ -1,10 +1,10 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
-
 from bot.services.cutback import make_text_shorter
 
 import html
+
 
 router = Router(name='callback')
 

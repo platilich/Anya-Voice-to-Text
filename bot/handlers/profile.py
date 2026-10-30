@@ -3,7 +3,7 @@ from aiogram.filters import Command
 
 # --- bot/ ---
 from bot.utils.sticker import send
-from bot.middlewares.block_spam import usp
+from bot.middlewares.filters import check_user
 from bot.utils import profile_form
 
 router = Router(name='command_profile')
@@ -17,7 +17,7 @@ async def profile(message: types.Message):
 
 
     # --- the function for updating user data will also return True if the user is banned ---
-    if await usp(message):
+    if await check_user(message, None):
         return
 
 

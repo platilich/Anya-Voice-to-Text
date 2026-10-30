@@ -1,8 +1,54 @@
 from django.db import models
 from solo.models import SingletonModel
 
+# --- caching of data in RAM ---
+from cachetools import TTLCache
 
-# Create your models here.
+
+
+# --- we store the data for 2 minutes ---
+rest_cache = TTLCache(maxsize=1, ttl=120)
+
+
+
+class Protection(SingletonModel):
+    rest_time = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        blank=True,
+        default=2.0,
+        verbose_name='Flood protection. The time of ignoring the user during spam'
+    )
+
+
+    class Meta:
+        verbose_name = 'Protection'
+        verbose_name_plural = 'Protection'
+
+
+
+    def __str__(self):
+        return 'Protection'
+
+
+
+async def get_rest_time():
+    # --- if the value is in the cache, we return it ---
+    if "rest" in rest_cache:
+        return rest_cache["rest"]
+
+
+    # --- getting a new value from the database ---
+    result = await Protection.objects.aget()
+
+    # --- cached to reduce database load ---
+    rest_cache["rest"] = result.rest_time
+
+    return result.rest_time
+
+
+
+
 class StickersAnya(SingletonModel):
     hello = models.CharField(
         max_length=255,
@@ -60,7 +106,6 @@ class StickersAnya(SingletonModel):
 
     @classmethod
     async def get_sticker(cls, message_name):
-        """Получаем или создаем запись с дефолтными значениями"""
         config, _ = await cls.objects.aget_or_create(pk=1)
 
         value = getattr(config, message_name, None)
@@ -80,7 +125,6 @@ class StickersAnya(SingletonModel):
 
 
 
-
 class GroqAPIKey(models.Model):
     name = models.CharField(max_length=30, blank=True, verbose_name='Key name')
     api_key = models.CharField(max_length=255, blank=True, verbose_name='Insert a spare API key (from groq.com)')
@@ -92,10 +136,12 @@ class GroqAPIKey(models.Model):
         keys = []
 
 
-        # async for автоматически выполнит асинхронный запрос к БД
         async for key in cls.objects.all():
             keys.append(key)
 
+
+
+        # --- returning the keys in the dictionary ---
         return keys
 
 

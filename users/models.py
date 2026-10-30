@@ -1,10 +1,9 @@
 from django.db import models
 from django.db.models import F, DateTimeField
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 
 
-import math
 
 # Create your models here.
 class TelegramUser(models.Model):
@@ -207,6 +206,13 @@ class Limits(models.Model):
             seconds_used=F("seconds_used") + duration_seconds
         )
 
+
+
+    @classmethod
+    async def return_seconds(cls, user_id, duration_seconds):
+        await cls.objects.filter(user_id=user_id).aupdate(
+            seconds_used=F('seconds_used') - duration_seconds
+        )
 
 
     @classmethod

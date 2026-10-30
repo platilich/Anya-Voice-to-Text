@@ -2,7 +2,7 @@ from aiogram import Router, types
 from aiogram.filters import Command
 
 # --- bot/ ---
-from bot.middlewares.block_spam import usp
+from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
 
 # --- models ---
@@ -22,12 +22,12 @@ async def cmd_start(message: types.Message):
 
 
     # --- the function for updating user data will also return True if the user is banned ---
-    if await usp(message): # update, save, protect
+    if await check_user(message, duration_voice_message=None): # update, save, protect
         return
 
 
     # --- send a sticker hello ---
-    await send(message, 'hello')
+    await send(message, name_sticker='hello')
 
 
     # --- get from database text for message ---

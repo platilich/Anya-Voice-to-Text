@@ -4,14 +4,15 @@ from aiogram.types import ReactionTypeEmoji
 # --- for a safe name stand ---
 import html
 
-
 # --- models ---
-from users.models import TelegramUser
+from users.models import TelegramUser, Limits
 
 
-# --- bot/utils/ ----
-from bot.middlewares.limits import increase_used
-from bot.middlewares.block_spam import usp_on_voice
+# --- middleware ----
+from bot.middlewares.filters import check_user
+
+
+# --- utils and services ---
 from bot.utils.cleanup import remove_temp_files
 from bot.services.recognition import recognize, AllGroqKeysFailedError
 
@@ -32,7 +33,6 @@ router = Router(name='handler_video')
 
 
 
-
 @router.message(F.voice | F.video_note)
 async def handle_video_note(message: types.Message, bot: Bot):
     user_id = message.from_user.id
@@ -41,12 +41,12 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
     # --- verification: can we process the voice message ---
-    if await usp_on_voice(message, time_voice_message):
+    if await check_user(message, time_voice_message):
         return
 
 
     # --- increasing the time used for the limits ---
-    await increase_used(user_id, time_voice_message)
+    await Limits.spend_seconds(user_id, time_voice_message)
 
 
     # --- sending reaction ---
@@ -108,6 +108,9 @@ async def handle_video_note(message: types.Message, bot: Bot):
         await notify_admin(bot)
 
 
+        # --- reduce used seconds ---
+        await Limits.return_seconds(user_id, time_voice_message)
+
         # --- calling the function to inform the user about the error ---
         await failed_message(message)
 
@@ -117,6 +120,8 @@ async def handle_video_note(message: types.Message, bot: Bot):
     except Exception as e:
         logger.critical(f"Error during video/voice processing: {e}")
 
+        # --- reduce used seconds ---
+        await Limits.return_seconds(user_id, time_voice_message)
 
         # --- calling the function to inform the user about the error ---
         await failed_message(message)

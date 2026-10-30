@@ -1,9 +1,7 @@
-from aiogram import Dispatcher
-
 from . import start, profile, get_plus, voice, callback
 
 
-def register_all_handlers(dp: Dispatcher) -> None:
+def register_all_handlers(dp):
     dp.include_router(start.router)
     dp.include_router(profile.router)
     dp.include_router(voice.router)

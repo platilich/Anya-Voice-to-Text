@@ -3,7 +3,7 @@ from aiogram.filters import Command
 
 
 # --- bot/ ---
-from bot.middlewares.block_spam import usp
+from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
 from bot.logger import logger
 
@@ -25,7 +25,7 @@ router = Router(name='command_get_plus')
 
 @router.message(Command("get_plus"))
 async def cmd_get_plus(message: types.Message):
-    if await usp(message):
+    if await check_user(message, None):
         return
 
 
