@@ -30,3 +30,17 @@ Output: Tomorrow we can't come over because it's my mom's birthday.
 
 Input: <text>Listen, do you know how much a ticket to Kazan costs? We should check.</text>
 Output: Do you know how much a ticket to Kazan costs? We should check."""
+
+
+
+
+"""
+
+it's system prompt i really spent a lot of effort to create good system prompt, 
+it was difficult.... 
+if you like this repo - click star!
+❤️
+
+BG | 8:04pm | 10/31/26
+
+"""

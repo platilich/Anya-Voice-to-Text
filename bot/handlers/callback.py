@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
 from bot.services.cutback import make_text_shorter
-
+from logger import logger
 import html
 
 
@@ -14,6 +14,8 @@ router = Router(name='callback')
 async def handle_cut_back(callback: CallbackQuery):
     message_text = callback.message.text
 
+    # --- logging ---
+    logger.info('got a callback summarize')
 
     # --- remove button ---
     await callback.message.edit_reply_markup(reply_markup=None)

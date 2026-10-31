@@ -26,6 +26,10 @@ async def download_file(bot, message, file_obj):
     # --- for voice messages use .ogg, for video notes mp4
     ext = 'ogg' if message.voice else 'mp4'
 
+    # --- logging ---
+    logger.info(f'downloading file: {file_obj}')
+
+
     # --- creating directory for temporary files ---
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
     path = str(TEMP_DIR / f"{message.from_user.id}_{message.message_id}.{ext}")

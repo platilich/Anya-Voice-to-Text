@@ -29,6 +29,8 @@ async def cmd_get_plus(message: types.Message):
         return
 
 
+    logger.info('got command /get_plus')
+
     # --- sending a sticker ---
     await send(message, name_sticker='plus')
 
@@ -65,6 +67,7 @@ async def process_pre_checkout(pre_checkout_query: types.PreCheckoutQuery):
     # --- confirming the transaction ---
     await pre_checkout_query.answer(ok=True)
 
+    logger.info('confirming the transaction')
 
 
 # --- successful payment handler ---
@@ -83,6 +86,7 @@ async def process_successful_payment(message: types.Message):
     if payment_info.invoice_payload == f"premium_donation_{price}_stars":
         try:
             await send(message, 'love')
+            logger.info('user successfully bought subscribe ')
 
 
         except Exception as e:
@@ -93,7 +97,14 @@ async def process_successful_payment(message: types.Message):
         await SubscribePlus.give_subscribe(user_id)
 
 
+        logger.info('give user subscribe')
+
+
         # --- sending thanks for the purchase ---
-        text = await get_text(model=SubscriptionPlusMessages, key='success_purchase')
-        response = text.replace('{name}', html.escape(name)).replace('{payment_info.total_amount}', payment_info.total_amount)
-        await message.answer(response)
+        try:
+            text = await get_text(model=SubscriptionPlusMessages, key='success_purchase')
+            response = text.replace('{name}', html.escape(name)).replace('{payment_info.total_amount}', payment_info.total_amount)
+            await message.answer(response)
+
+        except Exception as e:
+            logger.error(f'failed send message to user about successful subscription registration: {e}')

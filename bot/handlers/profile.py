@@ -5,6 +5,8 @@ from aiogram.filters import Command
 from bot.utils.sticker import send
 from bot.middlewares.filters import check_user
 from bot.utils import profile_form
+from bot.logger import logger
+
 
 router = Router(name='command_profile')
 
@@ -15,6 +17,7 @@ async def profile(message: types.Message):
     user_id = message.from_user.id
     name = message.from_user.first_name
 
+    logger.info('got a command /profile')
 
     # --- the function for updating user data will also return True if the user is banned ---
     if await check_user(message, None):

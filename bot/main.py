@@ -1,32 +1,40 @@
 import asyncio
-import sys
-from pathlib import Path
-import os
+from aiogram import Bot, Dispatcher
 import django
 
+
+# --- work with paths ---
+from dotenv import load_dotenv
+from pathlib import Path
+import sys
+import os
+
+
+# --- import all handlers ---
+from bot.handlers import register_all_handlers
+from logger import logger
+
+
+# --- adds the project folder to the top of the list of places where Python searches for modules to import ---
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_note_bot.settings')
 django.setup()
 
 
-
-from aiogram import Bot, Dispatcher
-from dotenv import load_dotenv
-
-
-
-from bot.handlers import register_all_handlers
-
-
-
-
+# --- getting BASE_DIR and load .env ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 
+# --- get a token from .env ---
 token = (os.getenv('TOKEN') or '').strip()
 if not token:
+    logger.error('NO TOKEN: Fill in the TOKEN in the file .env')
+
+
     raise SystemExit(
         "Fill in the TOKEN in the file .env\n\n"
         "Example:\n"
@@ -35,16 +43,18 @@ if not token:
 
 
 
+
+
+
 async def main():
     bot = Bot(token=token)
     dp = Dispatcher()
 
 
+    logger.info('bot started')
 
-
+    # --- register all handlers
     register_all_handlers(dp)
-
-
 
     await dp.start_polling(bot)
 

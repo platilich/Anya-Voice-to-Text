@@ -1,10 +1,15 @@
-from bot.logger import logger
+# --- groq for work with API ---
 from groq import AsyncGroq, RateLimitError, AuthenticationError
-from core.models import GroqAPIKey
 from groq.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from services.system_prompt import SYSTEM_PROMPT
 
+# --- for getting API keys
+from core.models import GroqAPIKey
+
+
+# --- other ---
+from services.system_prompt import SYSTEM_PROMPT
+from logger import logger
 
 
 # --- it is triggered when all Groq API keys are unavailable ---
@@ -14,13 +19,16 @@ class AllGroqKeysFailedError(Exception):
 
 
 async def make_text_shorter(text):
+    # --- getting all keys from db ---
     keys = await GroqAPIKey.get_api_keys()
+
+    # --- log this ---
+    logger.info('get all api keys | make_text_shorter')
 
 
     if keys is None:
         logger.error('Add at least one groq key to the admin panel')
         raise AllGroqKeysFailedError("No API keys found in database")
-
 
 
     prompt = text.replace('GitHub', '')
@@ -29,9 +37,8 @@ async def make_text_shorter(text):
 
     for key in keys:
         try:
-
+            # --- insert the key ---
             client = AsyncGroq(api_key=key.api_key)
-
 
             completion = await client.chat.completions.create(
                 model="openai/gpt-oss-120b",
@@ -56,7 +63,7 @@ async def make_text_shorter(text):
             return response_text
 
 
-
+        # --- if problem with groq key ---
         except (RateLimitError, AuthenticationError) as e:
             logger.warning(
                 f"Groq key {key.api_key[:8]}... failed: {e}. Trying next key..."
@@ -64,7 +71,7 @@ async def make_text_shorter(text):
             continue
 
 
-
+        # --- if something went wrong with key ---
         except Exception as e:
             logger.error(f"audio_recognition | unexpected error with key: {e}")
             continue

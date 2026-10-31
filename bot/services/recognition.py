@@ -1,6 +1,6 @@
-from bot.logger import logger
 from groq import AsyncGroq, RateLimitError, AuthenticationError
 from core.models import GroqAPIKey
+from bot.logger import logger
 
 
 
@@ -11,7 +11,11 @@ class AllGroqKeysFailedError(Exception):
 
 
 async def recognize(file_path):
+    # --- getting api keys from db ---
     keys = await GroqAPIKey.get_api_keys()
+
+    # --- log this ---
+    logger.info('attempt to get api keys | recognize')
 
     if keys is None:
         logger.error('Add at least one groq key to the admin panel')
@@ -26,7 +30,6 @@ async def recognize(file_path):
 
 
             logger.info('audio_recognition | recognition')
-
 
             with open(file_path, "rb") as file:
                 result = await groq_client.audio.transcriptions.create(
