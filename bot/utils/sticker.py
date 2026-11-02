@@ -5,8 +5,8 @@ from bot.logger import logger
 
 async def send(message, name_sticker):
     try:
-        # --- attempt to get Sticker ID ---
-        logger.info('sending a sticker')
+        # --- attempt to get sticker ID ---
+        logger.info(f'sending sticker {name_sticker}')
 
         # --- getting sticker ID
         sticker_id = await StickersAnya.get_sticker(name_sticker)
@@ -16,8 +16,8 @@ async def send(message, name_sticker):
             await message.answer_sticker(sticker=sticker_id)
 
         else:
-            logger.info('Sticker ID not found')
+            logger.info(f'sticker {name_sticker} not found')
 
 
     except Exception as e:
-        logger.info(f'Something went wrong. function send: {e}')
+        logger.info(f'failed send sticker {name_sticker}: {e}')

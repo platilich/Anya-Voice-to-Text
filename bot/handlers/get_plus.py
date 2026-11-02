@@ -2,19 +2,16 @@ from aiogram import Router, F, types
 from aiogram.filters import Command
 
 
-# --- bot/ ---
 from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
 from bot.logger import logger
 
 
-# --- models ---
 from bot_messages.models import SubscriptionPlusMessages
 from bot_messages.models import get_text
 from users.models import SubscribePlus
 from core.models import get_price_subscription
 
-# --- insert the name safety ---
 import html
 
 
@@ -48,7 +45,8 @@ async def cmd_get_plus(message: types.Message):
     prices = [types.LabeledPrice(label=text_title, amount=price)]
 
 
-    # --- sending an invoice to telegram stars ---
+    logger.info(f'send invoice plus | {message.from_user.id}')
+
     await message.answer_invoice(
         title=f"Project Support ({price} Stars)",
         description=text_description,
@@ -82,18 +80,16 @@ async def process_successful_payment(message: types.Message):
     price = await get_price_subscription()
 
 
-    # --- if the payment was successful ---
     if payment_info.invoice_payload == f"premium_donation_{price}_stars":
         try:
             await send(message, 'love')
-            logger.info('user successfully bought subscribe ')
+            logger.info('user bought subscribe')
 
 
         except Exception as e:
-            logger.info(f"The field with the sticker didn't seem to be filled in or there is no such ID.: {e}")
+            logger.info(f'failed send sticker love: {e}')
 
 
-        # --- we are issuing a subscription ---
         await SubscribePlus.give_subscribe(user_id)
 
 
@@ -107,4 +103,4 @@ async def process_successful_payment(message: types.Message):
             await message.answer(response)
 
         except Exception as e:
-            logger.error(f'failed send message to user about successful subscription registration: {e}')
+            logger.error(f'failed send thanks for plus: {e}')

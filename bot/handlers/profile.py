@@ -1,7 +1,6 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 
-# --- bot/ ---
 from bot.utils.sticker import send
 from bot.middlewares.filters import check_user
 from bot.utils import profile_form
@@ -24,7 +23,6 @@ async def profile(message: types.Message):
         return
 
 
-    # --- sending a sticker --
     await send(message, 'profile')
 
 
@@ -32,7 +30,8 @@ async def profile(message: types.Message):
     message_text = await profile_form.profile_message(user_id, name)
 
 
-    # --- sending a message ---
+    logger.info('attempt send /profile')
+
     await message.answer(
         text=message_text, parse_mode='HTML', disable_web_page_preview=True
     )

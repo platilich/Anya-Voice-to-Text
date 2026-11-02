@@ -1,5 +1,6 @@
 from django.db import models
 from solo.models import SingletonModel
+from bot.logger import logger
 
 
 
@@ -11,15 +12,29 @@ class BaseSingletonMessage(SingletonModel):
     @classmethod
     async def get_message_text(cls, field_name: str, **kwargs) -> str:
         # aget_or_create — асинхронный метод Django ORM для получения или создания записи
-        config, _ = await cls.objects.aget_or_create(pk=1)
+        config, created = await cls.objects.aget_or_create(pk=1)
+
+        if created:
+            logger.info(f'created {cls.__name__} in db')
 
         if not hasattr(config, field_name):
+            logger.info(f'no field {field_name} | {cls.__name__}')
             raise AttributeError(f"{cls.__name__} has no field '{field_name}'")
 
         value = getattr(config, field_name)
 
+        if not value:
+            logger.info(f'empty text {field_name} | {cls.__name__}')
+
         # подставляем переменные ({name}, {recognised} и т. д.), если они переданы
-        return value.format(**kwargs) if kwargs else value
+        if not kwargs:
+            return value
+
+        try:
+            return value.format(**kwargs)
+        except Exception as e:
+            logger.info(f'failed format {field_name} | {cls.__name__}: {e}')
+            raise
 
     class Meta:
         abstract = True
@@ -217,6 +232,7 @@ class ErrorMessages(BaseSingletonMessage):
 
 
 async def get_text(model, key):
+    logger.info(f'get text {key} | {model.__name__}')
     text = await model.get_message_text(key)
 
 

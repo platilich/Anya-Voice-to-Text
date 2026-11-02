@@ -27,7 +27,7 @@ async def download_file(bot, message, file_obj):
     ext = 'ogg' if message.voice else 'mp4'
 
     # --- logging ---
-    logger.info(f'downloading file: {file_obj}')
+    logger.info(f'downloading {ext} | {message.from_user.id}')
 
 
     # --- creating directory for temporary files ---
@@ -40,7 +40,7 @@ async def download_file(bot, message, file_obj):
     await bot.download_file(str(file_info.file_path), destination=path)
 
 
-    logger.info(path)
+    logger.info(f'saved file {path}')
 
     return path
 
@@ -48,6 +48,8 @@ async def download_file(bot, message, file_obj):
 
 # --- function for sending error messages to user ---
 async def failed_message(message):
+    logger.info(f'send service unavailable | {message.from_user.id}')
+
     # --- inform the user about the error ---
     # --- reaction emoji and sticker ---
     await message.react([ReactionTypeEmoji(emoji="😢")])
@@ -68,6 +70,7 @@ async def notify_admin(bot):
     text = await get_text(model=ErrorMessages, key='admin_no_groq_keys')
 
     if admin_id:
+        logger.info(f'notify admin {admin_id}')
         try:
             await bot.send_message(
                 chat_id=int(admin_id),
@@ -76,4 +79,7 @@ async def notify_admin(bot):
             )
 
         except Exception as admin_err:
-            logger.error(f"Failed to notify admin: {admin_err}")
+            logger.error(f'failed notify admin: {admin_err}')
+
+    else:
+        logger.info('no ADMIN_ID, cant notify')

@@ -43,9 +43,7 @@ async def recognize(file_path):
 
 
         except (RateLimitError, AuthenticationError) as e:
-            logger.warning(
-                f"Groq key {key.api_key[:8]}... failed: {e}. Trying next key..."
-            )
+            logger.warning(f'key {key.api_key[:8]} failed, try next: {e}')
             continue
 
 
@@ -56,10 +54,10 @@ async def recognize(file_path):
             raise
 
         except Exception as e:
-            logger.error(f"audio_recognition | unexpected error with key: {e}")
+            logger.error(f'recognize | something wrong with key: {e}')
             continue
 
 
 
-    logger.error("Error: All Groq API keys failed or rate-limited.")
+    logger.error('all groq keys failed')
     raise AllGroqKeysFailedError("All Groq API keys are exhausted or invalid")

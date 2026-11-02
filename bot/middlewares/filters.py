@@ -28,7 +28,7 @@ async def to_long(message):
         await message.answer(text)
 
     except Exception as e:
-        logger.info(f'error during sending message to user: {e}')
+        logger.info(f'failed send too long message: {e}')
 
 
 
@@ -71,14 +71,17 @@ async def check_user(message, duration_voice_message):
 
 
     if await anti_bot(user_id, is_bot):
+        logger.info(f'user {user_id} is bot, skip')
         return True
 
 
     if await TelegramUser.banned_user(user_id):
+        logger.info(f'user {user_id} banned, skip')
         return True
 
 
     if await anti_flood(user_id):
+        logger.info(f'user {user_id} flood, skip')
         return True
 
 
@@ -88,6 +91,7 @@ async def check_user(message, duration_voice_message):
 
         if duration_voice_message > 900:
             await to_long(message)
+            logger.info(f'voice too long | {user_id}')
             return True
 
 

@@ -1,4 +1,3 @@
-# --- groq for work with API ---
 from groq import AsyncGroq, RateLimitError, AuthenticationError
 from groq.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
@@ -65,18 +64,16 @@ async def make_text_shorter(text):
 
         # --- if problem with groq key ---
         except (RateLimitError, AuthenticationError) as e:
-            logger.warning(
-                f"Groq key {key.api_key[:8]}... failed: {e}. Trying next key..."
-            )
+            logger.warning(f'key {key.api_key[:8]} failed, try next: {e}')
             continue
 
 
         # --- if something went wrong with key ---
         except Exception as e:
-            logger.error(f"audio_recognition | unexpected error with key: {e}")
+            logger.error(f'make_text_shorter | something wrong with key: {e}')
             continue
 
 
 
-    logger.error("Error: All Groq API keys failed or rate-limited.")
+    logger.error('all groq keys failed')
     raise AllGroqKeysFailedError("All Groq API keys are exhausted or invalid")

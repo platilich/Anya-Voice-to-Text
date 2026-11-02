@@ -28,21 +28,16 @@ async def cmd_start(message: types.Message):
         return
 
 
-    # --- send a sticker hello ---
     await send(message, name_sticker='hello')
 
-
-    # --- get from database text for message ---
     text = await get_text(StartMessages, 'start_text')
 
-    # --- replace {name} to real name
     response = text.replace('{name}', html.escape(name))
 
 
-    # --- send answer to user ---
     try:
         logger.info('attempt send message to user')
         await message.answer(response, parse_mode='HTML', disable_web_page_preview=True)
 
     except Exception as e:
-        logger.info(f'failed send message to {message.from_user.id}. Error: {e}')
+        logger.info(f'failed send /start to {message.from_user.id}: {e}')

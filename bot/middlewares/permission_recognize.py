@@ -1,6 +1,7 @@
 # --- models ---
 from users.models import Limits
 from bot_messages.models import LimitMessages, get_text
+from bot.logger import logger
 
 
 
@@ -32,6 +33,7 @@ async def if_can_process(user_id, message):
 
     # --- informing you that we cannot process it ---
     else:
+        logger.info(f'user {user_id} over limit {used_time}/{allowed}')
         # --- send sticker ---
         sticker_file_id = 'CAACAgIAAxkBAAIBvWrTv6l-cN3DX2w_FqR-KE10qtMCAAJIrwAC-pahSkxOTB4PtFkjPQQ'
         await message.answer_sticker(sticker=sticker_file_id)

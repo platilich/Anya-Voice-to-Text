@@ -14,7 +14,6 @@ router = Router(name='callback')
 async def handle_cut_back(callback: CallbackQuery):
     message_text = callback.message.text
 
-    # --- logging ---
     logger.info('got a callback summarize')
 
     # --- remove button ---
@@ -24,7 +23,7 @@ async def handle_cut_back(callback: CallbackQuery):
     await callback.answer()
 
 
-    # --- calling function, which make text shorter and send result ---
+    logger.info('make text shorter')
     short_text = await make_text_shorter(message_text)
 
     response = (

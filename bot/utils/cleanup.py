@@ -11,4 +11,4 @@ def remove_temp_files(files):
             remove(file)
 
         except Exception as e:
-            logger.info(e)
+            logger.info(f'failed remove {file}: {e}')

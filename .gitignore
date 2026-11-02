@@ -11,3 +11,5 @@ __pycache__/
 *.ogg
 *.mp4
 staticfiles/
+tasks.txt
+bot.log
