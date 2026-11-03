@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import duration
 from solo.models import SingletonModel
 from bot.logger import logger
 
@@ -136,7 +137,19 @@ class LimitMessages(BaseSingletonMessage):
             f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
             '👉 <b>/get_plus</b>'
         ),
-        verbose_name='A message telling you that the voice message is too long'
+        verbose_name='The message that the package of minutes for the day is over'
+    )
+
+
+    not_enough_minutes_to_recognize = models.TextField(
+        max_length=255,
+        default=(
+            "❌ <b>The length of your message: {duration_voice_message} "
+            "⏳ <b>Limit:</b>{used_time}/{allowed}</b> min\n\n"
+            f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
+            '👉 <b>/get_plus</b>'
+        ),
+        verbose_name='The message that the voice message does not fit into the daily limit'
     )
 
 

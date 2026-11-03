@@ -106,6 +106,9 @@ class SubscribePlus(models.Model):
 
     @classmethod
     async def left_days_subscribe(cls, user_id):
+        await SubscribePlus.check_subscribe(user_id)
+
+
         await SubscribePlus.get_or_create_plus(user_id)
         user_data = await SubscribePlus.objects.aget(user_id=user_id)
 
@@ -133,6 +136,25 @@ class SubscribePlus(models.Model):
 
 
 
+    @classmethod
+    async def get_ending_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id)
+
+        return await SubscribePlus.get_ending_subscribe(user_id=user_id)
+
+
+
+    @classmethod
+    async def check_subscribe(cls, user_id):
+        date_now = datetime.now(timezone.utc)
+        date_ending = await cls.get_ending_subscribe(user_id)
+
+        if date_ending is not None and date_ending > date_now:
+            await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False, subscribe_ending=None)
+
+
+
+
 
     class Meta:
         verbose_name_plural = 'Subscription Plus'
@@ -152,6 +174,8 @@ class Limits(models.Model):
     @classmethod
     async def get_or_create_limit(cls, user_id):
         # auxiliary method: finds or automatically creates user limits
+        await SubscribePlus.check_subscribe(user_id)
+
         user_obj = await TelegramUser.objects.aget(pk=user_id)
         limit_obj, _ = await cls.objects.aget_or_create(
             user_id=user_obj,
@@ -163,6 +187,8 @@ class Limits(models.Model):
 
     @classmethod
     async def maybe_reset(cls, user_id: int):
+        await SubscribePlus.check_subscribe(user_id)
+
         limit = await cls.get_or_create_limit(user_id)
         today = datetime.now(timezone.utc).date()
 
@@ -183,6 +209,8 @@ class Limits(models.Model):
 
     @classmethod
     async def get_daily_limit_time(cls, user_id):
+        await SubscribePlus.check_subscribe(user_id)
+
         status = await SubscribePlus.get_or_create_plus(user_id=user_id)
 
 

@@ -20,21 +20,10 @@ rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
 
 
 
-async def to_long(message):
-    try:
-        await send(message, name_sticker='limits')
-        text = await get_text(model=LimitMessages, key='too_long')
-
-        await message.answer(text)
-
-    except Exception as e:
-        logger.info(f'failed send too long message: {e}')
-
 
 
 
 async def anti_bot(user_id, is_bot):
-
     if is_bot:
         await TelegramUser.change_status_banned(user_id, True)
         return True
@@ -85,15 +74,10 @@ async def check_user(message, duration_voice_message):
         return True
 
 
+
     if duration_voice_message:
-        if not await if_can_process(user_id, message):
+        if await if_can_process(user_id, message, duration_voice_message):
             return True
-
-        if duration_voice_message > 900:
-            await to_long(message)
-            logger.info(f'voice too long | {user_id}')
-            return True
-
 
 
     return False

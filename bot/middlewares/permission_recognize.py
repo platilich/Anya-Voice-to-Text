@@ -1,51 +1,52 @@
 # --- models ---
 from users.models import Limits
-from bot_messages.models import LimitMessages, get_text
-from bot.logger import logger
+
+from rejection_messages import (send_more_than_fifteen_minutes,
+                                send_duration_longer_left_min,
+                                send_minutes_ended)
+
+from logger import logger
+
 
 
 
 # --- function that checks whether the message can be processed ---
-async def if_can_process(user_id, message):
-    """
-    getting user date.
-        1. used_time - time already spent by the user.
-        2. allowed = the number of available minutes per day depends on the tariff
-    """
-
-    used_time, allowed = await Limits.get_usage_for_profile(user_id)
-
-
+async def if_can_process(user_id, message, duration_voice_message):
     """
     function that checks if the date in the database differs from today's date:
         1. Change the date in the database to the current one
         2. Set the seconds used to 0
     """
-
     await Limits.maybe_reset(user_id)
 
 
-    # --- if the time used is less than the allowed time, we allow ----
-    if used_time <= allowed:
+    """
+    getting user date.
+        1. used_time - time already spent by the user.
+        2. allowed = the number of available minutes per day depends on the tariff
+    """
+    used_time, allowed = await Limits.get_usage_for_profile(user_id)
+
+
+
+    if duration_voice_message > 900:
+        await send_more_than_fifteen_minutes(message)
+        logger.info(f'voice too long | {user_id}')
+        return True
+
+
+    if used_time + duration_voice_message > allowed:
+        # --- сообщение о том что в пакете минут на сутки не хватает на обработку данного сообщения ---
+        await send_duration_longer_left_min(message, used_time, allowed)
+        return False
+
+
+    # --- если использованное время больше разрешенного ----
+    if used_time > allowed:
+        await send_minutes_ended(message, used_time, allowed)
         return True
 
 
 
-    # --- informing you that we cannot process it ---
-    else:
-        logger.info(f'user {user_id} over limit {used_time}/{allowed}')
-        # --- send sticker ---
-        sticker_file_id = 'CAACAgIAAxkBAAIBvWrTv6l-cN3DX2w_FqR-KE10qtMCAAJIrwAC-pahSkxOTB4PtFkjPQQ'
-        await message.answer_sticker(sticker=sticker_file_id)
 
-
-        # --- send message ---
-        text = await get_text(model=LimitMessages, key='limit')
-        text_ready = text.replace('{used_time}', used_time).replace('{allowed}', allowed)
-
-        await message.answer(
-            text=text_ready,
-            parse_mode='HTML'
-        )
-
-        return False
+    return False
