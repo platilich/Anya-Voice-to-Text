@@ -1,4 +1,4 @@
-from . import start, profile, get_plus, voice, callback
+from bot.handlers import start, profile, get_plus, voice, callback
 
 
 def register_all_handlers(dp):

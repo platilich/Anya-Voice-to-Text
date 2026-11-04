@@ -1,11 +1,11 @@
 # --- models ---
 from users.models import Limits
 
-from rejection_messages import (send_more_than_fifteen_minutes,
+from bot.middlewares.rejection_messages import (send_more_than_fifteen_minutes,
                                 send_duration_longer_left_min,
                                 send_minutes_ended)
 
-from logger import logger
+from bot.logger import logger
 
 
 
@@ -25,7 +25,7 @@ async def if_can_process(user_id, message, duration_voice_message):
         1. used_time - time already spent by the user.
         2. allowed = the number of available minutes per day depends on the tariff
     """
-    used_time, allowed = await Limits.get_usage_for_profile(user_id)
+    used_time, allowed = await Limits.get_used_and_max_allowed(user_id)
 
 
 
@@ -35,10 +35,11 @@ async def if_can_process(user_id, message, duration_voice_message):
         return True
 
 
+
     if used_time + duration_voice_message > allowed:
         # --- сообщение о том что в пакете минут на сутки не хватает на обработку данного сообщения ---
-        await send_duration_longer_left_min(message, used_time, allowed)
-        return False
+        await send_duration_longer_left_min(message, duration_voice_message)
+        return True
 
 
     # --- если использованное время больше разрешенного ----

@@ -1,7 +1,6 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 
-# --- bot/ ---
 from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
 from bot.logger import logger

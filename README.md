@@ -137,10 +137,11 @@ nano .env
 Paste:
 
 ```env
-TOKEN=your_telegram_bot_token_here
-DEBUG=False
 SECRET_KEY=paste_openssl_key_here
-ALLOWED_HOSTS=*
+TOKEN=your_telegram_bot_token_here
+ADMIN_ID=your_telegram_id
+DEBUG=False
+ALLOWED_HOSTS=your_domen_or_just_*
 ```
 
 Save: `Ctrl + X` → `Y` → `Enter`.
@@ -170,9 +171,15 @@ Type username, email (can skip), password.
 
 ---
 
-## 7. Admin panel — first steps
+## 7. Admin panel - first steps
 
-<img src="screenshots/admin_panel.png" alt="Django admin panel" width="700"/>
+<table>
+    <tr>
+        <td><img src="screenshots/admin_panel.png" alt="Django admin panel" width="600"></td>
+        <td><img src="screenshots/second_scrin_admin_panel.png" alt="Second Django admin panel screenshot" width="600"></td>
+    </tr>
+</table>
+
 
 ### What you do here
 

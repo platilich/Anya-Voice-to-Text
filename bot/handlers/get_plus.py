@@ -80,7 +80,7 @@ async def process_successful_payment(message: types.Message):
     price = await get_price_subscription()
 
 
-    if payment_info.invoice_payload == f"premium_donation_{price}_stars":
+    if payment_info.invoice_payload == f"premium_donation_{price}_stars" and payment_info.currency == 'XTR':
         try:
             await send(message, 'love')
             logger.info('user bought subscribe')

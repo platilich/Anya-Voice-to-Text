@@ -1,11 +1,9 @@
 # --- models ---
 from users.models import TelegramUser
-from bot_messages.models import LimitMessages, get_text
 from core.models import get_rest_time
 
 
 # --- bot/ ---
-from bot.utils.sticker import send
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
 
@@ -27,6 +25,9 @@ async def anti_bot(user_id, is_bot):
     if is_bot:
         await TelegramUser.change_status_banned(user_id, True)
         return True
+
+    else:
+        return False
 
 
 
@@ -72,7 +73,6 @@ async def check_user(message, duration_voice_message):
     if await anti_flood(user_id):
         logger.info(f'user {user_id} flood, skip')
         return True
-
 
 
     if duration_voice_message:

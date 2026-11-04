@@ -104,6 +104,17 @@ class SubscribePlus(models.Model):
         await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
 
 
+
+    @classmethod
+    async def get_ending_date_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id=user_id)
+
+        user_data = await SubscribePlus.objects.aget(user_id=user_id)
+
+        return user_data.subscribe_ending
+
+
+
     @classmethod
     async def left_days_subscribe(cls, user_id):
         await SubscribePlus.check_subscribe(user_id)
@@ -137,19 +148,13 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def get_ending_subscribe(cls, user_id):
-        await SubscribePlus.get_or_create_plus(user_id)
-
-        return await SubscribePlus.get_ending_subscribe(user_id=user_id)
-
-
-
-    @classmethod
     async def check_subscribe(cls, user_id):
         date_now = datetime.now(timezone.utc)
-        date_ending = await cls.get_ending_subscribe(user_id)
+        date_ending = await cls.get_ending_date_subscribe(user_id)
 
-        if date_ending is not None and date_ending > date_now:
+
+        # --- если время подписки дата меньше чем дата сейчас то тогда время прошло и мы убираем подписку ---
+        if date_ending is not None and date_ending < date_now:
             await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False, subscribe_ending=None)
 
 
@@ -258,6 +263,20 @@ class Limits(models.Model):
 
 
         return time_formatted, max_minutes
+
+
+
+    @classmethod
+    async def get_used_and_max_allowed(cls, user_id):
+        await cls.maybe_reset(user_id)
+
+        seconds_used = await cls.get_seconds_used(user_id)
+
+        # лимит в секундах
+        status = await SubscribePlus.get_or_create_plus(user_id)
+        max_seconds = 30 * 60 if status.is_plus else 15 * 60
+
+        return seconds_used, max_seconds
 
 
 

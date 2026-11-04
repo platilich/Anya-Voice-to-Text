@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
 from bot.services.cutback import make_text_shorter
-from logger import logger
+from bot.logger import logger
 import html
 
 

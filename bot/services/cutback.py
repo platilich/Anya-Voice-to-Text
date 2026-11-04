@@ -7,8 +7,8 @@ from core.models import GroqAPIKey
 
 
 # --- other ---
-from services.system_prompt import SYSTEM_PROMPT
-from logger import logger
+from bot.services.system_prompt import SYSTEM_PROMPT
+from bot.logger import logger
 
 
 # --- it is triggered when all Groq API keys are unavailable ---

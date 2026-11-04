@@ -39,8 +39,6 @@ _invalid = []
 if not SECRET_KEY:
     _missing.append('SECRET_KEY')
 
-if not _debug_raw:
-    _missing.append('DEBUG')
 
 elif _debug_raw not in ('true', 'false', '1', '0', 'yes', 'no'):
     _invalid.append('DEBUG')
