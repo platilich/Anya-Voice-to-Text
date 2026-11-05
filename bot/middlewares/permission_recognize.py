@@ -17,14 +17,13 @@ async def if_can_process(user_id, message, duration_voice_message):
         1. Change the date in the database to the current one
         2. Set the seconds used to 0
     """
-    await Limits.maybe_reset(user_id)
-
 
     """
     getting user date.
         1. used_time - time already spent by the user.
         2. allowed = the number of available minutes per day depends on the tariff
     """
+
     used_time, allowed = await Limits.get_used_and_max_allowed(user_id)
 
 
@@ -37,12 +36,12 @@ async def if_can_process(user_id, message, duration_voice_message):
 
 
     if used_time + duration_voice_message > allowed:
-        # --- сообщение о том что в пакете минут на сутки не хватает на обработку данного сообщения ---
+        # --- a notification stating that the available daily minute allowance is insufficient to process this message ---
         await send_duration_longer_left_min(message, duration_voice_message)
         return True
 
 
-    # --- если использованное время больше разрешенного ----
+    # --- if the time used exceeds the allowed time ----
     if used_time > allowed:
         await send_minutes_ended(message, used_time, allowed)
         return True

@@ -46,16 +46,13 @@ class StartMessages(BaseSingletonMessage):
     # texts for /start command and welcome screen
     start_text = models.TextField(
         default=(
-            f"👋 Hey, <b>{{name}}</b>! I'm <b>Anya</b> ✨\n\n"
-            "I'm always here to help you instantly transcribe your audio & video into clear text! 🎧\n\n"
-            "<b>What I can do for you:</b>\n"
-            "🎙️ Convert voice notes & audio files to text\n"
-            "🎥 Transcribe your Telegram video messages (circles)\n\n"
-            "⚡ Fast, accurate, and super easy to use!\n\n"
-            "<b>Ready?</b> Just send or forward me any voice note or video message and I'll handle the rest! 💫\n\n"
-            "<a href='https://github.com/platilich/Anya-voice-to-text'><b>GitHub</b></a>"
+            f"👋 Hey <b>{{name}}</b>, I’m <b>Anya</b> 🌈\n\n"
+            "🔊 Convert voice notes to text;\n"
+            "📽️ Transcribe Telegram videos;\n\n"
+            "🚀 Fast & accurate – just send a voice or video and I’ll do the rest! ✨\n\n"
+            "<a href='httpshttps://github.com/platilich/Anya-voice-to-text'><b>GitHub</b></a>"
         ),
-        verbose_name='Start Message Text'
+    verbose_name='Start Message Text'
     )
 
     def __str__(self):
@@ -73,13 +70,13 @@ class ProfileMessages(BaseSingletonMessage):
 
     header = models.TextField(
         max_length=255,
-        default='👋 Hey {name}! Here is everything I know about your stats so far: 🎧\n',
+        default="👋 Hey <b>{name}</b>! Here’s everything I know about your stats so far 🎯\n",
         verbose_name='Header ({name})'
     )
 
     statistic = models.TextField(
         max_length=255,
-        default='🎙 Total items recognized by me: {recognised}',
+        default="🎙️ Total items I’ve recognized for you: <b>{recognised}</b> ✨",
         verbose_name='Recognized Count ({recognised})'
     )
 
@@ -98,19 +95,19 @@ class SubscriptionStatusMessages(BaseSingletonMessage):
 
     active_plus = models.TextField(
         max_length=255,
-        default='✨ Plus: {left_days} day left. We’re in this together!',
+        default="✨ {left_days} day{'s' if int(left_days)!=1 else ''} left — we’ve got this! 💖",
         verbose_name='Active Plus ({left_days})'
     )
 
     ending_today = models.TextField(
         max_length=500,
-        default="✨ My favorite Plus status ends today! Time to renew?",
+        default="✨ My Plus expires today—time to renew? 💫",
         verbose_name='Plus Ending Today'
     )
 
     no_subscription = models.TextField(
         max_length=500,
-        default='🚀 Unlock Plus with me to boost your limits by 5 times!',
+        default="🚀 Unlock Plus with me and multiply your limits x 5! ✨",
         verbose_name='No Subscription Upsell'
     )
 
@@ -132,10 +129,10 @@ class LimitMessages(BaseSingletonMessage):
     limit = models.TextField(
         max_length=255,
         default=(
-            "📊 <b>Limits:</b> {used_time}/{allowed} minutes\n"
-            f"⏳ <b>The limits will be updated tomorrow</b> min\n\n"
-            f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
-            '👉 <b>/get_plus</b>'
+            "📊 <b>Limits:</b> {used_time}/{allowed} min\n"
+            "⏰ New limits refresh tomorrow\n\n"
+            "⭐ <b>Upgrade to Plus</b> for more power!\n"
+            "👉 <b>/get_plus</b>"
         ),
         verbose_name='The message that the package of minutes for the day is over'
     )
@@ -144,10 +141,9 @@ class LimitMessages(BaseSingletonMessage):
     not_enough_minutes_to_recognize = models.TextField(
         max_length=255,
         default=(
-            "❌ <b>The length of your message: {duration_voice_message} "
-            "⏳ <b>Limit:</b>{used_time}/{allowed}</b> min\n\n"
-            f"⭐ <b>Upgrade to Plus</b> for higher limits!\n"
-            '👉 <b>/get_plus</b>'
+            "❌ Your clip is {duration_voice_message} long — limit: {used_time}/{allowed} min\n\n"
+            "⭐ Want more room? <b>Upgrade to Plus</b>!\n"
+            "👉 <b>/get_plus</b>"
         ),
         verbose_name='The message that the voice message does not fit into the daily limit'
     )
@@ -155,7 +151,7 @@ class LimitMessages(BaseSingletonMessage):
 
     too_long = models.TextField(
         max_length=255,
-        default='⌛ Oh, what a long voice message! 🙈 My servers might run out of RAM from a marathon like that. Let’s keep it under 15 minutes max, alright? ✨',
+        default="⌛ Oof, that’s a marathon! 🙈 My servers can’t handle >15 min. Keep it short, please? ✨",
         verbose_name='A message telling you that the voice message is too long'
     )
 
@@ -221,7 +217,6 @@ class ButtonSummarize(BaseSingletonMessage):
 class ErrorMessages(BaseSingletonMessage):
     # texts for errors and system notices
 
-
     admin_no_groq_keys = models.TextField(
         max_length=500,
         default='Oops! All of my Groq API keys are invalid, blocked, or out of limits..\n👉 <i>Please add a new key in the admin area so I can keep working for everyone!</i>',
@@ -230,7 +225,7 @@ class ErrorMessages(BaseSingletonMessage):
 
     service_unavailable = models.TextField(
         max_length=255,
-        default='😔 Oh no! My audio recognition service is resting right now.\n🙏 Please try again a bit later, I’ll be waiting!',
+        default="😔 Oops, my audio brain is on a break. 🙏 Try again in a bit—I'll be right here! ✨",
         verbose_name='User Notice: Service Unavailable'
     )
 

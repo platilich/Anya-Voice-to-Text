@@ -50,7 +50,7 @@ class TelegramUser(models.Model):
     async def get_statistic(cls, user_id):
         user_data = await TelegramUser.objects.filter(user_id=user_id).aget()
 
-        return [user_data.count_recognise]
+        return user_data.count_recognise
 
 
 
@@ -91,21 +91,6 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def give_subscribe(cls, user_id):
-        subscribe = await SubscribePlus.get_or_create_plus(user_id)
-
-        now = datetime.now(timezone.utc)
-        start = now
-        # если плюс ещё действует, прибавляем месяц к концу, а не затираем его
-        if subscribe.subscribe_ending and subscribe.subscribe_ending > now:
-            start = subscribe.subscribe_ending
-
-        subscribe_ending_date = start + relativedelta(months=1)
-        await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
-
-
-
-    @classmethod
     async def get_ending_date_subscribe(cls, user_id):
         await SubscribePlus.get_or_create_plus(user_id=user_id)
 
@@ -116,21 +101,36 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def left_days_subscribe(cls, user_id):
-        await SubscribePlus.check_subscribe(user_id)
-
-
+    async def give_subscribe(cls, user_id):
         await SubscribePlus.get_or_create_plus(user_id)
-        user_data = await SubscribePlus.objects.aget(user_id=user_id)
+
+        ending_date_subscribe = await SubscribePlus.get_ending_date_subscribe(user_id)
+
+        now = datetime.now(timezone.utc)
+        start = now
+
+        # --- adding another 1 month subscription ---
+        if ending_date_subscribe and ending_date_subscribe > now:
+            start = ending_date_subscribe
+
+        subscribe_ending_date = start + relativedelta(months=1)
+        await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=True, subscribe_ending=subscribe_ending_date)
+
+
+
+
+    @classmethod
+    async def left_days_subscribe(cls, user_id):
+        await SubscribePlus.get_or_create_plus(user_id)
+
+        date_ending_subscribe = await SubscribePlus.get_ending_date_subscribe(user_id)
 
 
         current_data = datetime.now(timezone.utc)
-        ending_subscribe_date = user_data.subscribe_ending
 
-
-        if ending_subscribe_date and ending_subscribe_date > current_data:
-            time_left = ending_subscribe_date - current_data
-            days_left = time_left.days  # полных оставшихся дней
+        if date_ending_subscribe and date_ending_subscribe > current_data:
+            time_left = date_ending_subscribe - current_data
+            days_left = time_left.days  # --- full remaining days ---
 
             return days_left
 
@@ -140,24 +140,14 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def user_message_status_subscribe(cls, user_id):
-        # 0 тоже валиден: подписка кончается сегодня
-        return await SubscribePlus.left_days_subscribe(user_id)
-
-
-
-
-    @classmethod
     async def check_subscribe(cls, user_id):
         date_now = datetime.now(timezone.utc)
         date_ending = await cls.get_ending_date_subscribe(user_id)
 
 
-        # --- если время подписки дата меньше чем дата сейчас то тогда время прошло и мы убираем подписку ---
+        # --- if the subscription end date is earlier than the current date, then the time has expired, and we remove the subscription ---
         if date_ending is not None and date_ending < date_now:
             await SubscribePlus.objects.filter(user_id=user_id).aupdate(is_plus=False, subscribe_ending=None)
-
-
 
 
 
@@ -165,8 +155,11 @@ class SubscribePlus(models.Model):
         verbose_name_plural = 'Subscription Plus'
 
 
+
     def __str__(self):
         return f'Subscription for {self.user_id}'
+
+
 
 
 class Limits(models.Model):
@@ -178,9 +171,6 @@ class Limits(models.Model):
 
     @classmethod
     async def get_or_create_limit(cls, user_id):
-        # auxiliary method: finds or automatically creates user limits
-        await SubscribePlus.check_subscribe(user_id)
-
         user_obj = await TelegramUser.objects.aget(pk=user_id)
         limit_obj, _ = await cls.objects.aget_or_create(
             user_id=user_obj,
@@ -190,10 +180,9 @@ class Limits(models.Model):
 
 
 
+    # --- limit resetting ---
     @classmethod
-    async def maybe_reset(cls, user_id: int):
-        await SubscribePlus.check_subscribe(user_id)
-
+    async def reset_daily_seconds_if_new_day(cls, user_id: int):
         limit = await cls.get_or_create_limit(user_id)
         today = datetime.now(timezone.utc).date()
 
@@ -204,8 +193,9 @@ class Limits(models.Model):
 
 
 
+    # --- lite function just get used seconds and allowed seconds ---
     @classmethod
-    async def get_seconds_used(cls, user_id: int): # возращает количество использованных сегодня минут
+    async def get_used_seconds(cls, user_id):
         limit = await cls.get_or_create_limit(user_id)
 
         return limit.seconds_used
@@ -214,30 +204,23 @@ class Limits(models.Model):
 
     @classmethod
     async def get_daily_limit_time(cls, user_id):
-        await SubscribePlus.check_subscribe(user_id)
-
         status = await SubscribePlus.get_or_create_plus(user_id=user_id)
 
 
         if status.is_plus:
-            return f"{30:02d}:{00:02d}"
+            return 1800
 
         else:
-            return f"{15:02d}:{00:02d}"
+            return 900
 
 
 
-
-
+    # --- adding/subtracting seconds ---
     @classmethod
     async def spend_seconds(cls, user_id, duration_seconds):
-        await cls.maybe_reset(user_id) # проверяем дату если дата совпадет то сбрасываем
-
-
         await cls.objects.filter(user_id=user_id).aupdate(
             seconds_used=F("seconds_used") + duration_seconds
         )
-
 
 
     @classmethod
@@ -246,37 +229,43 @@ class Limits(models.Model):
             seconds_used=F('seconds_used') - duration_seconds
         )
 
+    # --- --- --- --- --- --- --- --- ---
+
+
+    # --- retrieving seconds ---
+    @classmethod
+    async def get_usage_for_profile(cls, user_id): # --- for profile, formatted time ---
+        used_seconds = await cls.get_used_seconds(user_id)
+        allowed_seconds = await cls.get_daily_limit_time(user_id)
+
+
+        # --- formating used ---
+        minutes = used_seconds // 60
+        seconds = used_seconds % 60
+
+        time_used = f"{minutes:02d}:{seconds:02d}"
+        # --- --- --- --- --- ---
+
+
+        # --- formating allowed maximum ---
+        minutes = allowed_seconds // 60
+        seconds = allowed_seconds % 60
+
+        time_maximum = f"{minutes:02d}:{seconds:02d}"
+        # --- --- --- --- --- ---
+
+
+        return time_used, time_maximum
+
+
 
     @classmethod
-    async def get_usage_for_profile(cls, user_id):
-        await cls.maybe_reset(user_id) # получаем лимит сколько мы можем использовали
+    async def get_used_and_max_allowed(cls, user_id): # --- for middleware --
 
+        used_seconds = await cls.get_used_seconds(user_id)
+        allowed_seconds = await cls.get_daily_limit_time(user_id)
 
-        time_used = await cls.get_seconds_used(user_id)
-        max_minutes = await cls.get_daily_limit_time(user_id)
-
-
-        minutes = time_used // 60
-        seconds = time_used % 60
-
-        time_formatted = f"{minutes:02d}:{seconds:02d}"
-
-
-        return time_formatted, max_minutes
-
-
-
-    @classmethod
-    async def get_used_and_max_allowed(cls, user_id):
-        await cls.maybe_reset(user_id)
-
-        seconds_used = await cls.get_seconds_used(user_id)
-
-        # лимит в секундах
-        status = await SubscribePlus.get_or_create_plus(user_id)
-        max_seconds = 30 * 60 if status.is_plus else 15 * 60
-
-        return seconds_used, max_seconds
+        return used_seconds, allowed_seconds
 
 
 

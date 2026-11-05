@@ -36,7 +36,7 @@ async def profile_message(user_id: int, name: str) -> str:
     # 1. Получаем данные из БД
     all_time_recognised = await TelegramUser.get_statistic(user_id=user_id)
     used_minutes, allowed_minutes = await Limits.get_usage_for_profile(user_id=user_id)
-    user_message_subscribe = await SubscribePlus.user_message_status_subscribe(user_id=user_id)
+    user_message_subscribe = await SubscribePlus.left_days_subscribe(user_id=user_id)
 
 
     # 2. Формируем заголовок (с экранированием HTML)
@@ -46,8 +46,7 @@ async def profile_message(user_id: int, name: str) -> str:
 
     # 3. Формируем статистику (приводим число к str)
     profile_statistic = await get_text(ProfileMessages, 'statistic')
-    recognised_val = all_time_recognised[0] if all_time_recognised else 0
-    profile_statistic = profile_statistic.replace('{recognised}', str(recognised_val))
+    profile_statistic = profile_statistic.replace('{recognised}', str(all_time_recognised))
 
 
     # 5. Обрабатываем статус подписки

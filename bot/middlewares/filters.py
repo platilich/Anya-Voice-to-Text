@@ -12,11 +12,11 @@ from cachetools import TTLCache
 from datetime import datetime, timezone, timedelta
 
 
+from users.models import Limits, SubscribePlus
+
 
 
 rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
-
-
 
 
 
@@ -51,6 +51,12 @@ async def anti_flood(user_id):
 
 
 
+async def update_data(user_id):
+    await SubscribePlus.check_subscribe(user_id) # --- if the subscription has expired, we remove is_plus ---
+    await Limits.reset_daily_seconds_if_new_day(user_id)  # --- if it’s a new day, we discard the old limits ---
+
+
+
 async def check_user(message, duration_voice_message):
     user_id = message.from_user.id
     name = message.from_user.first_name
@@ -73,6 +79,10 @@ async def check_user(message, duration_voice_message):
     if await anti_flood(user_id):
         logger.info(f'user {user_id} flood, skip')
         return True
+
+
+
+    await update_data(user_id)
 
 
     if duration_voice_message:
