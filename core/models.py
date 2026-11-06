@@ -7,7 +7,6 @@ from cachetools import TTLCache
 
 
 # --- we store the data ---
-
 # --- for 2 minutes ---
 cache_subscription = TTLCache(maxsize=1, ttl=120)
 
