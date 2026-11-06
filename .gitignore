@@ -13,3 +13,4 @@ __pycache__/
 staticfiles/
 tasks.txt
 bot.log
+bot/.DB_Store

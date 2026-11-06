@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+from aiogram import Bot
 import html
 
+from aiogram.utils.deep_linking import create_start_link
 
 
 from bot_messages.models import (
@@ -71,12 +73,20 @@ async def profile_message(user_id: int, name: str) -> str:
     about_limits = '⏳ The limits are updated every 24 hours'
 
 
+
+    link = f"https://t.me/anya_voice_to_text_bot?start={user_id}"
+
+
+
+    ref_link = f'You can also get premium free!\nJust share with your with this link: {link}'
+
     # 7. Собираем сообщение
     profile_blocks = [
         profile_header,
         profile_statistic,
         profile_limit,
-        about_limits
+        about_limits,
+        ref_link
 
     ]
 

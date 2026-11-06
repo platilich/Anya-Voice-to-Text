@@ -1,5 +1,6 @@
 from aiogram import Router, types
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
+
 
 from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
@@ -7,7 +8,6 @@ from bot.logger import logger
 
 # --- models ---
 from bot_messages.models import get_text, StartMessages
-
 # --- to send the name safety (html.escape(name)) ---
 import html
 
@@ -16,14 +16,29 @@ import html
 router = Router(name='command_start')
 
 
+
+
+
 @router.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, command: CommandObject):
     name = message.from_user.first_name
 
+    print('ПОЛУЧЕННО СООБЩЕНИЕ')
+
+    if command.args:
+        from_user_id = command.args
+
+    else:
+        print('пользователь пришел просто по комманде /start без реферальных ссылок')
+        from_user_id = None
+
+
+    print(command)
+    print(from_user_id)
     logger.info('got a command /start')
 
     # --- the function for updating user data will also return True if the user is banned ---
-    if await check_user(message, duration_voice_message=None): # update, save, protect
+    if await check_user(message, from_user_id, duration_voice_message=None): # update, save, protect
         return
 
 

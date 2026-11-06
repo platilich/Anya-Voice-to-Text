@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 
 
-
 # Create your models here.
 class TelegramUser(models.Model):
     user_id = models.BigIntegerField(unique=True, primary_key=True)
@@ -26,7 +25,7 @@ class TelegramUser(models.Model):
             user_id=user_id,
             defaults={
                 'name': name,
-                'nickname': nickname,
+                'nickname': nickname
             }
         )
 
@@ -45,14 +44,11 @@ class TelegramUser(models.Model):
         await TelegramUser.objects.filter(user_id=user_id).aupdate(is_banned=is_banned)
 
 
-
     @classmethod
     async def get_statistic(cls, user_id):
         user_data = await TelegramUser.objects.filter(user_id=user_id).aget()
 
         return user_data.count_recognise
-
-
 
 
     @classmethod
@@ -70,6 +66,47 @@ class TelegramUser(models.Model):
     def __str__(self):
         return f"{self.name} ({self.user_id})"
 
+
+
+
+class ReferenceLinks(models.Model):
+    user_id = models.OneToOneField(TelegramUser, on_delete=models.CASCADE, primary_key=True)
+    count_invited = models.IntegerField(default=0)
+
+
+
+    @classmethod
+    async def create_new_link(cls, user):
+        user = await TelegramUser.objects.aget(pk=user)
+
+        obj, created = await cls.objects.aget_or_create(
+            user_id=user
+        )
+        return obj
+
+
+
+    @classmethod
+    async def increase_invited_users(cls, user_id: int, from_user_id: int):
+        # self invited
+        if user_id == from_user_id:
+            return
+
+
+        # Добавляем в M2M и увеличиваем счётчик
+        await ReferenceLinks.objects.filter(user_id=from_user_id).aupdate(count_invited=F('count_invited') + 1)
+
+
+
+
+
+    class Meta:
+        verbose_name = 'Reference Link'
+        verbose_name_plural = 'Reference Links'
+
+
+    def __str__(self):
+        return f'{self.user_id} invited: {self.count_invited} user(s)'
 
 
 

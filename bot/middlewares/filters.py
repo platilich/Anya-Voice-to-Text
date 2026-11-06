@@ -1,18 +1,18 @@
 # --- models ---
-from users.models import TelegramUser
+from users.models import TelegramUser, ReferenceLinks
 from core.models import get_rest_time
-
 
 # --- bot/ ---
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
-
 
 from cachetools import TTLCache
 from datetime import datetime, timezone, timedelta
 
 
 from users.models import Limits, SubscribePlus
+
+from aiogram import Bot
 
 
 
@@ -49,6 +49,9 @@ async def anti_flood(user_id):
     rate_limit_cache[user_id] = now
 
 
+    return False
+
+
 
 
 async def update_data(user_id):
@@ -57,13 +60,29 @@ async def update_data(user_id):
 
 
 
-async def check_user(message, duration_voice_message):
+async def check_user(message, from_user_id, duration_voice_message):
     user_id = message.from_user.id
     name = message.from_user.first_name
     nickname = message.from_user.username
     is_bot = message.from_user.is_bot
 
-    await TelegramUser.save_or_update_user(user_id, name, nickname)
+    user, created = await TelegramUser.save_or_update_user(user_id, name, nickname)
+
+    if created:
+        await ReferenceLinks.create_new_link(user_id)
+
+    if from_user_id and created:
+        await ReferenceLinks.increase_invited_users(user_id, from_user_id)
+
+        # --- выдаем подписки ---
+        await SubscribePlus.give_subscribe(user_id)
+        await SubscribePlus.give_subscribe(from_user_id)
+        print('ура всем по подписке!')
+
+        await message.bot.send_message(user_id, text='Ты перешел по ссылке друга! У тебя бесплатный месяц подписки Plus!')
+        await message.bot.send_message(from_user_id, text='Ты пригласил друга и он перешел по этой ссылке, у тебя теперь есть месяц подписки Plus!')
+
+
 
 
     if await anti_bot(user_id, is_bot):

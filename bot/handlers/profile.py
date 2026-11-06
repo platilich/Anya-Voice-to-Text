@@ -18,8 +18,10 @@ async def profile(message: types.Message):
 
     logger.info('got a command /profile')
 
+
+
     # --- the function for updating user data will also return True if the user is banned ---
-    if await check_user(message, None):
+    if await check_user(message, code=None, duration_voice_message=None):
         return
 
 

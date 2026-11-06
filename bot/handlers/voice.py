@@ -39,9 +39,10 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     logger.info('got a audio/video_note')
 
+    code = None
 
     # --- verification: can we process the voice message ---
-    if await check_user(message, time_voice_message):
+    if await check_user(message, code, time_voice_message):
         return
 
 
