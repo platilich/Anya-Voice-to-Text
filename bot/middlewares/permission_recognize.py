@@ -35,15 +35,15 @@ async def if_can_process(user_id, message, duration_voice_message):
 
 
 
-    if used_time + duration_voice_message > allowed:
-        # --- a notification stating that the available daily minute allowance is insufficient to process this message ---
-        await send_duration_longer_left_min(message, duration_voice_message)
-        return True
-
-
     # --- if the time used exceeds the allowed time ----
     if used_time > allowed:
         await send_minutes_ended(message, used_time, allowed)
+        return True
+
+
+    if used_time + duration_voice_message > allowed:
+        # --- a notification stating that the available daily minute allowance is insufficient to process this message ---
+        await send_duration_longer_left_min(message, duration_voice_message)
         return True
 
 

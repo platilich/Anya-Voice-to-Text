@@ -92,9 +92,7 @@ class SubscribePlus(models.Model):
 
     @classmethod
     async def get_ending_date_subscribe(cls, user_id):
-        await SubscribePlus.get_or_create_plus(user_id=user_id)
-
-        user_data = await SubscribePlus.objects.aget(user_id=user_id)
+        user_data = await SubscribePlus.get_or_create_plus(user_id=user_id)
 
         return user_data.subscribe_ending
 

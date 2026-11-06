@@ -229,6 +229,23 @@ class ErrorMessages(BaseSingletonMessage):
         verbose_name='User Notice: Service Unavailable'
     )
 
+    failed_payment = models.TextField(
+        max_length=255,
+        default="The price of the product has been changed or you have paid in the wrong currency, the money will be refunded.\n\nTry to get the invoice again /get_plus",
+        verbose_name='Message about price was changed'
+    )
+
+
+    refund_payment = models.TextField(
+        max_length=255,
+        default='✅ Success\nThe money has been refunded to your account',
+        verbose_name='Notification of successful withdrawal of funds'
+
+    )
+
+
+
+
     def __str__(self):
         return 'Error Texts'
 

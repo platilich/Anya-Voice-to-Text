@@ -33,10 +33,6 @@ async def handle_video_note(message: types.Message, bot: Bot):
         return
 
 
-    # --- increasing the time used for the limits ---
-    await Limits.spend_seconds(user_id, time_voice_message)
-
-
     # --- sending reaction ---
     await message.react([ReactionTypeEmoji(emoji='❤️')])
     await send(message, 'recognising')
@@ -46,6 +42,10 @@ async def handle_video_note(message: types.Message, bot: Bot):
     path = None
 
     try:
+        # --- increasing the time used for the limits ---
+        await Limits.spend_seconds(user_id, time_voice_message)
+
+
         # --- download the file ---
         path = await download_file(bot, message, file_obj)
 
