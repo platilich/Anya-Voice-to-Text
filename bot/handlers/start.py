@@ -8,7 +8,6 @@ from bot.logger import logger
 
 # --- models ---
 from bot_messages.models import get_text, StartMessages
-# --- to send the name safety (html.escape(name)) ---
 import html
 
 
@@ -25,21 +24,20 @@ async def cmd_start(message: types.Message, command: CommandObject):
 
     print('ПОЛУЧЕННО СООБЩЕНИЕ')
 
-    if command.args:
-        from_user_id = command.args
-
-    else:
-        print('пользователь пришел просто по комманде /start без реферальных ссылок')
-        from_user_id = None
+    friend_id = command.args
 
 
-    print(command)
-    print(from_user_id)
     logger.info('got a command /start')
 
-    # --- the function for updating user data will also return True if the user is banned ---
-    if await check_user(message, from_user_id, duration_voice_message=None): # update, save, protect
+    if not friend_id:
+        if await check_user(message=message):
+            return
+
+
+    if await check_user(message=message, friend_id=friend_id):
         return
+
+
 
 
     await send(message, name_sticker='hello')

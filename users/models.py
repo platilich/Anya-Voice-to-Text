@@ -20,7 +20,7 @@ class TelegramUser(models.Model):
 
 
     @classmethod
-    async def save_or_update_user(cls, user_id, name, nickname):
+    async def save_or_update_user(cls, user_id: int, name: str, nickname: str):
         user, created = await TelegramUser.objects.aupdate_or_create(
             user_id=user_id,
             defaults={
@@ -35,24 +35,24 @@ class TelegramUser(models.Model):
 
 
     @classmethod
-    async def increase_count_recognise(cls, user_id):
+    async def increase_count_recognise(cls, user_id: int):
         await TelegramUser.objects.filter(user_id=user_id).aupdate(count_recognise=F('count_recognise') + 1)
 
 
     @classmethod
-    async def change_status_banned(cls, user_id, is_banned):
+    async def change_status_banned(cls, user_id: int, is_banned: bool):
         await TelegramUser.objects.filter(user_id=user_id).aupdate(is_banned=is_banned)
 
 
     @classmethod
-    async def get_statistic(cls, user_id):
+    async def get_statistic(cls, user_id: int):
         user_data = await TelegramUser.objects.filter(user_id=user_id).aget()
 
         return user_data.count_recognise
 
 
     @classmethod
-    async def banned_user(cls, user_id):
+    async def banned_user(cls, user_id: int):
         try:
             user = await TelegramUser.objects.filter(user_id=user_id).aget()
 
@@ -76,8 +76,8 @@ class ReferenceLinks(models.Model):
 
 
     @classmethod
-    async def create_new_link(cls, user):
-        user = await TelegramUser.objects.aget(pk=user)
+    async def create_new_link(cls, user_id: int):
+        user = await TelegramUser.objects.aget(pk=user_id)
 
         obj, created = await cls.objects.aget_or_create(
             user_id=user
@@ -88,15 +88,10 @@ class ReferenceLinks(models.Model):
 
     @classmethod
     async def increase_invited_users(cls, user_id: int, from_user_id: int):
-        # self invited
         if user_id == from_user_id:
             return
 
-
-        # Добавляем в M2M и увеличиваем счётчик
         await ReferenceLinks.objects.filter(user_id=from_user_id).aupdate(count_invited=F('count_invited') + 1)
-
-
 
 
 
@@ -117,7 +112,7 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def get_or_create_plus(cls, user_id):
+    async def get_or_create_plus(cls, user_id: int):
         user_obj = await TelegramUser.objects.aget(pk=user_id)
         subscribe_obj, _ = await cls.objects.aget_or_create(
             user_id=user_obj,
@@ -128,7 +123,7 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def get_ending_date_subscribe(cls, user_id):
+    async def get_ending_date_subscribe(cls, user_id: int):
         user_data = await SubscribePlus.get_or_create_plus(user_id=user_id)
 
         return user_data.subscribe_ending
@@ -136,7 +131,7 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def give_subscribe(cls, user_id):
+    async def give_subscribe(cls, user_id: int):
         await SubscribePlus.get_or_create_plus(user_id)
 
         ending_date_subscribe = await SubscribePlus.get_ending_date_subscribe(user_id)
@@ -155,7 +150,7 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def left_days_subscribe(cls, user_id):
+    async def left_days_subscribe(cls, user_id: int):
         await SubscribePlus.get_or_create_plus(user_id)
 
         date_ending_subscribe = await SubscribePlus.get_ending_date_subscribe(user_id)
@@ -175,7 +170,7 @@ class SubscribePlus(models.Model):
 
 
     @classmethod
-    async def check_subscribe(cls, user_id):
+    async def check_subscribe(cls, user_id: int):
         date_now = datetime.now(timezone.utc)
         date_ending = await cls.get_ending_date_subscribe(user_id)
 
@@ -205,7 +200,7 @@ class Limits(models.Model):
 
 
     @classmethod
-    async def get_or_create_limit(cls, user_id):
+    async def get_or_create_limit(cls, user_id: int):
         user_obj = await TelegramUser.objects.aget(pk=user_id)
         limit_obj, _ = await cls.objects.aget_or_create(
             user_id=user_obj,
@@ -230,7 +225,7 @@ class Limits(models.Model):
 
     # --- lite function just get used seconds and allowed seconds ---
     @classmethod
-    async def get_used_seconds(cls, user_id):
+    async def get_used_seconds(cls, user_id: int):
         limit = await cls.get_or_create_limit(user_id)
 
         return limit.seconds_used
@@ -238,7 +233,7 @@ class Limits(models.Model):
 
 
     @classmethod
-    async def get_daily_limit_time(cls, user_id):
+    async def get_daily_limit_time(cls, user_id: int):
         status = await SubscribePlus.get_or_create_plus(user_id=user_id)
 
 
@@ -252,14 +247,14 @@ class Limits(models.Model):
 
     # --- adding/subtracting seconds ---
     @classmethod
-    async def spend_seconds(cls, user_id, duration_seconds):
+    async def spend_seconds(cls, user_id: int, duration_seconds: int):
         await cls.objects.filter(user_id=user_id).aupdate(
             seconds_used=F("seconds_used") + duration_seconds
         )
 
 
     @classmethod
-    async def return_seconds(cls, user_id, duration_seconds):
+    async def return_seconds(cls, user_id: int, duration_seconds: int):
         await cls.objects.filter(user_id=user_id).aupdate(
             seconds_used=F('seconds_used') - duration_seconds
         )
@@ -269,7 +264,7 @@ class Limits(models.Model):
 
     # --- retrieving seconds ---
     @classmethod
-    async def get_usage_for_profile(cls, user_id): # --- for profile, formatted time ---
+    async def get_usage_for_profile(cls, user_id: int): # --- for profile, formatted time ---
         used_seconds = await cls.get_used_seconds(user_id)
         allowed_seconds = await cls.get_daily_limit_time(user_id)
 
@@ -295,7 +290,7 @@ class Limits(models.Model):
 
 
     @classmethod
-    async def get_used_and_max_allowed(cls, user_id): # --- for middleware --
+    async def get_used_and_max_allowed(cls, user_id: int): # --- for middleware --
 
         used_seconds = await cls.get_used_seconds(user_id)
         allowed_seconds = await cls.get_daily_limit_time(user_id)

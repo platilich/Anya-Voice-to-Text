@@ -5,6 +5,8 @@ from core.models import get_rest_time
 # --- bot/ ---
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
+from bot_messages.models import SubscriptionPlusMessages, get_text
+
 
 from cachetools import TTLCache
 from datetime import datetime, timezone, timedelta
@@ -12,7 +14,6 @@ from datetime import datetime, timezone, timedelta
 
 from users.models import Limits, SubscribePlus
 
-from aiogram import Bot
 
 
 
@@ -28,7 +29,6 @@ async def anti_bot(user_id, is_bot):
 
     else:
         return False
-
 
 
 
@@ -54,13 +54,18 @@ async def anti_flood(user_id):
 
 
 
+
 async def update_data(user_id):
     await SubscribePlus.check_subscribe(user_id) # --- if the subscription has expired, we remove is_plus ---
     await Limits.reset_daily_seconds_if_new_day(user_id)  # --- if it’s a new day, we discard the old limits ---
 
 
 
-async def check_user(message, from_user_id, duration_voice_message):
+async def check_user(**kwargs):
+    message = kwargs.get('message')
+    friend_id = kwargs.get('friend_id')
+    duration_voice_message = kwargs.get('duration_voice_message')
+
     user_id = message.from_user.id
     name = message.from_user.first_name
     nickname = message.from_user.username
@@ -71,18 +76,24 @@ async def check_user(message, from_user_id, duration_voice_message):
     if created:
         await ReferenceLinks.create_new_link(user_id)
 
-    if from_user_id and created:
-        await ReferenceLinks.increase_invited_users(user_id, from_user_id)
+
+    if friend_id is not None and friend_id != user_id and created:
+        logger.info(f"We issue: {user_id}, {friend_id} monthly subscriptions")
+
+        await ReferenceLinks.increase_invited_users(user_id, friend_id)
+
 
         # --- выдаем подписки ---
         await SubscribePlus.give_subscribe(user_id)
-        await SubscribePlus.give_subscribe(from_user_id)
-        print('ура всем по подписке!')
-
-        await message.bot.send_message(user_id, text='Ты перешел по ссылке друга! У тебя бесплатный месяц подписки Plus!')
-        await message.bot.send_message(from_user_id, text='Ты пригласил друга и он перешел по этой ссылке, у тебя теперь есть месяц подписки Plus!')
+        await SubscribePlus.give_subscribe(friend_id)
 
 
+        for_new_user = await get_text(SubscriptionPlusMessages, key='ref_link_success_new_user')
+        for_owner_url = await get_text(SubscriptionPlusMessages, key='ref_link_success_owner')
+
+
+        await message.bot.send_message(user_id, text=for_new_user)
+        await message.bot.send_message(friend_id, text=for_owner_url)
 
 
     if await anti_bot(user_id, is_bot):
@@ -98,7 +109,6 @@ async def check_user(message, from_user_id, duration_voice_message):
     if await anti_flood(user_id):
         logger.info(f'user {user_id} flood, skip')
         return True
-
 
 
     await update_data(user_id)

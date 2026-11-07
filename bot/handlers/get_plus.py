@@ -22,7 +22,7 @@ router = Router(name='command_get_plus')
 
 @router.message(Command("get_plus"))
 async def cmd_get_plus(message: types.Message):
-    if await check_user(message, code=None, duration_voice_message=None):
+    if await check_user(message=message):
         return
 
 

@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import duration
 from solo.models import SingletonModel
 from bot.logger import logger
 
@@ -176,7 +175,7 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
     )
 
     invoice_description = models.TextField(
-        default="✨ Voluntary tip to support Anya! 🎁 Bonus: 50 req/hr limit for 30 days. ❤️ Non-refundable. 📝 Terms: https://telegra.ph/Terms-of-Service--Refund-Policy-10-17",
+        default="✨ Voluntary tip to support Anya! 🎁 Bonus: 30 min/hr limit for 30 days. ❤️ Non-refundable. 📝 Terms: https://telegra.ph/Terms-of-Service--Refund-Policy-10-17",
         verbose_name="Invoice Description"
     )
 
@@ -185,10 +184,33 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
         default=(
             '🎉 Oh, <b>{name}</b>, thank you so much for supporting me! 💖\n\n'
             '✅ Received: {payment_info.total_amount} ⭐\n\n'
-            '🚀 I’ve upgraded your limits to 50 processings per hour for 1 month. You rock!'
+            '🚀 I’ve upgraded your limits to 30 minutes per hour for 1 month. You rock!'
         ),
         verbose_name="Success Purchase Message ({name}, {payment_info.total_amount})"
     )
+
+
+    ref_link_success_new_user = models.TextField(
+        max_length=255,
+        default=(
+            "🎉 <b>{name}</b>, you followed a friend's link!!\n\n"
+            "✅ You have a free Plus for a month! ⭐\n\n"
+            '🚀 Your limits to 30 minutes per hour for 1 month. You rock!'
+        ),
+        verbose_name="Greeting a user who clicked on a friend's link"
+    )
+
+
+    ref_link_success_owner = models.TextField(
+        max_length=255,
+        default=(
+            "🎉 <b>{name}</b>, your friend came through your link!\n\n"
+            "✅ You have a free Plus for a month! ⭐\n\n"
+            '🚀 Your limits to 30 minutes per hour for 1 month. You rock!'
+        ),
+        verbose_name="A message that a friend has successfully clicked on the link"
+    )
+
 
     def __str__(self):
         return 'Subscription Payment Texts'

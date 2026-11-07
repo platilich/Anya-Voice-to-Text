@@ -35,15 +35,14 @@ def get_user_lock(user_id: int) -> asyncio.Lock:
 async def handle_video_note(message: types.Message, bot: Bot):
     user_id = message.from_user.id
     file_obj = message.voice or message.video_note
-    time_voice_message = file_obj.duration
+    duration_voice_message = file_obj.duration
 
     logger.info('got a audio/video_note')
 
-    code = None
 
-    # --- verification: can we process the voice message ---
-    if await check_user(message, code, time_voice_message):
+    if await check_user(message=message, duration_voice_message=duration_voice_message):
         return
+
 
 
     # --- execution queue ---
@@ -61,7 +60,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
         try:
             # --- increasing the time used for the limits ---
-            await Limits.spend_seconds(user_id, time_voice_message)
+            await Limits.spend_seconds(user_id, duration_voice_message)
 
 
             # --- download the file ---
@@ -106,7 +105,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
             await notify_admin(bot)
 
             # --- reduce used seconds ---
-            await Limits.return_seconds(user_id, time_voice_message)
+            await Limits.return_seconds(user_id, duration_voice_message)
 
             await failed_message(message)
 
@@ -116,7 +115,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
             logger.critical(f'failed process voice: {e}')
 
             # --- reduce used seconds ---
-            await Limits.return_seconds(user_id, time_voice_message)
+            await Limits.return_seconds(user_id, duration_voice_message)
 
 
             await failed_message(message)
