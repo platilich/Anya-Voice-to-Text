@@ -5,7 +5,7 @@ import asyncio
 import html
 from bot.utils.cleanup import remove_temp_files
 from bot.services.recognition import recognize, AllGroqKeysFailedError
-from bot.keyboards.shorten import keyboard_summarize
+from bot.keyboards.create_keyboard import keyboard_summarize
 from bot.logger import logger
 from bot.utils.sticker import send
 from bot.utils.download import download_file, failed_message, notify_admin

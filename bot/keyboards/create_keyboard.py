@@ -9,13 +9,13 @@ async def keyboard_summarize():
     button_name = await get_text(model=Buttons, key='button_summarize_title')
     summarize = InlineKeyboardButton(text=str(button_name), callback_data="summarize")
 
-    keyboard_shorten = InlineKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [summarize],
         ]
     )
 
-    return keyboard_shorten
+    return keyboard
 
 
 
@@ -24,11 +24,31 @@ async def keyboard_copy_the_link(url):
 
     copy = InlineKeyboardButton(text=str(button_name), copy_text=CopyTextButton(text=url))
 
-    keyboard_copy = InlineKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [copy],
         ]
     )
 
 
-    return keyboard_copy
+    return keyboard
+
+
+async def keyboard_terms(url):
+    button_pay_title = await get_text(model=Buttons, key='button_pay_title')
+    button_terms_title = await get_text(model=Buttons, key='button_terms_title')
+
+
+
+    pay = InlineKeyboardButton(text=str(button_pay_title), pay=True)
+    read_terms = InlineKeyboardButton(text=str(button_terms_title), url=url)
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [pay],
+            [read_terms],
+        ]
+    )
+
+
+    return keyboard

@@ -1,10 +1,12 @@
 from aiogram import Router, F, types
 from aiogram.filters import Command
+from aiogram.types import FSInputFile
 
 
 from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
 from bot.logger import logger
+from bot.keyboards.create_keyboard import keyboard_terms
 
 
 from bot_messages.models import SubscriptionPlusMessages, ErrorMessages
@@ -15,35 +17,47 @@ from core.models import get_price_subscription
 import html
 
 
-
-router = Router(name='command_get_plus')
-
+from pathlib import Path
 
 
-@router.message(Command("get_plus"))
-async def cmd_get_plus(message: types.Message):
+
+router = Router(name='command_get_pro')
+
+
+
+@router.message(Command("get_pro"))
+async def cmd_get_pro(message: types.Message):
     if await check_user(message=message):
         return
 
 
-    logger.info('got command /get_plus')
+    logger.info(f'send invoice pro | {message.from_user.id}')
 
-    # --- sending a sticker ---
-    await send(message, name_sticker='plus')
 
 
     # --- getting texts from models ---
     text_title = await get_text(model=SubscriptionPlusMessages, key='invoice_title')
     text_description = await get_text(model=SubscriptionPlusMessages, key='invoice_description')
 
+
     # --- getting the current subscription price ---
     current_price = await get_price_subscription()
-
-
     prices = [types.LabeledPrice(label=text_title, amount=current_price)]
 
 
-    logger.info(f'send invoice plus | {message.from_user.id}')
+
+
+    # --- sending a photo ---
+    project_root = Path(__file__).resolve().parent.parent
+    screen_file = project_root / "screens" / "get_pro.jpg"
+    photo = FSInputFile(screen_file)
+
+    await message.answer_photo(photo=photo)
+
+
+
+    # --- sending a invoice ---
+    keyboard = await keyboard_terms('https://telegra.ph/Terms-of-Service--Refund-Policy-10-17')
 
     await message.answer_invoice(
         title=f"Project Support ({current_price} Stars)",
@@ -52,7 +66,8 @@ async def cmd_get_plus(message: types.Message):
         provider_token="",
         currency="XTR",
         prices=prices,
-        start_parameter="get-premium"
+        start_parameter="get-premium",
+        reply_markup=keyboard,
     )
 
 
@@ -123,7 +138,6 @@ async def process_successful_payment(message: types.Message):
         logger.info('We are refund the money')
 
         return
-
 
 
     # --- sending thanks for the purchase ---

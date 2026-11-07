@@ -48,8 +48,7 @@ class StartMessages(BaseSingletonMessage):
             f"👋 Hey <b>{{name}}</b>, I’m <b>Anya</b> 🌈\n\n"
             "🔊 Convert voice notes to text;\n"
             "📽️ Transcribe Telegram videos;\n\n"
-            "🚀 Fast & accurate – just send a voice or video and I’ll do the rest! ✨\n\n"
-            "<a href='httpshttps://github.com/platilich/Anya-voice-to-text'><b>GitHub</b></a>"
+            "🚀 Fast & accurate – just send a voice or video and I’ll do the rest! ✨"
         ),
     verbose_name='Start Message Text'
     )
@@ -215,7 +214,7 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
     )
 
     invoice_description = models.TextField(
-        default="✨ Voluntary tip to support Anya! 🎁 Bonus: 30 min/hr limit for 30 days. ❤️ Non-refundable. 📝 Terms: https://telegra.ph/Terms-of-Service--Refund-Policy-10-17",
+        default="✨ Voluntary tip to support Anya! 🎁 Bonus: 30 min/hr limit for 30 days. ❤️ Non-refundableю",
         verbose_name="Invoice Description"
     )
 
@@ -274,6 +273,20 @@ class Buttons(BaseSingletonMessage):
         max_length=255,
         default='❤️ Copy',
         verbose_name='The name of copy button in the profile'
+    )
+
+
+    button_pay_title = models.TextField(
+        max_length=255,
+        default="✅ Pay",
+        verbose_name='Button pay'
+    )
+
+
+    button_terms_title = models.TextField(
+        max_length=255,
+        default="📝 Terms",
+        verbose_name='Button terms'
     )
 
 

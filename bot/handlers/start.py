@@ -39,26 +39,14 @@ async def cmd_start(message: types.Message, command: CommandObject):
 
 
     # --- path ---
-    project_root = Path(__file__).resolve().parent.parent
 
-    photos = [
-        "hello.jpeg",
-        "instruction.jpeg",
-    ]
-
-
-
-
-
-    text = await get_text(StartMessages, 'start_text')
+    text = await get_text(StartMessages, key='start_text')
 
     response = text.replace('{name}', html.escape(name))
 
     project_root = Path(__file__).resolve().parent.parent
     screen_file = project_root / "screens" / "instruction.jpeg"
     photo = FSInputFile(screen_file)
-
-
 
 
 

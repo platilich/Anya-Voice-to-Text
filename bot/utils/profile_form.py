@@ -78,7 +78,7 @@ async def profile_message(user_id: int, name: str) -> str:
     about_limits = '⏳ The limits are updated every 24 hours'
 
 
-    suggest = "\n\n🎁 You can get a free month of subscription!\n📋 Copy the link below and send it to a friend."
+    suggest = "🎁 You can get a free month of subscription!\n📋 Copy the link below and send it to a friend."
 
     # 7. Собираем сообщение
     profile_blocks = [

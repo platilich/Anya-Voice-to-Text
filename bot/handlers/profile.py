@@ -10,7 +10,7 @@ from pathlib import Path
 from bot.middlewares.filters import check_user
 from bot.utils import profile_form
 from bot.logger import logger
-from bot.keyboards.shorten import keyboard_copy_the_link
+from bot.keyboards.create_keyboard import keyboard_copy_the_link
 
 router = Router(name='command_profile')
 
