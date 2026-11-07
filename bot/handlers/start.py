@@ -1,12 +1,12 @@
 from aiogram import Router, types
 from aiogram.filters import Command, CommandObject
-from aiogram.types import FSInputFile, InputMediaPhoto
+from aiogram.types import FSInputFile
 
 
 from bot.middlewares.filters import check_user
-from bot.utils.sticker import send
 from bot.logger import logger
 from pathlib import Path
+
 
 # --- models ---
 from bot_messages.models import get_text, StartMessages
@@ -24,9 +24,6 @@ router = Router(name='command_start')
 @router.message(Command("start"))
 async def cmd_start(message: types.Message, command: CommandObject):
     name = message.from_user.first_name
-
-    print('ПОЛУЧЕННО СООБЩЕНИЕ')
-
     friend_id = command.args
 
 
@@ -39,7 +36,6 @@ async def cmd_start(message: types.Message, command: CommandObject):
 
 
     # --- path ---
-
     text = await get_text(StartMessages, key='start_text')
 
     response = text.replace('{name}', html.escape(name))

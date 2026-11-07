@@ -75,7 +75,7 @@ class ProfileMessages(BaseSingletonMessage):
     statistic = models.TextField(
         max_length=255,
         default="🎙️ Total items I’ve recognized for you: <b>{recognised}</b> ✨",
-        verbose_name='Recognized Count ({recognised})'
+        verbose_name='Recognized count recognised'
     )
 
 
@@ -89,7 +89,7 @@ class ProfileMessages(BaseSingletonMessage):
     text_status_subscribe = models.TextField(
         max_length=255,
         default='⭐ Subscription status: {variable_status}',
-        verbose_name='Block subscription status: '
+        verbose_name='Block subscription status'
     )
 
 
@@ -97,20 +97,20 @@ class ProfileMessages(BaseSingletonMessage):
     variable_status_days_left = models.TextField(
         max_length=255,
         default='{days} days',
-        verbose_name='Days left'
+        verbose_name='Days remaining',
     )
 
 
     variable_status_end_today = models.TextField(
         max_length=255,
-        default='Ends today',
-        verbose_name='Left today'
+        default='Expires today',
+        verbose_name='Subscription expiration notice',
     )
 
     variable_status_not_active = models.TextField(
         max_length=255,
         default='-',
-        verbose_name='Variable status not active'
+        verbose_name='Status when inactive',
     )
 
 
@@ -133,21 +133,23 @@ class SubscriptionStatusMessages(BaseSingletonMessage):
 
     active_plus = models.TextField(
         max_length=255,
-        default="✨ {left_days} day{'s' if int(left_days)!=1 else ''} left — we’ve got this! 💖",
-        verbose_name='Active Plus ({left_days})'
+        default="✨ You have {left_days} days of Plus left - enjoy! 💖",
+        verbose_name='Active Plus subscription',
     )
 
     ending_today = models.TextField(
         max_length=500,
-        default="✨ My Plus expires today—time to renew? 💫",
-        verbose_name='Plus Ending Today'
+        default="✨ Your Plus subscription expires today. Want to renew? 💫",
+        verbose_name='Plus subscription expires today'
     )
 
     no_subscription = models.TextField(
         max_length=500,
-        default="🚀 Unlock Plus with me and multiply your limits x 5! ✨",
-        verbose_name='No Subscription Upsell'
+        default="🚀 Want to do more? Upgrade to Plus for higher limits! ✨",
+        verbose_name='Plus upgrade prompt'
+
     )
+
 
     def __str__(self):
         return 'Subscription Status Texts'
@@ -167,23 +169,24 @@ class LimitMessages(BaseSingletonMessage):
     limit = models.TextField(
         max_length=255,
         default=(
-            "📊 <b>Limits:</b> {used_time}/{allowed} min\n"
-            "⏰ New limits refresh tomorrow\n\n"
-            "⭐ <b>Upgrade to Plus</b> for more power!\n"
+            "📊 <b>Today's limit:</b> {used_time}/{allowed} min used\n"
+            "⏰ Your minutes will refresh tomorrow.\n\n"
+            "⭐ Need more time? Upgrade to Plus!\n"
             "👉 <b>/get_plus</b>"
         ),
-        verbose_name='The message that the package of minutes for the day is over'
+        verbose_name="Daily usage limit reached"
     )
 
 
     not_enough_minutes_to_recognize = models.TextField(
         max_length=255,
         default=(
-            "❌ Your clip is {duration_voice_message} long — limit: {used_time}/{allowed} min\n\n"
-            "⭐ Want more room? <b>Upgrade to Plus</b>!\n"
+            "❌ Your clip is {duration_voice_message} long, so it won’t fit within today’s remaining limit "
+            "({used_time}/{allowed} min used).\n\n"
+            "⭐ Need more time? <b>Upgrade to Plus</b>!\n"
             "👉 <b>/get_plus</b>"
         ),
-        verbose_name='The message that the voice message does not fit into the daily limit'
+        verbose_name='Daily limit reached for this clip'
     )
 
 
@@ -223,7 +226,7 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
         default=(
             '🎉 Oh, <b>{name}</b>, thank you so much for supporting me! 💖\n\n'
             '✅ Received: {payment_info.total_amount} ⭐\n\n'
-            '🚀 I’ve upgraded your limits to 30 minutes per hour for 1 month. You rock!'
+            '🚀 I’ve upgraded your limits to 30 minutes per hour for 1 month. Enjoy!'
         ),
         verbose_name="Success Purchase Message ({name}, {payment_info.total_amount})"
     )
@@ -234,7 +237,7 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
         default=(
             "🎉 <b>{name}</b>, you followed a friend's link!!\n\n"
             "✅ You have a free Plus for a month! ⭐\n\n"
-            '🚀 Your limits to 30 minutes per hour for 1 month. You rock!'
+            '🚀 Your limits to 30 minutes per hour for 1 month. Enjoy!'
         ),
         verbose_name="Greeting a user who clicked on a friend's link"
     )
@@ -245,7 +248,7 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
         default=(
             "🎉 <b>{name}</b>, your friend came through your link!\n\n"
             "✅ You have a free Plus for a month! ⭐\n\n"
-            '🚀 Your limits to 30 minutes per hour for 1 month. You rock!'
+            '🚀 Your limits to 30 minutes per hour for 1 month. Enjoy!'
         ),
         verbose_name="A message that a friend has successfully clicked on the link"
     )
@@ -303,39 +306,49 @@ class ErrorMessages(BaseSingletonMessage):
 
     admin_no_groq_keys = models.TextField(
         max_length=500,
-        default='Oops! All of my Groq API keys are invalid, blocked, or out of limits..\n👉 <i>Please add a new key in the admin area so I can keep working for everyone!</i>',
-        verbose_name='Admin Notice: Groq Keys Depleted'
+        default=(
+            "⚠️ I can’t process requests right now—my Groq API keys are invalid, blocked, or out of quota.\n"
+            "👉 <i>Please add or update a key in the admin area so I can get back to work!</i>"
+        ),
+        verbose_name='Groq API keys unavailable',
     )
 
     service_unavailable = models.TextField(
         max_length=255,
-        default="😔 Oops, my audio brain is on a break. 🙏 Try again in a bit—I'll be right here! ✨",
-        verbose_name='User Notice: Service Unavailable'
+        default="😔 Oops, I can’t process audio right now. Please try again in a little while!",
+        verbose_name='Audio processing temporarily unavailable',
+
     )
 
     failed_payment = models.TextField(
         max_length=255,
-        default="The price of the product has been changed or you have paid in the wrong currency, the money will be refunded.\n\nTry to get the invoice again /get_plus",
-        verbose_name='Message about price was changed'
+        default=(
+            "⚠️ Looks like the price changed, or the payment was made in a different currency. "
+            "I’ll send the money back to your account.\n\n"
+            "Please get a new invoice with /get_plus."
+        ),
+        verbose_name='Price change or currency mismatch notice',
+
     )
 
 
     refund_payment = models.TextField(
         max_length=255,
-        default='✅ Success\nThe money has been refunded to your account',
-        verbose_name='Notification of successful withdrawal of funds'
+        default='✅ All sorted!\nI’ve sent the money back to your account.',
+        verbose_name='Refund confirmation'
 
     )
 
 
 
-
-    def __str__(self):
-        return 'Error Texts'
-
     class Meta:
         verbose_name = 'Error Text'
         verbose_name_plural = 'Error Texts'
+
+
+
+    def __str__(self):
+        return 'Error Texts'
 
 
 
