@@ -1,14 +1,17 @@
 from aiogram import Router, types
 from aiogram.filters import Command, CommandObject
+from aiogram.types import FSInputFile, InputMediaPhoto
 
 
 from bot.middlewares.filters import check_user
 from bot.utils.sticker import send
 from bot.logger import logger
+from pathlib import Path
 
 # --- models ---
 from bot_messages.models import get_text, StartMessages
 import html
+
 
 
 
@@ -29,27 +32,44 @@ async def cmd_start(message: types.Message, command: CommandObject):
 
     logger.info('got a command /start')
 
-    if not friend_id:
-        if await check_user(message=message):
-            return
 
 
     if await check_user(message=message, friend_id=friend_id):
         return
 
 
+    # --- path ---
+    project_root = Path(__file__).resolve().parent.parent
+
+    photos = [
+        "hello.jpeg",
+        "instruction.jpeg",
+    ]
 
 
-    await send(message, name_sticker='hello')
+
+
 
     text = await get_text(StartMessages, 'start_text')
 
     response = text.replace('{name}', html.escape(name))
 
+    project_root = Path(__file__).resolve().parent.parent
+    screen_file = project_root / "screens" / "instruction.jpeg"
+    photo = FSInputFile(screen_file)
+
+
+
+
 
     try:
-        logger.info('attempt send message to user')
-        await message.answer(response, parse_mode='HTML', disable_web_page_preview=True)
+
+        await message.answer_photo(
+            photo=photo,
+            caption=response,
+            parse_mode='HTML',
+            disable_web_page_preview=True
+        )
 
     except Exception as e:
         logger.info(f'failed send /start to {message.from_user.id}: {e}')

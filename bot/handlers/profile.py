@@ -1,11 +1,16 @@
 from aiogram import Router, types
 from aiogram.filters import Command
+from aiogram.methods import send_photo
+from aiogram.utils import keyboard
 
 from bot.utils.sticker import send
+from aiogram.types import FSInputFile
+
+from pathlib import Path
 from bot.middlewares.filters import check_user
 from bot.utils import profile_form
 from bot.logger import logger
-
+from bot.keyboards.shorten import keyboard_copy_the_link
 
 router = Router(name='command_profile')
 
@@ -25,15 +30,25 @@ async def profile(message: types.Message):
         return
 
 
-    await send(message, name_sticker='profile')
-
 
     # --- function for generating a message for /profile ---
     message_text = await profile_form.profile_message(user_id, name)
 
+    keyboard = await keyboard_copy_the_link(f'https://t.me/anya_voice_to_text_bot?start={user_id}')
 
-    logger.info('attempt send /profile')
 
-    await message.answer(
-        text=message_text, parse_mode='HTML', disable_web_page_preview=True
+
+    # --- path ---
+    project_root = Path(__file__).resolve().parent.parent
+    screen_file = project_root / "screens" / "profile.jpeg"
+    photo = FSInputFile(screen_file)
+
+
+
+    await message.answer_photo(
+        photo=photo,
+        caption=message_text,
+        parse_mode='HTML',
+        reply_markup=keyboard,
+        disable_web_page_preview=True
     )

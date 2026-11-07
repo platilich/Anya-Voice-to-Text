@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
-from aiogram import Bot
 import html
 
-from aiogram.utils.deep_linking import create_start_link
 
 
 from bot_messages.models import (
@@ -38,7 +36,7 @@ async def profile_message(user_id: int, name: str) -> str:
     # 1. Получаем данные из БД
     all_time_recognised = await TelegramUser.get_statistic(user_id=user_id)
     used_minutes, allowed_minutes = await Limits.get_usage_for_profile(user_id=user_id)
-    user_message_subscribe = await SubscribePlus.left_days_subscribe(user_id=user_id)
+    left_days_subscribe = await SubscribePlus.left_days_subscribe(user_id=user_id)
 
 
     # 2. Формируем заголовок (с экранированием HTML)
@@ -52,33 +50,35 @@ async def profile_message(user_id: int, name: str) -> str:
 
 
     # 5. Обрабатываем статус подписки
-    if user_message_subscribe is None or user_message_subscribe < 0:
-        # У вас нет подписки
-        profile_status_subscribe = await get_text(SubscriptionStatusMessages, 'no_subscription')
+    if left_days_subscribe is None or left_days_subscribe < 0:
+        variable_status = await get_text(ProfileMessages, key='variable_status_not_active')
 
 
-    elif user_message_subscribe == 0:
-        # Заканчивается сегодня
-        profile_status_subscribe = await get_text(SubscriptionStatusMessages, 'ending_today')
+    elif left_days_subscribe == 0:
+        variable_status = await get_text(ProfileMessages, key='variable_status_end_today')
 
 
     else:
         # Активная подписка
-        profile_status_subscribe = await get_text(SubscriptionStatusMessages, 'active_plus')
-        profile_status_subscribe = profile_status_subscribe.replace('{left_days}', str(user_message_subscribe))
+        text = await get_text(ProfileMessages, key='variable_status_days_left')
+        variable_status = text.replace('{days}', str(left_days_subscribe))
 
 
 
-    profile_limit = f'🕓 Minutes used today: {used_minutes}/{allowed_minutes}'
+
+    status_subscribe = await get_text(ProfileMessages, key='text_status_subscribe')
+
+
+    status_subscribe = status_subscribe.replace('{variable_status}', str(variable_status))
+
+
+
+    profile_limit = await get_text(ProfileMessages, key='minutes_used_today')
+    profile_limit = profile_limit.replace('{used_minutes}', str(used_minutes)).replace('{allowed_minutes}', allowed_minutes)
     about_limits = '⏳ The limits are updated every 24 hours'
 
 
-
-    link = f"https://t.me/anya_voice_to_text_bot?start={user_id}"
-
-
-
-    ref_link = f'You can also get premium free!\nJust share with your with this link: {link}'
+    suggest = "\n\n🎁 You can get a free month of subscription!\n📋 Copy the link below and send it to a friend."
 
     # 7. Собираем сообщение
     profile_blocks = [
@@ -86,13 +86,11 @@ async def profile_message(user_id: int, name: str) -> str:
         profile_statistic,
         profile_limit,
         about_limits,
-        ref_link
+        status_subscribe,
+        suggest
 
     ]
 
 
-
-
-    profile_blocks.append(profile_status_subscribe)
 
     return "\n\n".join(profile_blocks)

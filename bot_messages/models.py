@@ -79,6 +79,46 @@ class ProfileMessages(BaseSingletonMessage):
         verbose_name='Recognized Count ({recognised})'
     )
 
+
+    minutes_used_today = models.TextField(
+        max_length=255,
+        default='🕓 Minutes used today: {used_minutes}/{allowed_minutes}',
+        verbose_name='Block how much minutes used'
+    )
+
+
+    text_status_subscribe = models.TextField(
+        max_length=255,
+        default='⭐ Subscription status: {variable_status}',
+        verbose_name='Block subscription status: '
+    )
+
+
+
+    variable_status_days_left = models.TextField(
+        max_length=255,
+        default='{days} days',
+        verbose_name='Days left'
+    )
+
+
+    variable_status_end_today = models.TextField(
+        max_length=255,
+        default='Ends today',
+        verbose_name='Left today'
+    )
+
+    variable_status_not_active = models.TextField(
+        max_length=255,
+        default='-',
+        verbose_name='Variable status not active'
+    )
+
+
+
+
+
+
     def __str__(self):
         return 'Profile Texts'
 
@@ -222,12 +262,21 @@ class SubscriptionPlusMessages(BaseSingletonMessage):
 
 
 
-class ButtonSummarize(BaseSingletonMessage):
-    button_title = models.TextField(
+class Buttons(BaseSingletonMessage):
+    button_summarize_title = models.TextField(
         max_length=255,
         default='✨ Summarize',
         verbose_name='The name of the summary button (shorten the text, for voice messages where there are > 50 words)'
     )
+
+
+    button_copy_title = models.TextField(
+        max_length=255,
+        default='❤️ Copy',
+        verbose_name='The name of copy button in the profile'
+    )
+
+
 
 
     def __str__(self):
