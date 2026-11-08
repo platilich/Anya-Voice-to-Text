@@ -28,7 +28,6 @@ async def handle_cut_back(callback: CallbackQuery):
 
     response = (
         f'<blockquote>{html.escape(short_text)}</blockquote>'
-       '\n\n<a href="https://github.com/platilich/anya-voice-to-text"><b>GitHub</b></a>'
     )
 
     await callback.message.answer(

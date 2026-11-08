@@ -1,16 +1,13 @@
 from aiogram import Router, types
 from aiogram.filters import Command
-from aiogram.methods import send_photo
-from aiogram.utils import keyboard
-
-from bot.utils.sticker import send
 from aiogram.types import FSInputFile
 
 from pathlib import Path
+
 from bot.middlewares.filters import check_user
 from bot.utils import profile_form
 from bot.logger import logger
-from bot.keyboards.create_keyboard import keyboard_copy_the_link
+from bot.keyboards.create_keyboard import keyboard_copy
 
 router = Router(name='command_profile')
 
@@ -34,7 +31,7 @@ async def profile(message: types.Message):
     # --- function for generating a message for /profile ---
     message_text = await profile_form.profile_message(user_id, name)
 
-    keyboard = await keyboard_copy_the_link(f'https://t.me/anya_voice_to_text_bot?start={user_id}')
+    keyboard = await keyboard_copy(f'https://t.me/anya_voice_to_text_bot?start={user_id}')
 
 
 

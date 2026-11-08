@@ -1,18 +1,13 @@
 # --- models ---
-from users.models import TelegramUser, ReferenceLinks
-from core.models import get_rest_time
+from datetime import datetime, timedelta, timezone
 
-# --- bot/ ---
+from cachetools import TTLCache
+
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
 from bot_messages.models import SubscriptionPlusMessages, get_text
-
-
-from cachetools import TTLCache
-from datetime import datetime, timezone, timedelta
-
-
-from users.models import Limits, SubscribePlus
+from core.models import get_rest_time
+from users.models import Limits, ReferenceLinks, SubscribePlus, TelegramUser
 
 
 
@@ -32,32 +27,31 @@ async def anti_bot(user_id, is_bot):
 
 
 
+
 async def anti_flood(user_id):
     rest_seconds = await get_rest_time()
-
     rest = timedelta(seconds=rest_seconds)
-
-
     now = datetime.now(timezone.utc)
     last_message_time = rate_limit_cache.get(user_id)
 
-    # --- if the last message is less than 2 seconds, we do not respond ---
     if last_message_time is not None and (now - last_message_time) < rest:
         return True
 
-    # --- update time last message ---
     rate_limit_cache[user_id] = now
-
-
     return False
 
 
 
-
-
 async def update_data(user_id):
-    await SubscribePlus.check_subscribe(user_id) # --- if the subscription has expired, we remove is_plus ---
-    await Limits.reset_daily_seconds_if_new_day(user_id)  # --- if it’s a new day, we discard the old limits ---
+    await SubscribePlus.check_subscribe(user_id)
+    await Limits.reset_daily_seconds_if_new_day(user_id)
+
+
+
+async def protection_for_voice_handler(message, user_id: int, duration_voice_message: int):
+    await update_data(user_id)
+    return await if_can_process(user_id, message, duration_voice_message)
+
 
 
 
@@ -71,52 +65,66 @@ async def check_user(**kwargs):
     nickname = message.from_user.username
     is_bot = message.from_user.is_bot
 
-    user, created = await TelegramUser.save_or_update_user(user_id, name, nickname)
+
+    # --- skip flooded human messages before touching the database ---
+    if not is_bot and await anti_flood(user_id):
+        logger.info(f'user {user_id} flood, skip')
+        return True
+
+
+    user, created = await TelegramUser.objects.aget_or_create(
+        user_id=user_id,
+        defaults={'name': name, 'nickname': nickname},
+    )
+
+
+    if user.is_banned:
+        logger.info(f'user {user_id} banned, skip')
+        return True
+
+
+    if not created:
+        changed_fields = []
+        if user.name != name:
+            user.name = name
+            changed_fields.append('name')
+
+        if user.nickname != nickname:
+            user.nickname = nickname
+            changed_fields.append('nickname')
+
+        if changed_fields:
+            await user.asave(update_fields=changed_fields)
 
     if created:
         await ReferenceLinks.create_new_link(user_id)
 
 
+    # --- if the user is new and arrived via a referral link ---
     if friend_id is not None and friend_id != user_id and created:
         logger.info(f"We issue: {user_id}, {friend_id} monthly subscriptions")
 
         await ReferenceLinks.increase_invited_users(user_id, friend_id)
-
-
-        # --- выдаем подписки ---
         await SubscribePlus.give_subscribe(user_id)
         await SubscribePlus.give_subscribe(friend_id)
 
 
         for_new_user = await get_text(SubscriptionPlusMessages, key='ref_link_success_new_user')
         for_owner_url = await get_text(SubscriptionPlusMessages, key='ref_link_success_owner')
-
-
         await message.bot.send_message(user_id, text=for_new_user)
         await message.bot.send_message(friend_id, text=for_owner_url)
 
 
-    if await anti_bot(user_id, is_bot):
-        logger.info(f'user {user_id} is bot, skip')
-        return True
 
-
-    if await TelegramUser.banned_user(user_id):
-        logger.info(f'user {user_id} banned, skip')
-        return True
-
-
-    if await anti_flood(user_id):
-        logger.info(f'user {user_id} flood, skip')
-        return True
-
-
-    await update_data(user_id)
-
-
-    if duration_voice_message:
-        if await if_can_process(user_id, message, duration_voice_message):
+    if duration_voice_message is not None:
+        if await protection_for_voice_handler(message, user_id, duration_voice_message):
             return True
+
+
+    elif message.text:
+        command = message.text.split(maxsplit=1)[0].split('@', 1)[0]
+        if command == '/profile':
+            await update_data(user_id)
 
 
     return False

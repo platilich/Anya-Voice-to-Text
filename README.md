@@ -108,6 +108,7 @@ pwd
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install gunicorn
 ```
 
 Every time you open a new terminal:
@@ -245,13 +246,15 @@ Type=simple
 User=your_username
 WorkingDirectory=/home/your_username/Anya-Voice-to-Text
 EnvironmentFile=/home/your_username/Anya-Voice-to-Text/.env
-ExecStart=/home/your_username/Anya-Voice-to-Text/venv/bin/python manage.py runserver 127.0.0.1:8000
+ExecStart=/home/your_username/Anya-Voice-to-Text/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 --access-logfile - --error-logfile - video_note_bot.wsgi:application
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+Gunicorn serves Django on `127.0.0.1:8000`; Cloudflared continues forwarding to that address. The `--workers 2` setting is a starting point for a small server; reduce it to `1` if memory is limited.
 
 ### Cloudflared
 
@@ -302,7 +305,7 @@ sudo journalctl -u cloudflared -n 50 --no-pager
 ```
 
 Look for `https://....trycloudflare.com`  
-Then open: `https://....trycloudflare.com/admin/`
+Then open: `https://....trycloudflare.com/admin_panel/`
 
 ---
 

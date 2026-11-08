@@ -7,7 +7,9 @@ from bot_messages.models import get_text
 # --- creating keyboard ---
 async def keyboard_summarize():
     button_name = await get_text(model=Buttons, key='button_summarize_title')
+
     summarize = InlineKeyboardButton(text=str(button_name), callback_data="summarize")
+
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -15,14 +17,18 @@ async def keyboard_summarize():
         ]
     )
 
+    print(keyboard)
+
+
     return keyboard
 
 
 
-async def keyboard_copy_the_link(url):
+
+async def keyboard_copy(data):
     button_name = await get_text(model=Buttons, key='button_copy_title')
 
-    copy = InlineKeyboardButton(text=str(button_name), copy_text=CopyTextButton(text=url))
+    copy = InlineKeyboardButton(text=str(button_name), copy_text=CopyTextButton(text=data))
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -32,6 +38,8 @@ async def keyboard_copy_the_link(url):
 
 
     return keyboard
+
+
 
 
 async def keyboard_terms(url):

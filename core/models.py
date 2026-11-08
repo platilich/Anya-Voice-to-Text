@@ -101,8 +101,6 @@ class SummarizeButtonSettings(SingletonModel):
 
 
     def save(self, *args, **kwargs):
-        # Если это самая первая запись (pk=None или pk=1) и объекта еще не было,
-        # или если поле явно не задано — принудительно делаем True при создании
         if not self.pk:
             self.is_active = True
 

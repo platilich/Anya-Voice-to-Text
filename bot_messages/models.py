@@ -3,6 +3,12 @@ from solo.models import SingletonModel
 from bot.logger import logger
 
 
+from cachetools import TTLCache
+
+
+
+cache_messages = TTLCache(maxsize=1000, ttl=180)
+
 
 class BaseSingletonMessage(SingletonModel):
     """Base class for all single models with texts,
@@ -292,6 +298,11 @@ class Buttons(BaseSingletonMessage):
         verbose_name='Button terms'
     )
 
+    button_forward_title = models.TextField(
+        max_length=255,
+        default='✨ Share'
+    )
+
 
 
 
@@ -354,8 +365,11 @@ class ErrorMessages(BaseSingletonMessage):
 
 
 async def get_text(model, key):
-    logger.info(f'get text {key} | {model.__name__}')
+    cache_key = (model._meta.label_lower, key)
+
+    if cache_key in cache_messages:
+        return cache_messages[cache_key]
+
     text = await model.get_message_text(key)
-
-
+    cache_messages[cache_key] = text
     return text
