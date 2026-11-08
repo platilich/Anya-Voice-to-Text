@@ -4,7 +4,6 @@ from aiogram.types import FSInputFile
 
 
 from bot.middlewares.filters import check_user, is_work_command
-from bot.utils.sticker import send
 from bot.logger import logger
 from bot.keyboards.create_keyboard import keyboard_terms
 
@@ -12,7 +11,7 @@ from bot.keyboards.create_keyboard import keyboard_terms
 from bot_messages.models import SubscriptionPlusMessages, ErrorMessages
 from bot_messages.models import get_text
 from users.models import SubscribePlus
-from core.models import get_price_subscription
+from core.models import SubscriptionPrice
 
 import html
 
@@ -28,13 +27,15 @@ router = Router(name='command_get_pro')
 @router.message(Command("get_pro"))
 async def cmd_get_pro(message: types.Message):
     logger.info('command /get_pro')
+
+    if await check_user(message=message):
+        return
+
+
     if await is_work_command():
         logger.info('not work')
         return
 
-
-    if await check_user(message=message):
-        return
 
 
     logger.info(f'send invoice pro | {message.from_user.id}')
@@ -47,7 +48,7 @@ async def cmd_get_pro(message: types.Message):
 
 
     # --- getting the current subscription price ---
-    current_price = await get_price_subscription()
+    current_price = await SubscriptionPrice.get_price_subscription()
     prices = [types.LabeledPrice(label=text_title, amount=current_price)]
 
 
@@ -96,7 +97,7 @@ async def process_successful_payment(message: types.Message):
 
 
 
-    price_now = await get_price_subscription() # --- current price ---
+    price_now = await SubscriptionPrice.get_price_subscription() # --- current price ---
     paid = int(payment_info.total_amount)
 
 
@@ -159,7 +160,6 @@ async def process_successful_payment(message: types.Message):
 
 
     try:
-        await send(message, 'love')
         logger.info('user bought subscribe')
 
 

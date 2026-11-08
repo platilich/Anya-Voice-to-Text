@@ -9,7 +9,6 @@ import os
 # --- functions bot/ ---
 from bot.logger import logger
 from bot_messages.models import get_text
-from bot.utils.sticker import send
 
 
 # --- model ErrorMessages ---
@@ -53,7 +52,6 @@ async def failed_message(message):
     # --- inform the user about the error ---
     # --- reaction emoji and sticker ---
     await message.react([ReactionTypeEmoji(emoji="😢")])
-    await send(message, "oops")
 
     # --- send message about error ---
     text = await get_text(ErrorMessages, 'service_unavailable')

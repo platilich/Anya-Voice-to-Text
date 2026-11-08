@@ -11,7 +11,7 @@ from bot.utils.download import download_file, failed_message, notify_admin
 from bot.middlewares.filters import check_user
 
 from users.models import TelegramUser, Limits
-from core.models import is_active_summarize_button
+from toggles.models import SummarizeButtonSettings
 
 from collections import defaultdict
 
@@ -71,7 +71,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
             count_words = len(result.split())
 
 
-            is_active = await is_active_summarize_button()
+            is_active = await SummarizeButtonSettings.is_active()
 
 
             if count_words > 50 and is_active:

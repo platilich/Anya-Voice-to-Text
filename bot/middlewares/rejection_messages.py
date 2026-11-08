@@ -1,13 +1,11 @@
 from bot.logger import logger
 from bot_messages.models import LimitMessages, get_text
 from users.models import Limits
-from bot.utils.sticker import send
 
 
 
 async def send_more_than_fifteen_minutes(message):
     try:
-        await send(message, name_sticker='limits')
         text = await get_text(model=LimitMessages, key='too_long')
 
         await message.answer(text)
@@ -26,9 +24,6 @@ async def send_duration_longer_left_min(message, duration_voice_message):
 
     logger.info(f'user {user_id} over limit {used_time}/{allowed}')
 
-
-    # --- send sticker ---
-    await send(message, name_sticker='limits')
 
 
     # --- send message ---
@@ -51,10 +46,6 @@ async def send_minutes_ended(message, used_time, allowed):
     user_id = message.from_user.id
 
     logger.info(f'user {user_id} over limit {used_time}/{allowed}')
-
-
-    # --- send sticker ---
-    await send(message, name_sticker='limits')
 
 
     # --- send message ---

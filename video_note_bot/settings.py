@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'users',
     'core',
     'bot_messages',
+    'toggles',
 ]
 
 MIDDLEWARE = [

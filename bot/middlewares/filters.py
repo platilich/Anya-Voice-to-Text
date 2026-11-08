@@ -6,10 +6,11 @@ from cachetools import TTLCache
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
 from bot_messages.models import SubscriptionPlusMessages, get_text
-from core.models import get_rest_time, CommandGetProStatus
+from toggles.models import CommandGetProStatus
+from core.models import Protection
 from users.models import Limits, ReferenceLinks, SubscribePlus, TelegramUser
-
-
+from pathlib import Path
+from aiogram.types import FSInputFile
 
 
 rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
@@ -41,7 +42,7 @@ async def anti_bot(user_id, is_bot):
 
 
 async def anti_flood(user_id):
-    rest_seconds = await get_rest_time()
+    rest_seconds = await Protection.get_rest_time()
     rest = timedelta(seconds=rest_seconds)
     now = datetime.now(timezone.utc)
     last_message_time = rate_limit_cache.get(user_id)
@@ -121,10 +122,32 @@ async def check_user(**kwargs):
         await SubscribePlus.give_subscribe(friend_id)
 
 
+
+
+        # --- sending a messages ---
+        project_root = Path(__file__).resolve().parent.parent
+        screen_file = project_root / "screens" / "pro_activated.jpg"
+        photo = FSInputFile(screen_file)
+
+
         for_new_user = await get_text(SubscriptionPlusMessages, key='ref_link_success_new_user')
         for_owner_url = await get_text(SubscriptionPlusMessages, key='ref_link_success_owner')
-        await message.bot.send_message(user_id, text=for_new_user)
-        await message.bot.send_message(friend_id, text=for_owner_url)
+
+
+
+        await message.bot.send_photo(
+            photo=photo,
+            caption=for_new_user,
+            parse_mode='HTML',
+            disable_web_page_preview=True
+        )
+
+        await message.bot.send_photo(
+            photo=photo,
+            caption=for_owner_url,
+            parse_mode='HTML',
+            disable_web_page_preview=True
+        )
 
 
 
