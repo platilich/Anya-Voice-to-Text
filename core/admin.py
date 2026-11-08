@@ -1,7 +1,7 @@
 from django.contrib import admin
 from solo.admin import SingletonModelAdmin
 
-from .models import GroqAPIKey, StickersAnya, Protection, SubscriptionPrice, SummarizeButtonSettings
+from .models import GroqAPIKey, StickersAnya, Protection, SubscriptionPrice, SummarizeButtonSettings, CommandGetProStatus
 
 
 
@@ -14,9 +14,9 @@ class NativeSingletonAdmin(SingletonModelAdmin):
 
 
 
-for element in [StickersAnya, Protection, SubscriptionPrice, SummarizeButtonSettings]:
-    @admin.register(element)
-    class element(NativeSingletonAdmin):
+for i in [StickersAnya, Protection, SubscriptionPrice, SummarizeButtonSettings, CommandGetProStatus]:
+    @admin.register(i)
+    class i(NativeSingletonAdmin):
         pass
 
 

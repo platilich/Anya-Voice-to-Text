@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import FSInputFile
 
 
-from bot.middlewares.filters import check_user
+from bot.middlewares.filters import check_user, is_work_command
 from bot.utils.sticker import send
 from bot.logger import logger
 from bot.keyboards.create_keyboard import keyboard_terms
@@ -27,6 +27,12 @@ router = Router(name='command_get_pro')
 
 @router.message(Command("get_pro"))
 async def cmd_get_pro(message: types.Message):
+    logger.info('command /get_pro')
+    if await is_work_command():
+        logger.info('not work')
+        return
+
+
     if await check_user(message=message):
         return
 

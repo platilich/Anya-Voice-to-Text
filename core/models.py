@@ -13,7 +13,7 @@ cache_subscription = TTLCache(maxsize=1, ttl=120)
 # --- for 3 minutes ---
 cache_antiflood = TTLCache(maxsize=1, ttl=180)
 cache_summarize_button = TTLCache(maxsize=1, ttl=180)
-
+cache_status_command = TTLCache(maxsize=1, ttl=180)
 
 
 class SubscriptionPrice(SingletonModel):
@@ -44,6 +44,37 @@ async def get_price_subscription():
     cache_subscription["price"] = result.price
 
     return result.price
+
+
+
+
+class CommandGetProStatus(SingletonModel):
+    turn_off_get_pro = models.BooleanField(
+        default=False,
+        verbose_name='Turn off /get_pro command'
+    )
+
+
+    class Meta:
+        verbose_name = 'Command /get_pro status'
+
+
+
+    def __str__(self):
+        return 'Command /get_pro status'
+
+
+    @classmethod
+    async def get_status_command_get_pro(cls):
+        if "command_status" in cache_status_command:
+            return cache_status_command['command_status']
+
+
+        result = await cls.objects.aget()
+        cache_status_command['command_status'] = result.turn_off_get_pro
+
+        return result.turn_off_get_pro
+
 
 
 

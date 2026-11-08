@@ -6,13 +6,25 @@ from cachetools import TTLCache
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
 from bot_messages.models import SubscriptionPlusMessages, get_text
-from core.models import get_rest_time
+from core.models import get_rest_time, CommandGetProStatus
 from users.models import Limits, ReferenceLinks, SubscribePlus, TelegramUser
 
 
 
 
 rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
+pro_status = TTLCache(maxsize=1, ttl=180)
+
+
+
+async def is_work_command():
+    logger.info('function is_work_command')
+
+    status = await CommandGetProStatus.get_status_command_get_pro()
+
+    logger.info(f'status commandgetprostatus: {status}')
+    logger.info(f"||||||||||||| {status } |||||||||||||")
+    return status
 
 
 
