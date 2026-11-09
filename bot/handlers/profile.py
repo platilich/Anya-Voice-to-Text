@@ -2,12 +2,15 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.types import FSInputFile
 
+
 from pathlib import Path
+
 
 from bot.middlewares.filters import check_user
 from bot.utils import profile_form
 from bot.logger import logger
 from bot.keyboards.create_keyboard import keyboard_copy
+
 
 router = Router(name='command_profile')
 

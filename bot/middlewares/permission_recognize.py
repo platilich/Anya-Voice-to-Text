@@ -2,9 +2,7 @@
 from users.models import TelegramUser
 
 from bot.middlewares.rejection_messages import send_more_than_fifteen_minutes
-
 from bot.logger import logger
-
 
 
 

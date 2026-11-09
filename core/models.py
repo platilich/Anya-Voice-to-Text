@@ -39,7 +39,9 @@ class DonatePrice(SingletonModel):
             return cache_subscription["price"]
 
         # --- getting a new value from the database ---
-        result = await cls.objects.aget()
+        result, created = await cls.objects.aget_or_create(
+            defaults={'price': 1}
+        )
 
         # --- cached to reduce database load ---
         cache_subscription["price"] = result.price
@@ -78,7 +80,9 @@ class Protection(SingletonModel):
 
 
         # --- getting a new value from the database ---
-        result = await Protection.objects.aget()
+        result, created = await Protection.objects.aget_or_create(
+            defaults={'rest': 2.0}
+        )
 
         # --- cached to reduce database load ---
         cache_antiflood["rest"] = float(result.rest_time)

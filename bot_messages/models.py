@@ -51,13 +51,14 @@ class StartMessages(BaseSingletonMessage):
     # texts for /start command and welcome screen
     start_text = models.TextField(
         default=(
-            f"👋 Hey <b>{{name}}</b>, I’m <b>Anya</b> 🌈\n\n"
+            "👋 Hey <b>{name}</b>, I’m <b>Anya</b>\n\n"
             "🔊 Convert voice notes to text;\n"
             "📽️ Transcribe Telegram videos;\n\n"
             "🚀 Fast & accurate – just send a voice or video and I’ll do the rest! ✨"
         ),
     verbose_name='Start Message Text'
     )
+
 
     def __str__(self):
         return 'Start Command Texts'
@@ -278,32 +279,20 @@ class ErrorMessages(BaseSingletonMessage):
 
 
 class ReferenceTexts(SingletonModel):
-    admin_no_groq_keys = models.TextField(
-        max_length=500,
-        default=(
-            "Enjoy 3 free minutes—you’ve arrived via a friend’s link!"
-        ),
-        verbose_name='Groq API keys unavailable',
-    )
-
-    service_unavailable = models.TextField(
+    ref_link_success_new_user = models.TextField(
         max_length=255,
-        default="Your friend followed the link! Here are 3 minutes for you!",
-        verbose_name='Audio processing temporarily unavailable',
+        default='✨ Enjoy 3 free minutes-you’re here thanks to a friend! ✨',
+        verbose_name='Refund confirmation'
 
     )
 
 
-    class Meta:
-        verbose_name = 'Reference texts'
-        verbose_name_plural = 'Reference texts'
+    ref_link_success_owner = models.TextField(
+        max_length=255,
+        default='✨ Your friend followed the link!\nHere are 3 minutes just for you! ✨',
+        verbose_name='Refund confirmation'
 
-
-
-    def __str__(self):
-        return 'Reference texts'
-
-
+    )
 
 
 

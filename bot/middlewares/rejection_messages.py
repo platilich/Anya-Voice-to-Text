@@ -1,6 +1,6 @@
 from bot.logger import logger
 from bot_messages.models import LimitMessages, get_text
-from keyboards.create_keyboard import keyboard_copy
+from bot.keyboards.create_keyboard import keyboard_copy
 
 
 async def send_more_than_fifteen_minutes(message):

@@ -1,9 +1,13 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.types import FSInputFile, LabeledPrice
-from keyboards.create_keyboard import keyboard_terms
+
+
+from bot.keyboards.create_keyboard import keyboard_terms
 from bot.logger import logger
 from bot_messages.models import get_text, DonateMessages
+
+
 from core.models import DonatePrice
 from pathlib import Path
 import html

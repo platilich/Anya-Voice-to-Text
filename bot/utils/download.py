@@ -1,17 +1,9 @@
-# --- for reactions to messages ---
 from aiogram.types import ReactionTypeEmoji
-
-# --- for paths ---
 from pathlib import Path
 import os
 
-
-# --- functions bot/ ---
 from bot.logger import logger
 from bot_messages.models import get_text
-
-
-# --- model ErrorMessages ---
 from bot_messages.models import ErrorMessages
 
 

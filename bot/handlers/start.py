@@ -3,13 +3,12 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import FSInputFile
 
 
+from bot_messages.models import get_text, StartMessages
 from bot.middlewares.filters import check_user
 from bot.logger import logger
+
+
 from pathlib import Path
-
-
-# --- models ---
-from bot_messages.models import get_text, StartMessages
 import html
 
 

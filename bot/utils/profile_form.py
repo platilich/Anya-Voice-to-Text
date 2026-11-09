@@ -2,12 +2,10 @@ from datetime import datetime, timezone
 import html
 
 
-
 from bot_messages.models import (
     ProfileMessages,
     get_text,
 )
-
 
 from users.models import TelegramUser
 

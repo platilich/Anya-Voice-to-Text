@@ -83,7 +83,7 @@ class TelegramUser(models.Model):
     async def not_enough_seconds(cls, user_id: int, seconds: int):
         data = await TelegramUser.objects.filter(user_id=user_id).aget()
 
-        if data.seconds_balance - seconds > 0:
+        if data.seconds_balance - seconds >= 0:
             return False
 
 

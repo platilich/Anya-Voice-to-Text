@@ -1,8 +1,10 @@
 from aiogram import Router, F, Bot, types
 from aiogram.types import ReactionTypeEmoji
-
 import asyncio
 import html
+from collections import defaultdict
+
+
 from bot.utils.cleanup import remove_temp_files
 from bot.services.recognition import recognize, AllGroqKeysFailedError
 from bot.keyboards.create_keyboard import keyboard_summarize
@@ -13,7 +15,6 @@ from bot.middlewares.filters import check_user
 from users.models import TelegramUser
 from toggles.models import SummarizeButtonSettings
 
-from collections import defaultdict
 
 
 router = Router(name='handler_video')

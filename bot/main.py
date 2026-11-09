@@ -32,7 +32,7 @@ load_dotenv(BASE_DIR / '.env')
 
 # --- import all handlers ---
 from bot.handlers import register_all_handlers
-from logger import logger
+from bot.logger import logger
 
 
 
