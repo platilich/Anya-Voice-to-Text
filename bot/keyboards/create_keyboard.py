@@ -46,8 +46,6 @@ async def keyboard_terms(url):
     button_pay_title = await get_text(model=Buttons, key='button_pay_title')
     button_terms_title = await get_text(model=Buttons, key='button_terms_title')
 
-
-
     pay = InlineKeyboardButton(text=str(button_pay_title), pay=True)
     read_terms = InlineKeyboardButton(text=str(button_terms_title), url=url)
 

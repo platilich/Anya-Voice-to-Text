@@ -56,7 +56,7 @@ class SummarizeButtonSettings(SingletonModel):
 
 
     @classmethod
-    async def get_status_command_get_pro(cls):
+    async def get_status_btn_summarize(cls):
         # --- if the value is in the cache, we return it ---
         if "button_status" in cache_summarize_button:
             return cache_summarize_button["button_status"]

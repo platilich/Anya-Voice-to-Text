@@ -71,22 +71,32 @@ async def handle_video_note(message: types.Message, bot: Bot):
             count_words = len(result.split())
 
 
-            is_active = await SummarizeButtonSettings.is_active()
+            is_turn_off = await SummarizeButtonSettings.get_status_btn_summarize()
 
-
-            if count_words > 50 and is_active:
+            if count_words > 50 and not is_turn_off:
                 keyboard = await keyboard_summarize()
 
+
+                await message.reply(
+                    text=f'<blockquote>{html.escape(result)}</blockquote>',
+                    disable_web_page_preview=True,
+                    parse_mode='HTML',
+                    reply_markup=keyboard
+                )
+
+
+
             else:
-                keyboard = await keyboard_copy(result)
+                await message.reply(
+                    text=f'<blockquote>{html.escape(result)}</blockquote>',
+                    disable_web_page_preview=True,
+                    parse_mode='HTML'
+                )
 
 
-            await message.reply(
-                f'<blockquote>{html.escape(result)}</blockquote>',
-                disable_web_page_preview=True,
-                parse_mode='HTML',
-                reply_markup=keyboard
-            )
+
+
+
 
 
             # --- increase statistic ---
