@@ -1,11 +1,10 @@
 from django.contrib import admin
 from .models import (StartMessages,
                      ProfileMessages,
-                     SubscriptionPlusMessages,
                      LimitMessages,
-                     SubscriptionStatusMessages,
                      ErrorMessages,
-                     Buttons)
+                     Buttons,
+                     ReferenceTexts)
 
 
 
@@ -24,10 +23,7 @@ class NativeSingletonAdmin(SingletonModelAdmin):
 
 
 
-models = [StartMessages, ProfileMessages,
-          SubscriptionPlusMessages, LimitMessages,
-          SubscriptionStatusMessages, ErrorMessages, Buttons
-        ]
+models = [StartMessages, ProfileMessages, LimitMessages,  ErrorMessages, Buttons, ReferenceTexts]
 
 
 

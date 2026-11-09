@@ -5,12 +5,12 @@ import asyncio
 import html
 from bot.utils.cleanup import remove_temp_files
 from bot.services.recognition import recognize, AllGroqKeysFailedError
-from bot.keyboards.create_keyboard import keyboard_summarize, keyboard_copy
+from bot.keyboards.create_keyboard import keyboard_summarize
 from bot.logger import logger
 from bot.utils.download import download_file, failed_message, notify_admin
 from bot.middlewares.filters import check_user
 
-from users.models import TelegramUser, Limits
+from users.models import TelegramUser
 from toggles.models import SummarizeButtonSettings
 
 from collections import defaultdict
@@ -58,7 +58,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
         try:
             # --- increasing the time used for the limits ---
-            await Limits.spend_seconds(user_id, duration_voice_message)
+            await TelegramUser.spend_seconds(user_id, duration_voice_message)
 
 
             # --- download the file ---
@@ -96,9 +96,6 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
 
-
-
-
             # --- increase statistic ---
             await TelegramUser.increase_count_recognise(user_id)
 
@@ -111,7 +108,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
             await notify_admin(bot)
 
             # --- reduce used seconds ---
-            await Limits.return_seconds(user_id, duration_voice_message)
+            await TelegramUser.add_seconds(user_id, duration_voice_message)
 
             await failed_message(message)
 
@@ -121,7 +118,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
             logger.critical(f'failed process voice: {e}')
 
             # --- reduce used seconds ---
-            await Limits.return_seconds(user_id, duration_voice_message)
+            await TelegramUser.add_seconds(user_id, duration_voice_message)
 
 
             await failed_message(message)

@@ -1,9 +1,7 @@
 # --- models ---
-from users.models import Limits
+from users.models import TelegramUser
 
-from bot.middlewares.rejection_messages import (send_more_than_fifteen_minutes,
-                                send_duration_longer_left_min,
-                                send_minutes_ended)
+from bot.middlewares.rejection_messages import send_more_than_fifteen_minutes
 
 from bot.logger import logger
 
@@ -24,9 +22,6 @@ async def if_can_process(user_id, message, duration_voice_message):
         2. allowed = the number of available minutes per day depends on the tariff
     """
 
-    used_time, allowed = await Limits.get_used_and_max_allowed(user_id)
-
-
 
     if duration_voice_message > 900:
         await send_more_than_fifteen_minutes(message)
@@ -35,17 +30,9 @@ async def if_can_process(user_id, message, duration_voice_message):
 
 
 
-    # --- if the time used exceeds the allowed time ----
-    if used_time > allowed:
-        await send_minutes_ended(message, used_time, allowed)
+    if await TelegramUser.not_enough_seconds(user_id, duration_voice_message):
+        logger.info(f'not enough seconds, user: {user_id}')
         return True
-
-
-    if used_time + duration_voice_message > allowed:
-        # --- a notification stating that the available daily minute allowance is insufficient to process this message ---
-        await send_duration_longer_left_min(message, duration_voice_message)
-        return True
-
 
 
 

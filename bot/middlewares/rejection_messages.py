@@ -1,7 +1,6 @@
 from bot.logger import logger
 from bot_messages.models import LimitMessages, get_text
-from users.models import Limits
-
+from keyboards.create_keyboard import keyboard_copy
 
 
 async def send_more_than_fifteen_minutes(message):
@@ -16,43 +15,22 @@ async def send_more_than_fifteen_minutes(message):
 
 
 
-async def send_duration_longer_left_min(message, duration_voice_message):
+
+async def send_minutes_ended(message):
     user_id = message.from_user.id
+    name = message.from_user.first_name
 
-    used_time, allowed = await Limits.get_usage_for_profile(user_id)
-
-
-    logger.info(f'user {user_id} over limit {used_time}/{allowed}')
-
-
-
-    # --- send message ---
-    text = await get_text(model=LimitMessages, key='not_enough_minutes_to_recognize')
-    text_ready = (text
-                  .replace('{used_time}', str(used_time))
-        .replace('{allowed}', str(allowed))
-        .replace('{duration_voice_message}', str(duration_voice_message)))
-
-    await message.answer(
-        text=text_ready,
-        parse_mode='HTML'
-    )
-
-    return False
-
-
-
-async def send_minutes_ended(message, used_time, allowed):
-    user_id = message.from_user.id
-
-    logger.info(f'user {user_id} over limit {used_time}/{allowed}')
+    logger.info(f'user {user_id} over limit')
 
 
     # --- send message ---
     text = await get_text(model=LimitMessages, key='limit')
-    text_ready = text.replace('{used_time}', str(used_time)).replace('{allowed}', str(allowed))
+    response = text.replace('{name}', str(name))
+
+    keyboard = await keyboard_copy(f'https://t.me/anya_voice_to_text_bot?start={user_id}')
 
     await message.answer(
-        text=text_ready,
-        parse_mode='HTML'
+        text=response,
+        parse_mode='HTML',
+        reply_markup=keyboard
     )

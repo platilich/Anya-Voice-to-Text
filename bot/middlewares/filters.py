@@ -5,10 +5,9 @@ from cachetools import TTLCache
 
 from bot.logger import logger
 from bot.middlewares.permission_recognize import if_can_process
-from bot_messages.models import SubscriptionPlusMessages, get_text
-from toggles.models import CommandGetProStatus
+from bot_messages.models import get_text, ReferenceTexts
 from core.models import Protection
-from users.models import Limits, ReferenceLinks, SubscribePlus, TelegramUser
+from users.models import ReferenceLinks, TelegramUser
 from pathlib import Path
 from aiogram.types import FSInputFile
 
@@ -17,15 +16,6 @@ rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
 pro_status = TTLCache(maxsize=1, ttl=180)
 
 
-
-async def is_work_command():
-    logger.info('function is_work_command')
-
-    status = await CommandGetProStatus.get_status_command_get_pro()
-
-    logger.info(f'status commandgetprostatus: {status}')
-    logger.info(f"||||||||||||| {status } |||||||||||||")
-    return status
 
 
 
@@ -56,8 +46,7 @@ async def anti_flood(user_id):
 
 
 async def update_data(user_id):
-    await SubscribePlus.check_subscribe(user_id)
-    await Limits.reset_daily_seconds_if_new_day(user_id)
+    await TelegramUser.check_can_we_add_daily_free_seconds(user_id)
 
 
 
@@ -85,10 +74,9 @@ async def check_user(**kwargs):
         return True
 
 
-    user, created = await TelegramUser.objects.aget_or_create(
-        user_id=user_id,
-        defaults={'name': name, 'nickname': nickname},
-    )
+
+    user, created = await TelegramUser.save_or_update_user(user_id, name, nickname)
+
 
 
     if user.is_banned:
@@ -118,10 +106,8 @@ async def check_user(**kwargs):
         logger.info(f"We issue: {user_id}, {friend_id} monthly subscriptions")
 
         await ReferenceLinks.increase_invited_users(user_id, friend_id)
-        await SubscribePlus.give_subscribe(user_id)
-        await SubscribePlus.give_subscribe(friend_id)
-
-
+        await TelegramUser.add_seconds(user_id, seconds=180)
+        await TelegramUser.add_seconds(user_id, seconds=180)
 
 
         # --- sending a messages ---
@@ -129,9 +115,11 @@ async def check_user(**kwargs):
         screen_file = project_root / "screens" / "pro_activated.jpg"
         photo = FSInputFile(screen_file)
 
+        # 1. Enjoy 3 free minutes—you’ve arrived via a friend’s link!
+        for_new_user = await get_text(ReferenceTexts, key='ref_link_success_new_user')
 
-        for_new_user = await get_text(SubscriptionPlusMessages, key='ref_link_success_new_user')
-        for_owner_url = await get_text(SubscriptionPlusMessages, key='ref_link_success_owner')
+        # 2. Your friend followed the link! Here are 3 minutes for you!
+        for_owner_url = await get_text(ReferenceTexts, key='ref_link_success_owner')
 
 
 

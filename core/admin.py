@@ -1,7 +1,7 @@
 from django.contrib import admin
 from solo.admin import SingletonModelAdmin
 
-from .models import GroqAPIKey, Protection, SubscriptionPrice
+from .models import GroqAPIKey, Protection, DonatePrice
 
 
 
@@ -17,7 +17,7 @@ class Protection(NativeSingletonAdmin):
     pass
 
 
-@admin.register(SubscriptionPrice)
+@admin.register(DonatePrice)
 class SubscriptionPrice(NativeSingletonAdmin):
     pass
 

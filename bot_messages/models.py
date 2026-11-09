@@ -85,41 +85,24 @@ class ProfileMessages(BaseSingletonMessage):
     )
 
 
-    minutes_used_today = models.TextField(
+    left_seconds = models.TextField(
         max_length=255,
-        default='🕓 Minutes used today: {used_minutes}/{allowed_minutes}',
-        verbose_name='Block how much minutes used'
+        default='🕓 Balance: {left_seconds} seconds',
+        verbose_name='How much minutes used'
+    )
+
+    about_limits = models.TextField(
+        max_length=255,
+        default='⏳ 3 minutes are added every 24 hours',
+        verbose_name='About limit'
     )
 
 
-    text_status_subscribe = models.TextField(
+    text_suggest_invite_friend = models.TextField(
         max_length=255,
-        default='⭐ Subscription status: {variable_status}',
-        verbose_name='Block subscription status'
+        default='🎁 You can get a 3 minutes!\n📋 Just tap the button below and send it to a friend.',
+        verbose_name='Suggest invite friend'
     )
-
-
-
-    variable_status_days_left = models.TextField(
-        max_length=255,
-        default='{days} days',
-        verbose_name='Days remaining',
-    )
-
-
-    variable_status_end_today = models.TextField(
-        max_length=255,
-        default='Expires today',
-        verbose_name='Subscription expiration notice',
-    )
-
-    variable_status_not_active = models.TextField(
-        max_length=255,
-        default='-',
-        verbose_name='Status when inactive',
-    )
-
-
 
 
 
@@ -127,46 +110,10 @@ class ProfileMessages(BaseSingletonMessage):
     def __str__(self):
         return 'Profile Texts'
 
+
     class Meta:
         verbose_name = 'Profile Message'
         verbose_name_plural = 'Profile Messages'
-
-
-
-
-class SubscriptionStatusMessages(BaseSingletonMessage):
-    """Texts for user subscription status inside profile"""
-
-    active_plus = models.TextField(
-        max_length=255,
-        default="✨ You have {left_days} days of Plus left - enjoy! 💖",
-        verbose_name='Active Plus subscription',
-    )
-
-    ending_today = models.TextField(
-        max_length=500,
-        default="✨ Your Plus subscription expires today. Want to renew? 💫",
-        verbose_name='Plus subscription expires today'
-    )
-
-    no_subscription = models.TextField(
-        max_length=500,
-        default="🚀 Want to do more? Upgrade to Plus for higher limits! ✨",
-        verbose_name='Plus upgrade prompt'
-
-    )
-
-
-    def __str__(self):
-        return 'Subscription Status Texts'
-
-    class Meta:
-        verbose_name = 'Subscription Status Text'
-        verbose_name_plural = 'Subscription Status Texts'
-
-
-
-
 
 
 
@@ -175,24 +122,12 @@ class LimitMessages(BaseSingletonMessage):
     limit = models.TextField(
         max_length=255,
         default=(
-            "📊 <b>Today's limit:</b> {used_time}/{allowed} min used\n"
-            "⏰ Your minutes will refresh tomorrow.\n\n"
-            "⭐ Need more time? Upgrade to Plus!\n"
-            "👉 <b>/get_plus</b>"
+            "👋 Hey, {name}!\n"
+            "⏰ You've used up your minutes for now. Your free 3 minutes refresh every 24 hours.\n\n"
+            "⭐ Need more right now? Invite a friend who's new to the bot! Tap the button below and send them your link. "
+            "As soon as they press Start, you'll both get an extra 3 minutes.\n"
         ),
         verbose_name="Daily usage limit reached"
-    )
-
-
-    not_enough_minutes_to_recognize = models.TextField(
-        max_length=255,
-        default=(
-            "❌ Your clip is {duration_voice_message} long, so it won’t fit within today’s remaining limit "
-            "({used_time}/{allowed} min used).\n\n"
-            "⭐ Need more time? <b>Upgrade to Plus</b>!\n"
-            "👉 <b>/get_plus</b>"
-        ),
-        verbose_name='Daily limit reached for this clip'
     )
 
 
@@ -213,51 +148,29 @@ class LimitMessages(BaseSingletonMessage):
 
 
 
-class SubscriptionPlusMessages(BaseSingletonMessage):
+class DonateMessages(BaseSingletonMessage):
     # texts for invoicing and successful payments
-
     invoice_title = models.TextField(
         max_length=255,
-        default="⭐ Support Anya (Plus)",
+        default="Support the project with Anya",
         verbose_name="Invoice Title"
     )
 
     invoice_description = models.TextField(
-        default="✨ Voluntary tip to support Anya! 🎁 Bonus: 30 min/hr limit for 30 days. ❤️ Non-refundableю",
+        default="A small donation to support the project — 1 star.",
         verbose_name="Invoice Description"
     )
 
-    success_purchase = models.TextField(
+    success_donate = models.TextField(
         max_length=255,
         default=(
-            '🎉 Oh, <b>{name}</b>, thank you so much for supporting me! 💖\n\n'
-            '✅ Received: {payment_info.total_amount} ⭐\n\n'
-            '🚀 I’ve upgraded your limits to 30 minutes per hour for 1 month. Enjoy!'
+            "✨ {name}, thanks so much for the donation! ❤️"
         ),
         verbose_name="Success Purchase Message ({name}, {payment_info.total_amount})"
     )
 
 
-    ref_link_success_new_user = models.TextField(
-        max_length=255,
-        default=(
-            "🎉 <b>{name}</b>, you followed a friend's link!!\n\n"
-            "✅ You have a free Plus for a month! ⭐\n\n"
-            '🚀 Your limits to 30 minutes per hour for 1 month. Enjoy!'
-        ),
-        verbose_name="Greeting a user who clicked on a friend's link"
-    )
 
-
-    ref_link_success_owner = models.TextField(
-        max_length=255,
-        default=(
-            "🎉 <b>{name}</b>, your friend came through your link!\n\n"
-            "✅ You have a free Plus for a month! ⭐\n\n"
-            '🚀 Your limits to 30 minutes per hour for 1 month. Enjoy!'
-        ),
-        verbose_name="A message that a friend has successfully clicked on the link"
-    )
 
 
     def __str__(self):
@@ -285,10 +198,10 @@ class Buttons(BaseSingletonMessage):
     )
 
 
-    button_pay_title = models.TextField(
+    button_gift_one_star = models.TextField(
         max_length=255,
-        default="✅ Pay",
-        verbose_name='Button pay'
+        default="❤️ Gift 1 ⭐",
+        verbose_name='Gift btn'
     )
 
 
@@ -360,6 +273,36 @@ class ErrorMessages(BaseSingletonMessage):
 
     def __str__(self):
         return 'Error Texts'
+
+
+
+
+class ReferenceTexts(SingletonModel):
+    admin_no_groq_keys = models.TextField(
+        max_length=500,
+        default=(
+            "Enjoy 3 free minutes—you’ve arrived via a friend’s link!"
+        ),
+        verbose_name='Groq API keys unavailable',
+    )
+
+    service_unavailable = models.TextField(
+        max_length=255,
+        default="Your friend followed the link! Here are 3 minutes for you!",
+        verbose_name='Audio processing temporarily unavailable',
+
+    )
+
+
+    class Meta:
+        verbose_name = 'Reference texts'
+        verbose_name_plural = 'Reference texts'
+
+
+
+    def __str__(self):
+        return 'Reference texts'
+
 
 
 

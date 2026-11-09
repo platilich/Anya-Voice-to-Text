@@ -15,24 +15,25 @@ cache_antiflood = TTLCache(maxsize=1, ttl=180)
 
 
 
-class SubscriptionPrice(SingletonModel):
+class DonatePrice(SingletonModel):
     price = models.IntegerField(
         blank=True,
-        default=3,
-        verbose_name='Subscription price Plus. (Updated within 2 minutes)'
+        default=1,
+        verbose_name='Donate Price. (Updated within 2 minutes)'
     )
 
 
     class Meta:
-        verbose_name_plural = 'SubscriptionPrice'
+        verbose_name_plural = 'Donate price'
 
 
     def __str__(self):
-        return 'SubscriptionPlus'
+        return 'Donate price'
+
 
 
     @classmethod
-    async def get_price_subscription(cls):
+    async def get_donate_price(cls):
         # --- if the value is in the cache, we return it ---
         if "price" in cache_subscription:
             return cache_subscription["price"]

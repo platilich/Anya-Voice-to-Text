@@ -5,12 +5,11 @@ import html
 
 from bot_messages.models import (
     ProfileMessages,
-    SubscriptionStatusMessages,
     get_text,
 )
 
 
-from users.models import Limits, SubscribePlus, TelegramUser
+from users.models import TelegramUser
 
 
 
@@ -35,9 +34,9 @@ def get_reset_minutes(reset_datetime) -> int | None:
 async def profile_message(user_id: int, name: str) -> str:
     # 1. Получаем данные из БД
     all_time_recognised = await TelegramUser.get_statistic(user_id=user_id)
-    used_minutes, allowed_minutes = await Limits.get_usage_for_profile(user_id=user_id)
-    left_days_subscribe = await SubscribePlus.left_days_subscribe(user_id=user_id)
+    left_seconds = await TelegramUser.get_usage_for_profile(user_id=user_id)
 
+    minutes, seconds = divmod(max(0, int(left_seconds)), 60)
 
     # 2. Формируем заголовок (с экранированием HTML)
     profile_header = await get_text(ProfileMessages, 'header')
@@ -48,45 +47,19 @@ async def profile_message(user_id: int, name: str) -> str:
     profile_statistic = await get_text(ProfileMessages, 'statistic')
     profile_statistic = profile_statistic.replace('{recognised}', str(all_time_recognised))
 
+    minutes_left_today = await get_text(ProfileMessages, key='left_seconds')
+    minutes_left_today = minutes_left_today.replace('{left_seconds}', f'{minutes}:{seconds:02d} minutes')
 
-    # 5. Обрабатываем статус подписки
-    if left_days_subscribe is None or left_days_subscribe < 0:
-        variable_status = await get_text(ProfileMessages, key='variable_status_not_active')
+    about_limits = await get_text(ProfileMessages, key='about_limits')
+    suggest = await get_text(ProfileMessages, key='text_suggest_invite_friend')
 
-
-    elif left_days_subscribe == 0:
-        variable_status = await get_text(ProfileMessages, key='variable_status_end_today')
-
-
-    else:
-        # Активная подписка
-        text = await get_text(ProfileMessages, key='variable_status_days_left')
-        variable_status = text.replace('{days}', str(left_days_subscribe))
-
-
-
-
-    status_subscribe = await get_text(ProfileMessages, key='text_status_subscribe')
-
-
-    status_subscribe = status_subscribe.replace('{variable_status}', str(variable_status))
-
-
-
-    profile_limit = await get_text(ProfileMessages, key='minutes_used_today')
-    profile_limit = profile_limit.replace('{used_minutes}', str(used_minutes)).replace('{allowed_minutes}', allowed_minutes)
-    about_limits = '⏳ The limits are updated every 24 hours'
-
-
-    suggest = "🎁 You can get a free month of subscription!\n📋 Copy the link below and send it to a friend."
 
     # 7. Собираем сообщение
     profile_blocks = [
         profile_header,
         profile_statistic,
-        profile_limit,
+        minutes_left_today,
         about_limits,
-        status_subscribe,
         suggest
 
     ]
