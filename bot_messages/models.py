@@ -138,6 +138,12 @@ class LimitMessages(BaseSingletonMessage):
         verbose_name='A message telling you that the voice message is too long'
     )
 
+    time_updated = models.TextField(
+        max_length=255,
+        default='Hi, I added 3 minutes to you, have a nice day!',
+        verbose_name='Daily 3 minutes added'
+    )
+
 
     def __str__(self):
         return 'Limit Texts'
@@ -278,7 +284,7 @@ class ErrorMessages(BaseSingletonMessage):
 
 
 
-class ReferenceTexts(SingletonModel):
+class ReferenceTexts(BaseSingletonMessage):
     ref_link_success_new_user = models.TextField(
         max_length=255,
         default='✨ Enjoy 3 free minutes-you’re here thanks to a friend! ✨',

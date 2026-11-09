@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from datetime import datetime, timezone, timedelta
 
 
@@ -68,14 +68,14 @@ class TelegramUser(models.Model):
 
     @classmethod
     async def check_can_we_add_daily_free_seconds(cls, user_id: int):
-        user = await TelegramUser.objects.filter(user_id=user_id).aget()
         now = datetime.now(timezone.utc)
-
-        if user.balance_free_added is None or user.balance_free_added <= now:
-            await cls.add_seconds(user_id, seconds=180)
-            await TelegramUser.objects.filter(user_id=user_id).aupdate(
-                balance_free_added=now + timedelta(days=1)
-            )
+        updated = await TelegramUser.objects.filter(user_id=user_id).filter(
+            Q(balance_free_added__isnull=True) | Q(balance_free_added__lte=now)
+        ).aupdate(
+            balance_free_added=now + timedelta(days=1),
+            seconds_balance=F('seconds_balance') + 180,
+        )
+        return updated == 1
 
 
 

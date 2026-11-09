@@ -33,7 +33,7 @@ class CommandGetProStatus(SingletonModel):
 
 
         result, created = await cls.objects.aget_or_create(
-            defaults={'command_status': False}
+            defaults={'turn_off_get_pro': False}
         )
         cache_status_command['command_status'] = result.turn_off_get_pro
 
@@ -60,16 +60,16 @@ class SummarizeButtonSettings(SingletonModel):
     @classmethod
     async def get_status_btn_summarize(cls):
         # --- if the value is in the cache, we return it ---
-        if "button_status" in cache_summarize_button:
-            return cache_summarize_button["button_status"]
+        if "turn_off_btn" in cache_summarize_button:
+            return cache_summarize_button["turn_off_btn"]
 
 
         # --- getting a new value from the database ---
         result, created = await cls.objects.aget_or_create(
-            defaults={'button_status': True}
+            defaults={'turn_off_btn': False}
         )
 
         # --- cached to reduce database load ---
-        cache_summarize_button["button_status"] = result.turn_off_btn
+        cache_summarize_button["turn_off_btn"] = result.turn_off_btn
 
         return result.turn_off_btn

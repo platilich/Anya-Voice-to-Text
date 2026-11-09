@@ -75,17 +75,17 @@ class Protection(SingletonModel):
     @classmethod
     async def get_rest_time(cls):
         # --- if the value is in the cache, we return it ---
-        if "rest" in cache_antiflood:
-            return cache_antiflood["rest"]
+        if "rest_time" in cache_antiflood:
+            return cache_antiflood["rest_time"]
 
 
         # --- getting a new value from the database ---
         result, created = await Protection.objects.aget_or_create(
-            defaults={'rest': 2.0}
+            defaults={'rest_time': 2.0}
         )
 
         # --- cached to reduce database load ---
-        cache_antiflood["rest"] = float(result.rest_time)
+        cache_antiflood["rest_time"] = float(result.rest_time)
 
         return float(result.rest_time)
 
