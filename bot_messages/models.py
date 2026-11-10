@@ -205,11 +205,14 @@ class Buttons(BaseSingletonMessage):
     )
 
 
-    button_gift_one_star = models.TextField(
+
+
+    button_price_seconds = models.TextField(
         max_length=255,
         default="❤️ Gift 1 ⭐",
         verbose_name='Gift btn'
     )
+
 
 
     button_terms_title = models.TextField(

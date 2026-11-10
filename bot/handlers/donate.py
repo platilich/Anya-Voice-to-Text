@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import FSInputFile, LabeledPrice
 
 
-from bot.keyboards.create_keyboard import keyboard_terms
+from bot.keyboards.create_keyboard import keyboard_donate
 from bot.logger import logger
 from bot_messages.models import get_text, DonateMessages
 
@@ -24,7 +24,7 @@ DONATION_PAYLOAD = "donate_1_star"
 async def command_donate(message: types.Message):
     logger.info("command /donate")
 
-    keyboard = await keyboard_terms()
+    keyboard = await keyboard_donate()
 
 
     invoice_title = await get_text(DonateMessages, key='invoice_title')

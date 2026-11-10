@@ -42,7 +42,7 @@ async def keyboard_copy(data):
 
 
 
-async def keyboard_terms():
+async def keyboard_donate():
     button_pay_title = await get_text(model=Buttons, key='button_gift_one_star')
 
 
@@ -51,6 +51,28 @@ async def keyboard_terms():
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [pay],
+        ]
+    )
+
+
+    return keyboard
+
+
+
+async def keyboard_shop():
+    button_price_first = await get_text(model=Buttons, key='button_price_first')
+    button_price_seconds = await get_text(model=Buttons, key='button_price_seconds')
+
+
+
+    pay_first = InlineKeyboardButton(text=str(button_price_first), pay=True)
+    pay_second = InlineKeyboardButton(text=str(button_price_seconds), pay=True)
+
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [pay_first],
+            [pay_second],
         ]
     )
 

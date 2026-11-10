@@ -131,7 +131,7 @@ async def check_user(**kwargs):
 
         # --- sending a messages ---
         project_root = Path(__file__).resolve().parent.parent
-        screen_file = project_root / "screens" / "pro_activated.jpg"
+        screen_file = project_root / "screens" / "free_minutes.jpg"
         photo = FSInputFile(screen_file)
 
         # 1. Enjoy 3 free minutes—you’ve arrived via a friend’s link!
