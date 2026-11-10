@@ -205,8 +205,6 @@ class Buttons(BaseSingletonMessage):
     )
 
 
-
-
     button_price_seconds = models.TextField(
         max_length=255,
         default="❤️ Gift 1 ⭐",
@@ -214,12 +212,19 @@ class Buttons(BaseSingletonMessage):
     )
 
 
+    button_buy = models.TextField(
+        max_length=255,
+        default="❤️ Pay",
+        verbose_name='Button pay'
+    )
+
 
     button_terms_title = models.TextField(
         max_length=255,
         default="📝 Terms",
         verbose_name='Button terms'
     )
+
 
     button_forward_title = models.TextField(
         max_length=255,
@@ -314,3 +319,38 @@ async def get_text(model, key):
     text = await model.get_message_text(key)
     cache_messages[cache_key] = text
     return text
+
+
+
+
+class ShopTexts(BaseSingletonMessage):
+    # texts for invoicing and successful payments
+    invoice_title = models.TextField(
+        max_length=255,
+        default="Buy minute package",
+        verbose_name="Invoice Title"
+    )
+
+
+    invoice_description = models.TextField(
+        default="Buy a minute package in Ani, 3 minutes, for 7 days",
+        verbose_name="Invoice Description"
+    )
+
+
+    success_bought = models.TextField(
+        max_length=255,
+        default="✨ {name}, thank you very much for your purchase! ❤️",
+        verbose_name="Success Purchase Message ({name}, {payment_info.total_amount})"
+    )
+
+
+
+    def __str__(self):
+        return 'Subscription Payment Texts'
+
+
+
+    class Meta:
+        verbose_name = 'Subscription Payment'
+        verbose_name_plural = 'Subscription Payments'

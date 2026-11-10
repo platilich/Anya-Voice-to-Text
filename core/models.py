@@ -7,11 +7,10 @@ from cachetools import TTLCache
 
 
 # --- we store the data ---
-# --- for 2 minutes ---
-cache_subscription = TTLCache(maxsize=1, ttl=120)
-
-# --- for 3 minutes ---
+cache_donate = TTLCache(maxsize=1, ttl=180)
 cache_antiflood = TTLCache(maxsize=1, ttl=180)
+cache_price = TTLCache(maxsize=1, ttl=180)
+
 
 
 
@@ -19,7 +18,7 @@ class DonatePrice(SingletonModel):
     price = models.IntegerField(
         blank=True,
         default=1,
-        verbose_name='Donate Price. (Updated within 2 minutes)'
+        verbose_name='Donate Price. (Updated within 3 minutes)'
     )
 
 
@@ -35,8 +34,8 @@ class DonatePrice(SingletonModel):
     @classmethod
     async def get_donate_price(cls):
         # --- if the value is in the cache, we return it ---
-        if "price" in cache_subscription:
-            return cache_subscription["price"]
+        if "price" in cache_donate:
+            return cache_donate["price"]
 
         # --- getting a new value from the database ---
         result, created = await cls.objects.aget_or_create(
@@ -44,11 +43,43 @@ class DonatePrice(SingletonModel):
         )
 
         # --- cached to reduce database load ---
-        cache_subscription["price"] = result.price
+        cache_donate["price"] = result.price
 
         return result.price
 
 
+
+class MinutePrice(SingletonModel):
+    price = models.IntegerField(
+        blank=True,
+        default=1,
+        verbose_name='Price per minute in Stars (updated within 3 minutes)'
+    )
+
+
+    class Meta:
+        verbose_name_plural = 'Minute price per minute'
+
+
+    def __str__(self):
+        return 'Minute price per minute'
+
+
+    @classmethod
+    async def get_minute_price_per_minute(cls):
+        # --- if the value is in the cache, we return it ---
+        if "price" in cache_price:
+            return cache_price["price"]
+
+        # --- getting a new value from the database ---
+        result, created = await cls.objects.aget_or_create(
+            defaults={'price': 1}
+        )
+
+        # --- cached to reduce database load ---
+        cache_price["price"] = result.price
+
+        return result.price
 
 
 
@@ -88,7 +119,6 @@ class Protection(SingletonModel):
         cache_antiflood["rest_time"] = float(result.rest_time)
 
         return float(result.rest_time)
-
 
 
 

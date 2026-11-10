@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SummarizeButtonSettings, CommandGetProStatus
+from .models import SummarizeButtonSettings, ShopStatus
 from solo.admin import SingletonModelAdmin
 
 
@@ -16,6 +16,6 @@ class SummarizeButtonSettings(NativeSingletonAdmin):
 
 
 
-@admin.register(CommandGetProStatus)
-class CommandGetProStatus(NativeSingletonAdmin):
+@admin.register(ShopStatus)
+class ShopStatus(NativeSingletonAdmin):
     pass

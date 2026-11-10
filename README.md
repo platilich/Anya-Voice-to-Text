@@ -1,4 +1,4 @@
-<img src='screenshots/anya.png' alt='anya' width="200">
+<img src='bot/screens/instruction.jpeg' alt='anya' width="500">
 
 
 # Anya-Voice-to-Text

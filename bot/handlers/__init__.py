@@ -1,4 +1,4 @@
-from bot.handlers import start, profile, donate, voice, callback
+from bot.handlers import start, profile, donate, voice, callback, shop
 
 
 def register_all_handlers(dp):
@@ -7,6 +7,7 @@ def register_all_handlers(dp):
     dp.include_router(voice.router)
     dp.include_router(donate.router)
     dp.include_router(callback.router)
+    dp.include_router(shop.router)
 
 
 
@@ -17,5 +18,6 @@ __all__ = [
     "profile",
     "voice",
     "donate",
-    'callback'
+    'callback',
+    'shop'
 ]

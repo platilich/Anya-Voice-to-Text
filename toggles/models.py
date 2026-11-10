@@ -9,35 +9,36 @@ cache_status_command = TTLCache(maxsize=1, ttl=180)
 
 
 # Create your models here.
-class CommandGetProStatus(SingletonModel):
-    turn_off_get_pro = models.BooleanField(
-        default=False,
-        verbose_name='Turn off /get_pro command'
+class ShopStatus(SingletonModel):
+    turn_off_shop = models.BooleanField(
+        default=True,
+        verbose_name='Turn off /shop command'
     )
 
 
     class Meta:
-        verbose_name = 'Payment for Pro subscription'
-        verbose_name_plural = 'Payment for Pro subscription'
+        verbose_name = 'Shop status'
+        verbose_name_plural = 'Shop status'
 
 
 
     def __str__(self):
-        return 'Command /get_pro status'
+        return 'Command /shop'
 
 
     @classmethod
-    async def get_status_command_get_pro(cls):
+    async def get_status_shop(cls):
         if "command_status" in cache_status_command:
             return cache_status_command['command_status']
 
 
         result, created = await cls.objects.aget_or_create(
-            defaults={'turn_off_get_pro': False}
+            defaults={'turn_off_shop': False}
         )
-        cache_status_command['command_status'] = result.turn_off_get_pro
 
-        return result.turn_off_get_pro
+        cache_status_command['command_status'] = result.turn_off_shop
+        # возращаем True допустим
+        return result.turn_off_shop
 
 
 

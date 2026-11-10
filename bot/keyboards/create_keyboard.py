@@ -60,19 +60,19 @@ async def keyboard_donate():
 
 
 async def keyboard_shop():
-    button_price_first = await get_text(model=Buttons, key='button_price_first')
-    button_price_seconds = await get_text(model=Buttons, key='button_price_seconds')
+    button_buy_title = await get_text(model=Buttons, key='button_buy')
+    button_terms = await get_text(model=Buttons, key='button_terms_title')
 
 
 
-    pay_first = InlineKeyboardButton(text=str(button_price_first), pay=True)
-    pay_second = InlineKeyboardButton(text=str(button_price_seconds), pay=True)
+    pay = InlineKeyboardButton(text=str(button_buy_title), pay=True)
+    terms = InlineKeyboardButton(text=str(button_terms), url='https://telegra.ph/Terms-of-Service--Refund-Policy-10-17')
 
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [pay_first],
-            [pay_second],
+            [pay],
+            [terms],
         ]
     )
 

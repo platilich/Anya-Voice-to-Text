@@ -14,11 +14,14 @@ from users.models import ReferenceLinks, TelegramUser
 from core.models import Protection
 
 
+from toggles.models import ShopStatus
+
+
+
+
 
 rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
 pro_status = TTLCache(maxsize=1, ttl=180)
-
-
 
 
 async def anti_bot(user_id, is_bot):
@@ -43,6 +46,7 @@ async def anti_flood(user_id):
 
     rate_limit_cache[user_id] = now
     return False
+
 
 
 
@@ -72,7 +76,17 @@ def parse_referrer_id(raw_friend_id, user_id: int) -> int | None:
 async def update_data(message, user_id: int):
     if await TelegramUser.check_can_we_add_daily_free_seconds(user_id):
         time_updated = await get_text(LimitMessages, key='time_updated')
-        await message.answer(text=time_updated)
+        project_root = Path(__file__).resolve().parent.parent
+        screen_file = project_root / "screens" / "free_minutes.jpg"
+        photo = FSInputFile(screen_file)
+
+        await message.bot.send_photo(
+            chat_id=user_id,
+            photo=photo,
+            caption=time_updated,
+            parse_mode='HTML',
+            disable_web_page_preview=True
+        )
 
 
 
@@ -159,7 +173,9 @@ async def check_user(**kwargs):
         )
 
 
+
     await update_data(message, user_id)
+
 
     if duration_voice_message is not None:
         if await protection_for_voice_handler(user_id, duration_voice_message):
@@ -183,6 +199,15 @@ async def check_user(**kwargs):
                 reply_markup=keyboard
             )
             return True
+
+
+    elif message.text:
+        command = message.text.split(maxsplit=1)[0].split('@', 1)[0]
+        if command == '/shop':
+            status = await ShopStatus.get_status_shop()
+            logger.info(f'магазин не работает: {status}')
+            return status
+
 
 
     return False
