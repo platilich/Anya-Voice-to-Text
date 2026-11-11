@@ -1,38 +1,33 @@
 # --- work with paths ---
-from dotenv import load_dotenv
 from pathlib import Path
-import sys
 import os
-
+import sys
+from dotenv import load_dotenv
 
 
 
 # --- adds the project folder to the top of the list of places where Python searches for modules to import ---
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
 
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'video_note_bot.settings')
-
+load_dotenv(BASE_DIR / ".env")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "video_note_bot.settings")
 
 
 import asyncio
-from aiogram import Bot, Dispatcher
 import django
-
 django.setup()
 
+from aiogram import Bot, Dispatcher
+from aiogram.types import FSInputFile
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-# --- getting BASE_DIR and load .env ---
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
-
-
-
-
-
-# --- import all handlers ---
+from users.models import TelegramUser
+from bot_messages.models import get_text, LimitMessages
 from bot.handlers import register_all_handlers
 from bot.logger import logger
+
+
 
 
 
@@ -54,6 +49,35 @@ if not token:
 
 
 
+async def broadcast_limits_updated(bot):
+    users_id = await TelegramUser.get_all_users()
+
+    time_updated = await get_text(LimitMessages, key='time_updated')
+
+    project_root = Path(__file__).resolve().parent.parent
+    screen_file = project_root / "screens" / "free_minutes.jpeg"
+    photo = FSInputFile(screen_file)
+
+
+    for user_id in users_id:
+        try:
+            await TelegramUser.add_seconds(user_id, seconds=180)
+
+            await bot.send_photo(
+                chat_id=user_id,
+                photo=photo,
+                caption=time_updated,
+                parse_mode='HTML'
+            )
+
+
+        except Exception as e:
+            logger.error(f'failed to send a mailing list message to the user: {e}')
+
+
+
+
+
 async def main():
     bot = Bot(token=token)
     dp = Dispatcher()
@@ -61,8 +85,26 @@ async def main():
 
     logger.info('bot started')
 
-    # --- register all handlers
+
     register_all_handlers(dp)
+
+
+    scheduler = AsyncIOScheduler(timezone="Europe/Belgrade")
+
+
+    scheduler.add_job(
+        broadcast_limits_updated,
+        trigger="cron",
+        hour=9,
+        minute=00,
+        args=[bot],
+        id="daily_minutes",
+        replace_existing=True,
+    )
+
+
+
+    scheduler.start()
 
     await dp.start_polling(bot)
 

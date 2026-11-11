@@ -98,6 +98,20 @@ class TelegramUser(models.Model):
         return left_seconds.seconds_balance
 
 
+
+
+    @classmethod
+    async def get_all_users(cls):
+        return [user_id async for user_id in
+                TelegramUser.objects.values_list("user_id", flat=True)]
+
+
+
+
+
+
+
+
     @classmethod
     async def banned_user(cls, user_id: int):
         try:

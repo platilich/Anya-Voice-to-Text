@@ -73,23 +73,6 @@ def parse_referrer_id(raw_friend_id, user_id: int) -> int | None:
 
 
 
-async def update_data(message, user_id: int):
-    if await TelegramUser.check_can_we_add_daily_free_seconds(user_id):
-        time_updated = await get_text(LimitMessages, key='time_updated')
-        project_root = Path(__file__).resolve().parent.parent
-        screen_file = project_root / "screens" / "free_minutes.jpg"
-        photo = FSInputFile(screen_file)
-
-        await message.bot.send_photo(
-            chat_id=user_id,
-            photo=photo,
-            caption=time_updated,
-            parse_mode='HTML',
-            disable_web_page_preview=True
-        )
-
-
-
 async def check_user(**kwargs):
     message = kwargs.get('message')
     duration_voice_message = kwargs.get('duration_voice_message')
@@ -145,36 +128,22 @@ async def check_user(**kwargs):
 
         # --- sending a messages ---
         project_root = Path(__file__).resolve().parent.parent
-        screen_file = project_root / "screens" / "free_minutes.jpg"
+        screen_file = project_root / "screens" / "free_minutes.jpeg"
         photo = FSInputFile(screen_file)
 
-        # 1. Enjoy 3 free minutes—you’ve arrived via a friend’s link!
-        for_new_user = await get_text(ReferenceTexts, key='ref_link_success_new_user')
 
         # 2. Your friend followed the link! Here are 3 minutes for you!
         for_owner_url = await get_text(ReferenceTexts, key='ref_link_success_owner')
 
 
 
-        await message.bot.send_photo(
-            chat_id=user_id,
-            photo=photo,
-            caption=for_new_user,
-            parse_mode='HTML',
-            disable_web_page_preview=True
-        )
 
         await message.bot.send_photo(
             chat_id=friend_id,
             photo=photo,
             caption=for_owner_url,
-            parse_mode='HTML',
-            disable_web_page_preview=True
+            parse_mode='HTML'
         )
-
-
-
-    await update_data(message, user_id)
 
 
     if duration_voice_message is not None:

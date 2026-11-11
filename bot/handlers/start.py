@@ -19,7 +19,6 @@ router = Router(name='command_start')
 
 
 
-
 @router.message(Command("start"))
 async def cmd_start(message: types.Message, command: CommandObject):
     name = message.from_user.first_name
@@ -51,7 +50,6 @@ async def cmd_start(message: types.Message, command: CommandObject):
             photo=photo,
             caption=response,
             parse_mode='HTML',
-            disable_web_page_preview=True
         )
 
     except Exception as e:

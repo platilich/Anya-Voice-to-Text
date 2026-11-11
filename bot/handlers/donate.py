@@ -33,6 +33,18 @@ async def command_donate(message: types.Message):
 
     amount = await DonatePrice.get_donate_price()
 
+    project_root = Path(__file__).resolve().parent.parent
+    screen_file = project_root / "screens" / "donate.jpeg"
+    photo = FSInputFile(screen_file)
+
+
+
+    await message.answer_photo(
+        photo=photo,
+        parse_mode='HTML',
+        disable_web_page_preview=True
+    )
+
 
     await message.answer_invoice(
         title=invoice_title,
@@ -65,7 +77,7 @@ async def process_successful_payment(message: types.Message):
 
 
     project_root = Path(__file__).resolve().parent.parent
-    screen_file = project_root / "screens" / "donate.jpg"
+    screen_file = project_root / "screens" / "success_donate.jpg"
     photo = FSInputFile(screen_file)
 
 
