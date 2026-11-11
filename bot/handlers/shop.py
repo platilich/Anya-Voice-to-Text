@@ -17,7 +17,7 @@ import html
 
 from pathlib import Path
 
-
+from users.models import TelegramUser
 
 router = Router(name='command_shop')
 
@@ -91,7 +91,7 @@ async def process_successful_payment(message: types.Message):
 
 
 
-    price_now = await MinutePrice.get_minute_price_per_minute() # --- current price ---
+    price_now = await MinutePrice.get_minute_price_per_minute() * 3 # --- current price ---
     paid = int(payment_info.total_amount)
 
 
@@ -105,7 +105,7 @@ async def process_successful_payment(message: types.Message):
         try:
             logger.info('we write to the user that something is wrong with the payment.')
 
-            failed_payment = await get_text(model=SubscriptionPlusMessages, key='failed_payment')
+            failed_payment = await get_text(model=ShopTexts, key='failed_payment')
             await message.answer(failed_payment)
 
         except Exception as e:
@@ -143,7 +143,7 @@ async def process_successful_payment(message: types.Message):
 
     # --- sending thanks for the purchase ---
     try:
-        text = await get_text(model=SubscriptionPlusMessages, key='success_purchase')
+        text = await get_text(model=ShopTexts, key='success_purchase')
         response = text.replace('{name}', str(html.escape(name))).replace('{payment_info.total_amount}', str(payment_info.total_amount))
         await message.answer(response)
 
@@ -153,15 +153,9 @@ async def process_successful_payment(message: types.Message):
 
 
 
-    try:
-        logger.info('user bought subscribe')
 
+    logger.info('user bought subscribe')
 
-    except Exception as e:
-        logger.info(f'failed send sticker love: {e}')
+    await TelegramUser.add_seconds(user_id, seconds=180)
 
-
-
-    await SubscribePlus.give_subscribe(user_id)
-
-    logger.info('give user subscribe')
+    logger.info('add 180 secondss')

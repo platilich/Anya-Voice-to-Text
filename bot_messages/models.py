@@ -51,13 +51,27 @@ class StartMessages(BaseSingletonMessage):
     # texts for /start command and welcome screen
     start_text = models.TextField(
         default=(
-            "👋 Hey <b>{name}</b>, I’m <b>Anya</b>\n\n"
-            "🔊 Convert voice notes to text;\n"
-            "📽️ Transcribe Telegram videos;\n\n"
-            "🚀 Fast & accurate – just send a voice or video and I’ll do the rest! ✨"
+            "👋 Hi, <b>{name}</b>! I’m <b>Anya</b> 😊\n\n"
+            "🔊 Voice messages and 📽️ videos, turned into text.\n\n"
+            "✨ Send one my way!"
         ),
-    verbose_name='Start Message Text'
+
+        verbose_name='Start Message Text'
     )
+
+    start_text_invited_user = models.TextField(
+        default=(
+            "👋 Hi, <b>{name}</b>! I’m <b>Anya</b> 😊\n\n"
+            "🔊 I’ll turn your voice messages into text;\n"
+            "📽️ and transcribe your Telegram videos.\n\n"
+            "🎁 You came through a friend’s link, so here are 3 bonus minutes!\n"
+            "⏱️ You now have <b>6 minutes</b> to use 💛\n\n"
+            "🚀 Send me a voice message or video, and I’ll get right on it! ✨"
+        ),
+
+        verbose_name='Start Message Text'
+    )
+
 
 
     def __str__(self):
@@ -232,8 +246,6 @@ class Buttons(BaseSingletonMessage):
     )
 
 
-
-
     def __str__(self):
         return 'ButtonSummarize'
 
@@ -303,7 +315,7 @@ class ReferenceTexts(BaseSingletonMessage):
 
     ref_link_success_owner = models.TextField(
         max_length=255,
-        default='✨ Your friend followed the link!\nHere are 3 minutes just for you! ✨',
+        default='✨ Your friend, {name}, followed the link! You both get 3 minutes! ✨',
         verbose_name='Refund confirmation'
 
     )

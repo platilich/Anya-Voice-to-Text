@@ -9,7 +9,7 @@ class TelegramUser(models.Model):
     name = models.CharField(max_length=255, blank=True, verbose_name='Name')
     nickname = models.CharField(max_length=255, blank=True, null=True, verbose_name='Nickname')
     count_recognise = models.PositiveIntegerField(default=0, verbose_name='Number of recognise voice messages into text')
-    seconds_balance = models.IntegerField(default=120, verbose_name='Seconds balance')
+    seconds_balance = models.IntegerField(default=180, verbose_name='Seconds balance')
     balance_free_added = models.DateTimeField(null=True, verbose_name='Balance ended')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Registered')
     is_banned = models.BooleanField(default=False, verbose_name='Banned')
@@ -45,14 +45,12 @@ class TelegramUser(models.Model):
         await TelegramUser.objects.filter(user_id=user_id).aupdate(is_banned=is_banned)
 
 
+
     @classmethod
     async def get_statistic(cls, user_id: int):
         user_data = await TelegramUser.objects.filter(user_id=user_id).aget()
 
         return user_data.count_recognise
-
-
-
 
 
     @classmethod
@@ -148,11 +146,8 @@ class ReferenceLinks(models.Model):
 
 
     @classmethod
-    async def increase_invited_users(cls, user_id: int, from_user_id: int):
-        if user_id == from_user_id:
-            return
-
-        await ReferenceLinks.objects.filter(user_id=from_user_id).aupdate(count_invited=F('count_invited') + 1)
+    async def increase_invited_users(cls, user_id):
+        await ReferenceLinks.objects.filter(user_id=user_id).aupdate(count_invited=F('count_invited') + 1)
 
 
 

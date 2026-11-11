@@ -87,7 +87,7 @@ async def check_user(**kwargs):
     # --- skip flooded human messages before touching the database ---
     if not is_bot and await anti_flood(user_id):
         logger.info(f'user {user_id} flood, skip')
-        return True
+        return 'bad'
 
 
 
@@ -97,7 +97,7 @@ async def check_user(**kwargs):
 
     if user.is_banned:
         logger.info(f'user {user_id} banned, skip')
-        return True
+        return 'bad'
 
 
     if not created:
@@ -118,15 +118,16 @@ async def check_user(**kwargs):
     # --- if the user is new and arrived via a referral link ---
     if friend_id is not None and created:
         logger.info(f"We issue: {user_id}, {friend_id} monthly subscriptions")
+
+        await ReferenceLinks.increase_invited_users(user_id)
+
+        # --- add seconds new user, and friend which invited
         await TelegramUser.add_seconds(user_id, seconds=180)
-
-
-        await ReferenceLinks.increase_invited_users(user_id, friend_id)
         await TelegramUser.add_seconds(friend_id, seconds=180)
 
 
 
-        # --- sending a messages ---
+        # --- sending a messages to friend_id---
         project_root = Path(__file__).resolve().parent.parent
         screen_file = project_root / "screens" / "free_minutes.jpeg"
         photo = FSInputFile(screen_file)
@@ -135,15 +136,20 @@ async def check_user(**kwargs):
         # 2. Your friend followed the link! Here are 3 minutes for you!
         for_owner_url = await get_text(ReferenceTexts, key='ref_link_success_owner')
 
+        response = for_owner_url.replace('{name}', html.escape(name))
+
 
 
 
         await message.bot.send_photo(
             chat_id=friend_id,
             photo=photo,
-            caption=for_owner_url,
+            caption=response,
             parse_mode='HTML'
         )
+
+
+        return 'new'
 
 
     if duration_voice_message is not None:
@@ -167,7 +173,7 @@ async def check_user(**kwargs):
                 parse_mode='HTML',
                 reply_markup=keyboard
             )
-            return True
+            return 'bad'
 
 
     elif message.text:
