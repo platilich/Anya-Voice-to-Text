@@ -5,10 +5,7 @@ from cachetools import TTLCache
 from pathlib import Path
 
 from bot.logger import logger
-from bot.middlewares.permission_recognize import if_can_process
-from bot.middlewares.rejection_messages import send_more_than_fifteen_minutes
-from bot_messages.models import get_text, ReferenceTexts, LimitMessages
-from bot.keyboards.create_keyboard import keyboard_copy
+from bot_messages.models import get_text, ReferenceTexts
 
 from users.models import ReferenceLinks, TelegramUser
 from core.models import Protection
@@ -46,13 +43,6 @@ async def anti_flood(user_id):
 
     rate_limit_cache[user_id] = now
     return False
-
-
-
-
-
-async def protection_for_voice_handler(user_id: int, duration_voice_message: int):
-    return await if_can_process(user_id, duration_voice_message)
 
 
 
@@ -103,10 +93,10 @@ async def check_user(**kwargs):
     if not created:
         changed_fields = []
         if user.name != name:
-            changed_fields.append(user.name)
+            changed_fields.append("name")
 
         if user.nickname != nickname:
-            changed_fields.append(user.nickname)
+            changed_fields.append("nickname")
 
         if changed_fields:
             await user.asave(update_fields=changed_fields)
@@ -151,29 +141,6 @@ async def check_user(**kwargs):
 
         return 'new'
 
-
-    if duration_voice_message is not None:
-        if await protection_for_voice_handler(user_id, duration_voice_message):
-            if duration_voice_message > 900:
-                await send_more_than_fifteen_minutes(message)
-                return True
-
-            # --- creating keyboard ---
-            url = f'https://t.me/anya_voice_to_text_bot?start={user_id}'
-            keyboard = await keyboard_copy(url)
-
-
-
-            # --- getting a text for message from limits text ---
-            text = await get_text(LimitMessages, key='limit')
-            text = text.replace('{name}', html.escape(name or ''))
-
-            await message.answer(
-                text=text,
-                parse_mode='HTML',
-                reply_markup=keyboard
-            )
-            return 'bad'
 
 
     elif message.text:

@@ -4,13 +4,13 @@ import asyncio
 import html
 from collections import defaultdict
 
-
 from bot.utils.cleanup import remove_temp_files
 from bot.services.recognition import recognize, AllGroqKeysFailedError
 from bot.keyboards.create_keyboard import keyboard_summarize
 from bot.logger import logger
 from bot.utils.download import download_file, failed_message, notify_admin
 from bot.middlewares.filters import check_user
+from bot.middlewares.permission_recognize import not_enough_minutes
 
 from users.models import TelegramUser
 from toggles.models import SummarizeButtonSettings
@@ -47,6 +47,9 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     # --- execution queue ---
     async with user_locks[user_id]:
+        if await not_enough_minutes(message, user_id, duration_voice_message):
+            return
+
 
         # --- sending reaction ---
         await message.react([ReactionTypeEmoji(emoji='❤️')])
