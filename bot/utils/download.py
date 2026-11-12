@@ -14,26 +14,40 @@ TEMP_DIR = Path(__file__).resolve().parents[2] / "temp"
 
 
 async def download_file(bot, message, file_obj):
-    # --- for voice messages use .ogg, for video notes mp4
-    ext = 'ogg' if message.voice else 'mp4'
+    # --- for voice messages use .ogg, for video notes mp4 ---
 
-    # --- logging ---
+    ext = 'ogg' if message.voice else 'mp4'
     logger.info(f'downloading {ext} | {message.from_user.id}')
 
+    try:
+        logger.info('creating directory...')
+        TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
-    # --- creating directory for temporary files ---
-    TEMP_DIR.mkdir(parents=True, exist_ok=True)
+
+    except Exception as e:
+        logger.error(f'directory already created: {e}')
+
+
     path = str(TEMP_DIR / f"{message.from_user.id}_{message.message_id}.{ext}")
 
 
-    # get_file only returns Telegram's path. The bytes are saved by download_file.
-    file_info = await bot.get_file(file_obj.file_id)
-    await bot.download_file(str(file_info.file_path), destination=path)
+    try:
+        logger.info('downloading a file...')
+        file_info = await bot.get_file(file_obj.file_id)
+        await bot.download_file(str(file_info.file_path), destination=path)
+
+        return path
 
 
-    logger.info(f'saved file {path}')
+    except Exception as e:
+        logger.error(f'error during downloading a file: {e}')
+        os.remove(path)
 
-    return path
+        return None
+
+
+
+
 
 
 
@@ -48,6 +62,8 @@ async def failed_message(message):
     # --- send message about error ---
     text = await get_text(ErrorMessages, 'service_unavailable')
     await message.answer(text)
+
+
 
 
 # --- function for sending problem with Groq API keys message to admin ---

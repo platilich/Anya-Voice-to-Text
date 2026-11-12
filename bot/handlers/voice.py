@@ -11,6 +11,7 @@ from bot.logger import logger
 from bot.utils.download import download_file, failed_message, notify_admin
 from bot.middlewares.filters import check_user
 from bot.middlewares.permission_recognize import not_enough_minutes
+from bot.middlewares.rejection_messages import failed_downloaded_file
 
 from users.models import TelegramUser
 from toggles.models import SummarizeButtonSettings
@@ -68,6 +69,17 @@ async def handle_video_note(message: types.Message, bot: Bot):
             # --- download the file ---
             path = await download_file(bot, message, file_obj)
 
+            if path is None:
+                try:
+                    await failed_downloaded_file(message)
+
+                except Exception as e:
+                    logger.error(f'failed to reply to user: {e}')
+
+
+                return
+
+
             # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
             result = await recognize(path)
             logger.info(f'recognised: {result}')
@@ -75,11 +87,41 @@ async def handle_video_note(message: types.Message, bot: Bot):
             count_words = len(result.split())
 
 
+
+
+            # --- increase statistic ---
+            await TelegramUser.increase_count_recognise(user_id)
+
+
+
             is_turn_off = await SummarizeButtonSettings.get_status_btn_summarize()
+
+
+
+            if count_words > 4096:
+                list_messages = []
+
+                for i in range(0, len(result), 4096):
+                    message = result[i: i + 4096]
+                    list_messages.append(message)
+
+
+                for message in list_messages:
+                    await message.answer(
+                        text=f'<blockquote>{html.escape(message)}</blockquote>',
+                        disable_web_page_preview=True,
+                        parse_mode='HTML'
+                    )
+
+
+
+                return
+
+
+
 
             if count_words > 50 and not is_turn_off:
                 keyboard = await keyboard_summarize()
-
 
                 await message.reply(
                     text=f'<blockquote>{html.escape(result)}</blockquote>',
@@ -97,11 +139,6 @@ async def handle_video_note(message: types.Message, bot: Bot):
                     parse_mode='HTML'
                 )
 
-
-
-
-            # --- increase statistic ---
-            await TelegramUser.increase_count_recognise(user_id)
 
 
 

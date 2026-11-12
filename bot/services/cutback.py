@@ -30,7 +30,6 @@ async def make_text_shorter(text):
         raise AllGroqKeysFailedError("No API keys found in database")
 
 
-    prompt = text.replace('GitHub', '')
 
 
 
@@ -40,7 +39,7 @@ async def make_text_shorter(text):
             client = AsyncGroq(api_key=key.api_key)
 
             completion = await client.chat.completions.create(
-                model="openai/gpt-oss-120b",
+                model="openai/gpt-oss-20b",
                 messages=[
                     ChatCompletionSystemMessageParam(
                         role="system",
@@ -49,7 +48,7 @@ async def make_text_shorter(text):
 
                     ChatCompletionUserMessageParam(
                         role="user",
-                        content=f"<text>{prompt}</text>"
+                        content=f"<text>{text}</text>"
                     )
                 ],
                 temperature=0,

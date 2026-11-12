@@ -65,7 +65,6 @@ def parse_referrer_id(raw_friend_id, user_id: int) -> int | None:
 
 async def check_user(**kwargs):
     message = kwargs.get('message')
-    duration_voice_message = kwargs.get('duration_voice_message')
 
     user_id = int(message.from_user.id)
     friend_id = parse_referrer_id(kwargs.get('friend_id'), user_id)
@@ -109,7 +108,7 @@ async def check_user(**kwargs):
     if friend_id is not None and created:
         logger.info(f"We issue: {user_id}, {friend_id} monthly subscriptions")
 
-        await ReferenceLinks.increase_invited_users(user_id)
+        await ReferenceLinks.increase_invited_users(friend_id)
 
         # --- add seconds new user, and friend which invited
         await TelegramUser.add_seconds(user_id, seconds=180)
@@ -123,7 +122,7 @@ async def check_user(**kwargs):
         photo = FSInputFile(screen_file)
 
 
-        # 2. Your friend followed the link! Here are 3 minutes for you!
+        # 2. your friend followed the link! Here are 3 minutes for you!
         for_owner_url = await get_text(ReferenceTexts, key='ref_link_success_owner')
 
         response = for_owner_url.replace('{name}', html.escape(name))
@@ -147,7 +146,6 @@ async def check_user(**kwargs):
         command = message.text.split(maxsplit=1)[0].split('@', 1)[0]
         if command == '/shop':
             status = await ShopStatus.get_status_shop()
-            logger.info(f'магазин не работает: {status}')
             return status
 
 

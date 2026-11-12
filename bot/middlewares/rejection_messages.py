@@ -1,5 +1,10 @@
+from ast import parse
+
+from aiogram.enums import parse_mode
+from aiogram.types import reply_markup_union
+
 from bot.logger import logger
-from bot_messages.models import LimitMessages, get_text
+from bot_messages.models import LimitMessages, ErrorMessages, get_text
 from bot.keyboards.create_keyboard import keyboard_copy
 
 
@@ -34,3 +39,23 @@ async def send_minutes_ended(message):
         parse_mode='HTML',
         reply_markup=keyboard
     )
+
+
+
+
+async def failed_downloaded_file(message):
+    text = await get_text(model=ErrorMessages, key='failed_downloading')
+
+    try:
+        logger.error(
+        "An error occurred, unable to download the user's message. Attempting to notify the user about the problem."
+        )
+
+        await message.answer(
+            text=text,
+            parse_mode='HTML'
+        )
+
+
+    except Exception as e:
+        logger.error(f'Failed to send message to user: {e}')

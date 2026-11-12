@@ -292,6 +292,15 @@ class ErrorMessages(BaseSingletonMessage):
 
 
 
+
+    failed_downloading = models.TextField(
+        max_length=255,
+        default='There was some error downloading the file.\nPlease send the voice message again.',
+        verbose_name='Message if the file was downloaded unsuccessfully'
+    )
+
+
+
     class Meta:
         verbose_name = 'Error Text'
         verbose_name_plural = 'Error Texts'
