@@ -7,45 +7,7 @@ from cachetools import TTLCache
 
 
 # --- we store the data ---
-cache_donate = TTLCache(maxsize=1, ttl=180)
 cache_antiflood = TTLCache(maxsize=1, ttl=180)
-cache_price = TTLCache(maxsize=1, ttl=180)
-
-
-
-
-class DonatePrice(SingletonModel):
-    price = models.IntegerField(
-        blank=True,
-        default=1,
-        verbose_name='Donate Price. (Updated within 3 minutes)'
-    )
-
-
-    class Meta:
-        verbose_name_plural = 'Donate price'
-
-
-    def __str__(self):
-        return 'Donate price'
-
-
-
-    @classmethod
-    async def get_donate_price(cls):
-        # --- if the value is in the cache, we return it ---
-        if "price" in cache_donate:
-            return cache_donate["price"]
-
-        # --- getting a new value from the database ---
-        result, created = await cls.objects.aget_or_create(
-            defaults={'price': 1}
-        )
-
-        # --- cached to reduce database load ---
-        cache_donate["price"] = result.price
-
-        return result.price
 
 
 

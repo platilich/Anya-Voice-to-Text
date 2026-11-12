@@ -163,40 +163,6 @@ class LimitMessages(BaseSingletonMessage):
 
 
 
-class DonateMessages(BaseSingletonMessage):
-    # texts for invoicing and successful payments
-    invoice_title = models.TextField(
-        max_length=255,
-        default="Support the project with Anya",
-        verbose_name="Invoice Title"
-    )
-
-    invoice_description = models.TextField(
-        default="A small donation to support the project — 1 star.",
-        verbose_name="Invoice Description"
-    )
-
-    success_donate = models.TextField(
-        max_length=255,
-        default=(
-            "✨ {name}, thanks so much for the donation! ❤️"
-        ),
-        verbose_name="Success Purchase Message ({name}, {payment_info.total_amount})"
-    )
-
-
-
-
-
-    def __str__(self):
-        return 'Subscription Payment Texts'
-
-    class Meta:
-        verbose_name = 'Subscription Payment'
-        verbose_name_plural = 'Subscription Payments'
-
-
-
 
 class Buttons(BaseSingletonMessage):
     button_summarize_title = models.TextField(

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SummarizeButtonSettings, ShopStatus
+from .models import SummarizeButtonSettings
 from solo.admin import SingletonModelAdmin
 
 
@@ -13,10 +13,4 @@ class NativeSingletonAdmin(SingletonModelAdmin):
 # Register your models here.
 @admin.register(SummarizeButtonSettings)
 class SummarizeButtonSettings(NativeSingletonAdmin):
-    pass
-
-
-
-@admin.register(ShopStatus)
-class ShopStatus(NativeSingletonAdmin):
     pass

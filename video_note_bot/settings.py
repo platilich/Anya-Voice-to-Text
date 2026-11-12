@@ -87,7 +87,8 @@ INSTALLED_APPS = [
     'bot_messages',
     'toggles',
     'broadcast_manage',
-    'shop'
+    'shop',
+    'donations'
 ]
 
 MIDDLEWARE = [

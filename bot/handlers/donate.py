@@ -5,10 +5,12 @@ from aiogram.types import FSInputFile, LabeledPrice
 
 from bot.keyboards.create_keyboard import keyboard_donate
 from bot.logger import logger
-from bot_messages.models import get_text, DonateMessages
+from bot_messages.models import get_text
 
 
-from core.models import DonatePrice
+from donations.models import DonationMessages, DonatePrice
+
+
 from pathlib import Path
 import html
 
@@ -26,12 +28,10 @@ async def command_donate(message: types.Message):
 
     keyboard = await keyboard_donate()
 
+    invoice_title = await DonationMessages.get_donate_text(key='invoice_title')
+    invoice_description = await DonationMessages.get_donate_text(key='invoice_description')
 
-    invoice_title = await get_text(DonateMessages, key='invoice_title')
-    invoice_description = await get_text(DonateMessages, key='invoice_description')
-
-
-    amount = await DonatePrice.get_donate_price()
+    amount = await DonatePrice.get_donation_price()
 
     project_root = Path(__file__).resolve().parent.parent
     screen_file = project_root / "screens" / "donate.jpeg"
@@ -71,7 +71,7 @@ async def process_successful_payment(message: types.Message):
     name = message.from_user.first_name
 
 
-    text = await get_text(DonateMessages, key='success_donate')
+    text = await DonationMessages.get_donate_text(key='success_donate')
 
     response = text.replace('{name}', html.escape(name))
 

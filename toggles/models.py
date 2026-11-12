@@ -5,43 +5,9 @@ from cachetools import TTLCache
 
 
 cache_summarize_button = TTLCache(maxsize=1, ttl=180)
-cache_status_command = TTLCache(maxsize=1, ttl=180)
 
 
 # Create your models here.
-class ShopStatus(SingletonModel):
-    turn_off_shop = models.BooleanField(
-        default=True,
-        verbose_name='Turn off /shop command'
-    )
-
-
-    class Meta:
-        verbose_name = 'Shop status'
-        verbose_name_plural = 'Shop status'
-
-
-
-    def __str__(self):
-        return 'Command /shop'
-
-
-    @classmethod
-    async def get_status_shop(cls):
-        if "command_status" in cache_status_command:
-            return cache_status_command['command_status']
-
-
-        result, created = await cls.objects.aget_or_create(
-            defaults={'turn_off_shop': False}
-        )
-
-        cache_status_command['command_status'] = result.turn_off_shop
-        # возращаем True допустим
-        return result.turn_off_shop
-
-
-
 class SummarizeButtonSettings(SingletonModel):
     turn_off_btn = models.BooleanField(
         default=False,
