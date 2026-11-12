@@ -8,9 +8,9 @@ from bot.logger import logger
 from bot.keyboards.create_keyboard import keyboard_shop
 
 
-from bot_messages.models import ShopTexts, ErrorMessages
-from bot_messages.models import get_text
-from core.models import MinutePrice
+
+from shop.models import ShopTexts, ShopStatus, ShopMinutePrice
+
 
 import html
 
@@ -31,17 +31,21 @@ async def shop(message: types.Message):
         return
 
 
+    if await ShopStatus.shop_not_work():
+        return
+
+
     logger.info(f'send invoice pro | {message.from_user.id}')
 
 
 
     # --- getting texts from models ---
-    text_title = await get_text(model=ShopTexts, key='invoice_title')
-    text_description = await get_text(model=ShopTexts, key='invoice_description')
+    text_title = await ShopTexts.get_shop_text(key='invoice_title')
+    text_description = await ShopTexts.get_shop_text(key='invoice_description')
 
 
     # --- getting the current subscription price ---
-    price_per_one_minute = await MinutePrice.get_minute_price_per_minute() # per minute in stars
+    price_per_one_minute = await ShopMinutePrice.get_minute_price_per_minute()
 
     current_price = price_per_one_minute * 3
 
@@ -91,7 +95,7 @@ async def process_successful_payment(message: types.Message):
 
 
 
-    price_now = await MinutePrice.get_minute_price_per_minute() * 3 # --- current price ---
+    price_now = await ShopMinutePrice.get_minute_price_per_minute() * 3
     paid = int(payment_info.total_amount)
 
 
@@ -105,8 +109,9 @@ async def process_successful_payment(message: types.Message):
         try:
             logger.info('we write to the user that something is wrong with the payment.')
 
-            failed_payment = await get_text(model=ShopTexts, key='failed_payment')
-            await message.answer(failed_payment)
+            response = ShopTexts.get_shop_text(key='failed_payment')
+
+            await message.answer(str(response))
 
         except Exception as e:
             logger.error(f"couldn't send message to user: {user_id}\nerror: {e}")
@@ -114,10 +119,12 @@ async def process_successful_payment(message: types.Message):
 
         try:
             logger.info(f'refund money to user: {user_id}')
+
             await message.bot.refund_payment(
                 user_id=user_id,
                 telegram_payment_charge_id=payment_info.telegram_payment_charge_id,
             )
+
 
         except Exception as e:
             logger.error(f'error when transferring money to user: {user_id}\nerror: {e}')
@@ -128,22 +135,23 @@ async def process_successful_payment(message: types.Message):
         try:
             logger.info('we write to the user that something is wrong with the payment.')
 
-            text = await get_text(model=ErrorMessages, key='refund_payment')
+            text = await ShopTexts.get_shop_text(key='refund_payment')
             await message.answer(text)
+
 
         except Exception as e:
             logger.error(f"couldn't send message to user: {user_id}\nerror: {e}")
 
 
 
-        logger.info('We are refund the money')
+        logger.info('We refund the money')
 
         return
 
 
     # --- sending thanks for the purchase ---
     try:
-        text = await get_text(model=ShopTexts, key='success_purchase')
+        text = await ShopTexts.get_shop_text(key='success_bought')
         response = text.replace('{name}', str(html.escape(name))).replace('{payment_info.total_amount}', str(payment_info.total_amount))
         await message.answer(response)
 
@@ -152,10 +160,8 @@ async def process_successful_payment(message: types.Message):
         logger.error(f'failed send thanks for plus: {e}')
 
 
-
-
     logger.info('user bought subscribe')
 
     await TelegramUser.add_seconds(user_id, seconds=180)
 
-    logger.info('add 180 secondss')
+    logger.info('add 180 seconds')

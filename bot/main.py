@@ -23,10 +23,9 @@ from aiogram.types import FSInputFile
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from users.models import TelegramUser
-from bot_messages.models import get_text, LimitMessages
 from bot.handlers import register_all_handlers
 from bot.logger import logger
-
+from broadcast_manage.models import BroadcastTime, BroadcastStatus, BroadcastTexts
 
 
 
@@ -47,12 +46,15 @@ if not token:
 
 
 
-
-
 async def broadcast_limits_updated(bot):
+    if await BroadcastStatus.broadcast_not_work():
+        return
+
+
     users_id = await TelegramUser.get_all_users()
 
-    time_updated = await get_text(LimitMessages, key='time_updated')
+    time_updated = await BroadcastTexts.get_broadcast_text()
+
 
     project_root = Path(__file__).resolve().parent.parent
     screen_file = project_root / "screens" / "free_minutes.jpeg"
@@ -89,18 +91,22 @@ async def main():
     register_all_handlers(dp)
 
 
-    scheduler = AsyncIOScheduler(timezone="Europe/Belgrade")
+    scheduler = AsyncIOScheduler(timezone="UTC")
+
+
+    scheduled_at = await BroadcastTime.get_time_broadcast()
 
 
     scheduler.add_job(
         broadcast_limits_updated,
         trigger="cron",
-        hour=9,
-        minute=00,
+        hour=scheduled_at.hour,
+        minute=scheduled_at.minute,
         args=[bot],
         id="daily_minutes",
         replace_existing=True,
     )
+
 
 
 

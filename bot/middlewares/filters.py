@@ -11,10 +11,6 @@ from users.models import ReferenceLinks, TelegramUser
 from core.models import Protection
 
 
-from toggles.models import ShopStatus
-
-
-
 
 
 rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
@@ -139,15 +135,6 @@ async def check_user(**kwargs):
 
 
         return 'new'
-
-
-
-    elif message.text:
-        command = message.text.split(maxsplit=1)[0].split('@', 1)[0]
-        if command == '/shop':
-            status = await ShopStatus.get_status_shop()
-            return status
-
 
 
     return False

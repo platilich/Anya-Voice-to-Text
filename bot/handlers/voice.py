@@ -102,13 +102,13 @@ async def handle_video_note(message: types.Message, bot: Bot):
                 list_messages = []
 
                 for i in range(0, len(result), 4096):
-                    message = result[i: i + 4096]
-                    list_messages.append(message)
+                    msg = result[i: i + 4096]
+                    list_messages.append(msg)
 
 
-                for message in list_messages:
+                for msg in list_messages:
                     await message.answer(
-                        text=f'<blockquote>{html.escape(message)}</blockquote>',
+                        text=f'<blockquote>{html.escape(msg)}</blockquote>',
                         disable_web_page_preview=True,
                         parse_mode='HTML'
                     )

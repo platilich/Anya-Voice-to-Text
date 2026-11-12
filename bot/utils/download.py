@@ -41,7 +41,13 @@ async def download_file(bot, message, file_obj):
 
     except Exception as e:
         logger.error(f'error during downloading a file: {e}')
-        os.remove(path)
+
+        try:
+            logger.info(f'attempt to remove a file: {path}')
+            os.remove(path)
+
+        except Exception as e:
+            logger.info(f'file not found: {e}')
 
         return None
 

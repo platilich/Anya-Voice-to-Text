@@ -30,5 +30,5 @@ models = [StartMessages, ProfileMessages, LimitMessages,  ErrorMessages, Buttons
 for model in models:
 
     @admin.register(model)
-    class StickerAnyaAdmin(NativeSingletonAdmin):
+    class SoloClass(NativeSingletonAdmin):
         pass

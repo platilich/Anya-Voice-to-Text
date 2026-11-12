@@ -49,39 +49,6 @@ class DonatePrice(SingletonModel):
 
 
 
-class MinutePrice(SingletonModel):
-    price = models.IntegerField(
-        blank=True,
-        default=1,
-        verbose_name='Price per minute in Stars (updated within 3 minutes)'
-    )
-
-
-    class Meta:
-        verbose_name_plural = 'Minute price per minute'
-
-
-    def __str__(self):
-        return 'Minute price per minute'
-
-
-    @classmethod
-    async def get_minute_price_per_minute(cls):
-        # --- if the value is in the cache, we return it ---
-        if "price" in cache_price:
-            return cache_price["price"]
-
-        # --- getting a new value from the database ---
-        result, created = await cls.objects.aget_or_create(
-            defaults={'price': 1}
-        )
-
-        # --- cached to reduce database load ---
-        cache_price["price"] = result.price
-
-        return result.price
-
-
 
 class Protection(SingletonModel):
     rest_time = models.DecimalField(
