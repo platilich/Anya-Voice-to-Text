@@ -60,6 +60,11 @@ class TelegramUser(models.Model):
 
     @classmethod
     async def spend_seconds(cls, user_id: int, seconds: int):
+        data = await TelegramUser.objects.filter(user_id=user_id).aget()
+
+        if data.seconds_balance - seconds < 0:
+            return
+
         await TelegramUser.objects.filter(user_id=user_id).aupdate(seconds_balance=F('seconds_balance') - seconds)
 
 

@@ -108,7 +108,7 @@ async def check_user(**kwargs):
 
         # --- add seconds new user, and friend which invited
         await TelegramUser.add_seconds(user_id, seconds=180)
-        await TelegramUser.add_seconds(friend_id, seconds=180)
+        await TelegramUser.add_seconds(friend_id, seconds=360)
 
 
 

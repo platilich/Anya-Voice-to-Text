@@ -5,7 +5,6 @@ from aiogram.types import FSInputFile, LabeledPrice
 
 from bot.keyboards.create_keyboard import keyboard_donate
 from bot.logger import logger
-from bot_messages.models import get_text
 
 
 from donations.models import DonationMessages, DonatePrice

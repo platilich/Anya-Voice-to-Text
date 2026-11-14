@@ -138,9 +138,9 @@ class LimitMessages(BaseSingletonMessage):
         max_length=255,
         default=(
             "👋 Hey, {name}!\n"
-            "⏰ You've used up your minutes for now. Your free 3 minutes refresh every 24 hours.\n\n"
-            "⭐ Need more right now? Invite a friend who's new to the bot! Tap the button below and send them your link. "
-            "As soon as they press Start, you'll both get an extra 3 minutes.\n"
+            "⏰ The limits will be updated at 9 UTC\n\n"
+            "⭐ Need more right now? Invite a friend who's new to the bot! click the button below and send it to a friend, let him click start.\n\n"
+            "✨ You'll get 6 minutes, and he'll get 3 minutes."
         ),
         verbose_name="Daily usage limit reached"
     )

@@ -33,13 +33,13 @@ class DonationMessages(SingletonModel):
 
 
     def __str__(self):
-        return 'Subscription Payment Texts'
+        return 'Donation texts'
 
 
 
     class Meta:
-        verbose_name = 'Subscription Payment'
-        verbose_name_plural = 'Subscription Payments'
+        verbose_name = 'Donation text'
+        verbose_name_plural = 'Donation texts'
 
 
 

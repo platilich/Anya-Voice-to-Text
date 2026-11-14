@@ -54,13 +54,13 @@ class ShopTexts(SingletonModel):
 
 
     def __str__(self):
-        return 'Subscription Payment Texts'
+        return 'Shop texts'
 
 
 
     class Meta:
-        verbose_name = 'Subscription Payment'
-        verbose_name_plural = 'Subscription Payments'
+        verbose_name = 'Shop texts'
+        verbose_name_plural = 'Shop texts'
 
 
 
@@ -131,7 +131,7 @@ class ShopMinutePrice(SingletonModel):
 
 class ShopStatus(SingletonModel):
     shop_turn_off = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name='Turn off shop'
     )
 

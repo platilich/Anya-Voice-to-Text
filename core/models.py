@@ -1,3 +1,4 @@
+from django.conf.locale import fa
 from django.db import models
 from solo.models import SingletonModel
 
@@ -53,8 +54,8 @@ class Protection(SingletonModel):
 
 
 class GroqAPIKey(models.Model):
-    name = models.CharField(max_length=30, blank=True, verbose_name='Key name')
-    api_key = models.CharField(max_length=255, blank=True, verbose_name='Insert a spare API key (from groq.com)')
+    name = models.CharField(max_length=30, verbose_name='Key name')
+    api_key = models.CharField(max_length=255, verbose_name='Insert a spare API key (from groq.com)')
 
 
 
@@ -73,6 +74,7 @@ class GroqAPIKey(models.Model):
 
         # --- returning the keys in the dictionary ---
         return keys
+
 
 
     class Meta:
