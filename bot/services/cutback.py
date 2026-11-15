@@ -1,5 +1,5 @@
 from services.system_prompt import SYSTEM_PROMPT
-from transcription.models import get_api_keys
+from transcription.models import get_api_keys, get_selected_models
 
 from google import genai
 from google.genai import types
@@ -7,11 +7,11 @@ from google.genai import types
 
 async def make_text_shorter(text: str):
     keys = await get_api_keys()
+    selected_model = await get_selected_models('text')
+
 
     for key in keys:
         client = genai.Client(api_key=key)
-
-        model = "gemini-3.1-flash-lite"
 
         contents = [
             types.Content(
@@ -32,7 +32,7 @@ async def make_text_shorter(text: str):
         )
 
         response = client.models.generate_content(
-            model=model,
+            model=selected_model,
             contents=contents,
             config=generate_content_config,
         )

@@ -1,4 +1,4 @@
-from transcription.models import get_api_keys
+from transcription.models import get_api_keys, get_selected_models
 from google import genai
 from bot.logger import logger
 
@@ -6,6 +6,8 @@ from bot.logger import logger
 
 async def recognize(path: str):
     keys = await get_api_keys()
+    selected_model = await get_selected_models('voice')
+
 
     for key in keys:
         client = genai.Client(
@@ -18,7 +20,7 @@ async def recognize(path: str):
 
         # 2. Вызываем interactions.create с правильной структурой словаря для файла
         response = client.interactions.create(
-            model="gemini-3.5-transcribe",
+            model=selected_model,
             input=[
                 {
                     "type": "audio",
