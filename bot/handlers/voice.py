@@ -12,6 +12,7 @@ from bot.utils.download import download_file, failed_message, notify_admin
 from bot.middlewares.filters import check_user
 from bot.middlewares.permission_recognize import not_enough_minutes
 from bot.middlewares.rejection_messages import failed_downloaded_file
+from aiogram.types import FSInputFile
 
 from users.models import TelegramUser
 
@@ -37,6 +38,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
     file_obj = message.voice or message.video_note
     duration_voice_message = file_obj.duration
 
+
     logger.info('got a audio/video_note')
 
 
@@ -47,93 +49,87 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
     # --- execution queue ---
     async with user_locks[user_id]:
-        if await not_enough_minutes(message, user_id, duration_voice_message):
-            return
+        try:
+            if await not_enough_minutes(message, user_id, duration_voice_message):
+                return
 
 
-        # --- sending reaction ---
-        await message.react([ReactionTypeEmoji(emoji='❤️')])
-        await bot.send_chat_action(chat_id=message.chat.id, action='typing')
-
-
-        path = None
-
-
-
-        # --- increasing the time used for the limits ---
-        await TelegramUser.spend_seconds(user_id, duration_voice_message)
-
-
-        # --- download the file ---
-        path = await download_file(bot, message, file_obj)
-
-        if path is None:
-            try:
-                await failed_downloaded_file(message)
-
-            except Exception as e:
-                logger.error(f'failed to reply to user: {e}')
-
-
-            return
-
-
-        # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
-        print(path)
-        result = await recognize(path)
-
-        logger.info(f'recognised: {result}')
+            # --- sending reaction ---
+            await message.react([ReactionTypeEmoji(emoji='❤️')])
+            await bot.send_chat_action(chat_id=message.chat.id, action='typing')
 
 
 
-        count_words = len(result)
+            # --- increasing the time used for the limits ---
+            await TelegramUser.spend_seconds(user_id, duration_voice_message)
+
+
+            # --- download the file ---
+            path = await download_file(bot, message, file_obj)
+
+
+            if path is None:
+                try:
+                    await failed_downloaded_file(message)
+
+                except Exception as e:
+                    logger.error(f'failed to reply to user: {e}')
+
+                return
+
+
+            # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
+            print(path)
+            result = await recognize(path)
+
+            logger.info(f'recognised: {result}')
+
+
+
+            count_words = len(result)
 
 
 
 
-        # --- increase statistic ---
-        await TelegramUser.increase_count_recognise(user_id)
+            # --- increase statistic ---
+            await TelegramUser.increase_count_recognise(user_id)
 
 
-        if count_words > 4096:
-            list_messages = []
-
-            for i in range(0, len(result), 4096):
-                msg = result[i: i + 4096]
-                list_messages.append(msg)
+            if count_words > 4096:
+                with open('anya-voice-to-text', 'w+') as file:
+                    file.write(result)
+                    file.close()
 
 
-            for msg in list_messages:
-                await message.answer(
-                    text=f'<blockquote>{html.escape(msg)}</blockquote>',
+                # --- create a file object ---
+                file_to_send = FSInputFile(path="anya-voice-to-text")
+
+                await bot.send_document(chat_id=message.chat.id, document=file_to_send)
+
+                return
+
+
+
+            if count_words > 50:
+                keyboard = await keyboard_summarize()
+
+                await message.reply(
+                    text=f'<blockquote>{html.escape(result)}</blockquote>',
                     disable_web_page_preview=True,
-                    parse_mode='HTML'
+                    parse_mode='HTML',
+                    reply_markup=keyboard
                 )
 
-
-
-            return
-
-
-
-        await message.reply(
-            text=f'<blockquote>{html.escape(result)}</blockquote>',
-            disable_web_page_preview=True,
-            parse_mode='HTML'
-        )
+                return
 
 
 
-"""        except AllGroqKeysFailedError as e:
-            logger.critical(f'groq keys failed: {e}')
 
-            # --- calling the function to inform the admin about problems with Groq API keys ---
-            await notify_admin(bot)
-
-            # --- reduce used seconds ---
-            await TelegramUser.add_seconds(user_id, duration_voice_message)
-
-            await failed_message(message)
+            await message.reply(
+                text=f'<blockquote>{html.escape(result)}</blockquote>',
+                disable_web_page_preview=True,
+                parse_mode='HTML'
+            )
 
 
 
@@ -149,4 +145,4 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
         finally:
             if path:
-                remove_temp_files([path])"""
+                remove_temp_files([path])

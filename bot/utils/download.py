@@ -6,6 +6,8 @@ from bot.logger import logger
 from bot_messages.models import get_text
 from bot_messages.models import ErrorMessages
 
+from utils.convert import conver_to_ogg
+
 
 # --- bot/handlers/this_file.py ---
 TEMP_DIR = Path(__file__).resolve().parents[2] / "temp"
@@ -35,6 +37,10 @@ async def download_file(bot, message, file_obj):
         logger.info('downloading a file...')
         file_info = await bot.get_file(file_obj.file_id)
         await bot.download_file(str(file_info.file_path), destination=path)
+
+        if ext == 'mp4':
+            path = await conver_to_ogg(path)
+
 
         return path
 

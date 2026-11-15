@@ -4,7 +4,7 @@ from bot.logger import logger
 
 
 
-async def recognize(path):
+async def recognize(path: str):
     keys = await get_api_keys()
 
     for key in keys:
@@ -29,10 +29,13 @@ async def recognize(path):
         )
 
         try:
-            client.files.delete(name=audio_file.name)
+            client.files.delete(name=str(audio_file.name))
 
         except Exception as e:
             logger.info(f"couldn't delete file from google server: {e}")
 
 
-        return response.output_text
+
+        response = str(response.output_text)
+
+        return response
