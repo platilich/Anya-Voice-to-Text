@@ -84,10 +84,10 @@ INSTALLED_APPS = [
     'users',
     'core',
     'bot_messages',
-    'toggles',
     'broadcast_manage',
     'shop',
-    'donations'
+    'donations',
+    'transcription',
 ]
 
 MIDDLEWARE = [

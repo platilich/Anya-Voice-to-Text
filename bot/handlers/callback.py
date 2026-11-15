@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 
-from bot.services.cutback import make_text_shorter
+#from bot.services.cutback import make_text_shorter
 from bot.logger import logger
 import html
 
@@ -24,14 +24,14 @@ async def handle_cut_back(callback: CallbackQuery):
 
 
     logger.info('make text shorter')
-    short_text = await make_text_shorter(message_text)
+    #short_text = await make_text_shorter(message_text)
 
-    response = (
-        f'<blockquote>{html.escape(short_text)}</blockquote>'
-    )
+    #response = (
+        #f'<blockquote>{html.escape(short_text)}</blockquote>'
+    #)
 
     await callback.message.answer(
-        text=response,
+        text='заглушка',
         parse_mode='HTML',
         disable_web_page_preview=True
 

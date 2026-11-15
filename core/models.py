@@ -49,33 +49,3 @@ class Protection(SingletonModel):
         cache_antiflood["rest_time"] = float(result.rest_time)
 
         return float(result.rest_time)
-
-
-
-
-class GroqAPIKey(models.Model):
-    name = models.CharField(max_length=30, verbose_name='Key name')
-    api_key = models.CharField(max_length=255, verbose_name='Insert a spare API key (from groq.com)')
-
-
-
-    def __str__(self):
-        return self.name
-
-
-    @classmethod
-    async def get_api_keys(cls):
-        keys = []
-
-
-        async for key in cls.objects.all():
-            keys.append(key)
-
-
-        # --- returning the keys in the dictionary ---
-        return keys
-
-
-
-    class Meta:
-        verbose_name_plural = 'Groq API Keys'

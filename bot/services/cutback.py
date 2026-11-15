@@ -1,4 +1,4 @@
-from groq import AsyncGroq, RateLimitError, AuthenticationError
+"""from groq import AsyncGroq, RateLimitError, AuthenticationError
 from groq.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
 
@@ -75,4 +75,4 @@ async def make_text_shorter(text):
 
 
     logger.error('all groq keys failed')
-    raise AllGroqKeysFailedError("All Groq API keys are exhausted or invalid")
+    raise AllGroqKeysFailedError("All Groq API keys are exhausted or invalid")"""

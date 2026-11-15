@@ -1,63 +1,38 @@
-from groq import AsyncGroq, RateLimitError, AuthenticationError
-from core.models import GroqAPIKey
+from transcription.models import get_api_keys
+from google import genai
 from bot.logger import logger
 
 
 
-# --- it is triggered when all Groq API keys are unavailable ---
-class AllGroqKeysFailedError(Exception):
-    pass
-
-
-
-async def recognize(file_path):
-    # --- getting api keys from db ---
-    keys = await GroqAPIKey.get_api_keys()
-
-    # --- log this ---
-    logger.info('attempt to get api keys | recognize')
-
-    if keys is None:
-        logger.error('Add at least one groq key to the admin panel')
-        raise AllGroqKeysFailedError("No API keys found in database")
-
-
-
+async def recognize(path):
+    keys = await get_api_keys()
 
     for key in keys:
+        client = genai.Client(
+            api_key=key,
+            http_options={"api_version": "v1beta"}
+        )
+
+        # 1. Загружаем файл через Files API
+        audio_file = client.files.upload(file=path)
+
+        # 2. Вызываем interactions.create с правильной структурой словаря для файла
+        response = client.interactions.create(
+            model="gemini-3.5-transcribe",
+            input=[
+                {
+                    "type": "audio",
+                    "uri": audio_file.uri,
+                    "mime_type": audio_file.mime_type,
+                }
+            ],
+        )
+
         try:
-            groq_client = AsyncGroq(api_key=key.api_key)
-
-
-            logger.info('audio_recognition | recognition')
-
-            with open(file_path, "rb") as file:
-                result = await groq_client.audio.transcriptions.create(
-                    file=(file_path, file.read()),
-                    model="whisper-large-v3",
-                    temperature=0,
-                )
-
-            return result.text
-
-
-
-        except (RateLimitError, AuthenticationError) as e:
-            logger.warning(f'key {key.api_key[:8]} failed, try next: {e}')
-            continue
-
-
-
-        except OSError:
-            # The file was never saved, or the disk read failed. That is not
-            # a bad key, so do not walk the rest of the key list.
-            raise
+            client.files.delete(name=audio_file.name)
 
         except Exception as e:
-            logger.error(f'recognize | something wrong with key: {e}')
-            continue
+            logger.info(f"couldn't delete file from google server: {e}")
 
 
-
-    logger.error('all groq keys failed')
-    raise AllGroqKeysFailedError("All Groq API keys are exhausted or invalid")
+        return response.output_text

@@ -5,7 +5,7 @@ import html
 from collections import defaultdict
 
 from bot.utils.cleanup import remove_temp_files
-from bot.services.recognition import recognize, AllGroqKeysFailedError
+from bot.services.recognition import recognize
 from bot.keyboards.create_keyboard import keyboard_summarize
 from bot.logger import logger
 from bot.utils.download import download_file, failed_message, notify_admin
@@ -14,7 +14,6 @@ from bot.middlewares.permission_recognize import not_enough_minutes
 from bot.middlewares.rejection_messages import failed_downloaded_file
 
 from users.models import TelegramUser
-from toggles.models import SummarizeButtonSettings
 
 
 
@@ -61,88 +60,71 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
 
-        try:
-            # --- increasing the time used for the limits ---
-            await TelegramUser.spend_seconds(user_id, duration_voice_message)
+        # --- increasing the time used for the limits ---
+        await TelegramUser.spend_seconds(user_id, duration_voice_message)
 
 
-            # --- download the file ---
-            path = await download_file(bot, message, file_obj)
+        # --- download the file ---
+        path = await download_file(bot, message, file_obj)
 
-            if path is None:
-                try:
-                    await failed_downloaded_file(message)
+        if path is None:
+            try:
+                await failed_downloaded_file(message)
 
-                except Exception as e:
-                    logger.error(f'failed to reply to user: {e}')
-
-
-                return
+            except Exception as e:
+                logger.error(f'failed to reply to user: {e}')
 
 
-            # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
-            result = await recognize(path)
-            logger.info(f'recognised: {result}')
-
-            count_words = len(result.split())
+            return
 
 
+        # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
+        print(path)
+        result = await recognize(path)
 
-
-            # --- increase statistic ---
-            await TelegramUser.increase_count_recognise(user_id)
+        logger.info(f'recognised: {result}')
 
 
 
-            is_turn_off = await SummarizeButtonSettings.get_status_btn_summarize()
-
-
-
-            if count_words > 4096:
-                list_messages = []
-
-                for i in range(0, len(result), 4096):
-                    msg = result[i: i + 4096]
-                    list_messages.append(msg)
-
-
-                for msg in list_messages:
-                    await message.answer(
-                        text=f'<blockquote>{html.escape(msg)}</blockquote>',
-                        disable_web_page_preview=True,
-                        parse_mode='HTML'
-                    )
-
-
-
-                return
+        count_words = len(result)
 
 
 
 
-            if count_words > 50 and not is_turn_off:
-                keyboard = await keyboard_summarize()
-
-                await message.reply(
-                    text=f'<blockquote>{html.escape(result)}</blockquote>',
-                    disable_web_page_preview=True,
-                    parse_mode='HTML',
-                    reply_markup=keyboard
-                )
+        # --- increase statistic ---
+        await TelegramUser.increase_count_recognise(user_id)
 
 
+        if count_words > 4096:
+            list_messages = []
 
-            else:
-                await message.reply(
-                    text=f'<blockquote>{html.escape(result)}</blockquote>',
+            for i in range(0, len(result), 4096):
+                msg = result[i: i + 4096]
+                list_messages.append(msg)
+
+
+            for msg in list_messages:
+                await message.answer(
+                    text=f'<blockquote>{html.escape(msg)}</blockquote>',
                     disable_web_page_preview=True,
                     parse_mode='HTML'
                 )
 
 
 
+            return
 
-        except AllGroqKeysFailedError as e:
+
+
+        await message.reply(
+            text=f'<blockquote>{html.escape(result)}</blockquote>',
+            disable_web_page_preview=True,
+            parse_mode='HTML'
+        )
+
+
+
+"""        except AllGroqKeysFailedError as e:
             logger.critical(f'groq keys failed: {e}')
 
             # --- calling the function to inform the admin about problems with Groq API keys ---
@@ -167,4 +149,4 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
         finally:
             if path:
-                remove_temp_files([path])
+                remove_temp_files([path])"""
