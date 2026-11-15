@@ -10,25 +10,6 @@ from bot_messages.models import (
 from users.models import TelegramUser
 
 
-
-def get_reset_minutes(reset_datetime) -> int | None:
-    if not reset_datetime:
-        return None
-
-    now = datetime.now(timezone.utc)
-
-    # Если время сброса уже прошло
-    if reset_datetime <= now:
-        return None
-
-    # Высчитываем разницу в минутах
-    diff = reset_datetime - now
-    minutes_left = int(diff.total_seconds() // 60)
-
-    # Если сброс меньше чем через минуту, но еще не наступил
-    return max(1, minutes_left)
-
-
 async def profile_message(user_id: int, name: str) -> str:
     # 1. Получаем данные из БД
     all_time_recognised = await TelegramUser.get_statistic(user_id=user_id)

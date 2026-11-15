@@ -1,10 +1,7 @@
-from aiogram.types import ReactionTypeEmoji
 from pathlib import Path
 import os
 
 from bot.logger import logger
-from bot_messages.models import get_text
-from bot_messages.models import ErrorMessages
 
 from utils.convert import conver_to_ogg
 
@@ -56,48 +53,3 @@ async def download_file(bot, message, file_obj):
             logger.info(f'file not found: {e}')
 
         return None
-
-
-
-
-
-
-
-# --- function for sending error messages to user ---
-async def failed_message(message):
-    logger.info(f'send service unavailable | {message.from_user.id}')
-
-    # --- inform the user about the error ---
-    # --- reaction emoji and sticker ---
-    await message.react([ReactionTypeEmoji(emoji="😢")])
-
-    # --- send message about error ---
-    text = await get_text(ErrorMessages, 'service_unavailable')
-    await message.answer(text)
-
-
-
-
-# --- function for sending problem with Groq API keys message to admin ---
-async def notify_admin(bot):
-    # --- extract admin id from .env ---
-    admin_id = os.getenv("ADMIN_ID")
-
-
-    # --- send message to inform admin about problem with Groq API keys ---
-    text = await get_text(model=ErrorMessages, key='admin_no_groq_keys')
-
-    if admin_id:
-        logger.info(f'notify admin {admin_id}')
-        try:
-            await bot.send_message(
-                chat_id=int(admin_id),
-                text=text,
-                parse_mode="HTML",
-            )
-
-        except Exception as admin_err:
-            logger.error(f'failed notify admin: {admin_err}')
-
-    else:
-        logger.info('no ADMIN_ID, cant notify')
