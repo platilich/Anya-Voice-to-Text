@@ -13,7 +13,13 @@ from bot.middlewares.filters import check_user
 from bot.middlewares.permission_recognize import not_enough_minutes
 
 
-from messages.rejection_messages import failed_downloaded_file, failed_message
+from messages.rejection_messages import (failed_downloaded_file,
+                                         failed_message,
+                                         gemini_limits,
+                                         send_message_little_longer,
+                                         notify_admin
+                                    )
+
 from users.models import TelegramUser
 from collections import defaultdict
 
@@ -33,6 +39,47 @@ async def get_user_lock(user_id: int) -> asyncio.Lock:
         user_locks[user_id] = asyncio.Lock() # --- add user into the list ---
 
     return user_locks[user_id]
+
+
+
+
+
+async def send_start_recognise(message, path):
+    for i in range(3):
+        result = await recognize(path)
+
+        code = result[0]
+        status = result[1]
+
+
+        if status is not False:
+            return result
+
+
+        if code == 429:
+            logger.warning("The limits on our Gemini AI API account have ended")
+            await gemini_limits(message)
+            break
+
+
+        if code in (500, 503, 504):
+            logger.warning(f"Временная ошибка сервиса: {code}")
+
+            if i == 0:
+                await send_message_little_longer(message)
+
+
+            if i == 2:
+                await failed_message(message)
+                await notify_admin(message)
+
+                break
+
+
+
+
+        await asyncio.sleep(10)
+
 
 
 
@@ -85,56 +132,59 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
             # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
             print(path)
-            result = await recognize(path)
 
-            logger.info(f'recognised: {result}')
-
+            result = str(await send_start_recognise(message, path))
 
 
-            count_words = len(result)
-
+            if result:
+                logger.info(f'recognised: {result}')
 
 
 
-            # --- increase statistic ---
-            await TelegramUser.increase_count_recognise(user_id)
-
-
-            if count_words > 4096:
-                with open('anya-voice-to-text', 'w+') as file:
-                    file.write(result)
-                    file.close()
-
-
-                # --- create a file object ---
-                file_to_send = FSInputFile(path="anya-voice-to-text")
-
-                await bot.send_document(chat_id=message.chat.id, document=file_to_send)
-
-                return
+                count_words = len(result)
 
 
 
-            if count_words > 50:
-                keyboard = await keyboard_summarize()
+
+                # --- increase statistic ---
+                await TelegramUser.increase_count_recognise(user_id)
+
+
+                if count_words > 4096:
+                    with open('anya-voice-to-text', 'w+') as file:
+                        file.write(result)
+                        file.close()
+
+
+                    # --- create a file object ---
+                    file_to_send = FSInputFile(path="anya-voice-to-text")
+
+                    await bot.send_document(chat_id=message.chat.id, document=file_to_send)
+
+                    return
+
+
+
+                if count_words > 50:
+                    keyboard = await keyboard_summarize()
+
+                    await message.reply(
+                        text=f'<blockquote>{html.escape(result)}</blockquote>',
+                        disable_web_page_preview=True,
+                        parse_mode='HTML',
+                        reply_markup=keyboard
+                    )
+
+                    return
+
+
+
 
                 await message.reply(
                     text=f'<blockquote>{html.escape(result)}</blockquote>',
                     disable_web_page_preview=True,
-                    parse_mode='HTML',
-                    reply_markup=keyboard
+                    parse_mode='HTML'
                 )
-
-                return
-
-
-
-
-            await message.reply(
-                text=f'<blockquote>{html.escape(result)}</blockquote>',
-                disable_web_page_preview=True,
-                parse_mode='HTML'
-            )
 
 
 
@@ -146,6 +196,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
             await failed_message(message)
+
 
 
         finally:

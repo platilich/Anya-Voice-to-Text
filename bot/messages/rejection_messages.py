@@ -1,3 +1,5 @@
+from aiogram.enums import parse_mode
+
 from bot.logger import logger
 from bot_messages.models import LimitMessages, ErrorMessages, get_text
 from bot.keyboards.create_keyboard import keyboard_copy
@@ -123,4 +125,39 @@ async def send_message_not_enough_seconds(message):
         text=text,
         parse_mode='HTML',
         reply_markup=keyboard
+    )
+
+
+
+async def gemini_limits(message):
+    await message.answer(
+        text='Today we have run out of limits on our Google AI API account, come back tomorrow',
+        parse_mode='HTML'
+    )
+
+
+    admin_id = os.getenv("ADMIN_ID")
+
+    if admin_id:
+        logger.info(f'notify admin {admin_id}')
+        try:
+            await message.bot.send_message(
+                chat_id=int(admin_id),
+                text='The limits on our Gemini AI API account have ended...',
+                parse_mode="HTML",
+            )
+
+        except Exception as admin_err:
+            logger.error(f'failed notify admin: {admin_err}')
+
+    else:
+        logger.info('no ADMIN_ID, cant notify')
+
+
+
+
+async def send_message_little_longer(message):
+    await message.answer(
+        text='This voice message will be processed a little longer, please wait.',
+        parse_mode='HTML'
     )
