@@ -6,7 +6,8 @@ from solo.models import SingletonModel
 
 # Create your models here.
 cache_donate = TTLCache(maxsize=1, ttl=180)
-cache_text = TTLCache(maxsize=1, ttl=180)
+cache_text = TTLCache(maxsize=3, ttl=180)
+
 
 
 

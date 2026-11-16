@@ -1,5 +1,3 @@
-from aiogram.enums import parse_mode
-
 from bot.logger import logger
 from bot_messages.models import LimitMessages, ErrorMessages, get_text
 from bot.keyboards.create_keyboard import keyboard_copy
@@ -7,7 +5,7 @@ import os
 from aiogram.types import ReactionTypeEmoji
 import html
 
-
+from transcription.models import get_api_texts_limitation
 
 
 async def send_more_than_fifteen_minutes(message):
@@ -48,9 +46,7 @@ async def failed_downloaded_file(message):
     text = await get_text(model=ErrorMessages, key='failed_downloading')
 
     try:
-        logger.error(
-        "An error occurred, unable to download the user's message. Attempting to notify the user about the problem."
-        )
+        logger.error("An error occurred, unable to download the user's message. Attempting to notify the user about the problem.")
 
         await message.answer(
             text=text,
@@ -87,7 +83,7 @@ async def notify_admin(bot):
 
 
     # --- send message to inform admin about problem with Groq API keys ---
-    text = await get_text(model=ErrorMessages, key='admin_no_groq_keys')
+    text = await get_api_texts_limitation('admin_no_keys')
 
     if admin_id:
         logger.info(f'notify admin {admin_id}')
@@ -129,9 +125,12 @@ async def send_message_not_enough_seconds(message):
 
 
 
+
 async def gemini_limits(message):
+    text = await get_api_texts_limitation('gemini_limits_ended')
+
     await message.answer(
-        text='Today we have run out of limits on our Google AI API account, come back tomorrow',
+        text=text,
         parse_mode='HTML'
     )
 
@@ -140,12 +139,15 @@ async def gemini_limits(message):
 
     if admin_id:
         logger.info(f'notify admin {admin_id}')
+        text = await get_api_texts_limitation('gemini_limits_ended_for_admin')
+
         try:
             await message.bot.send_message(
                 chat_id=int(admin_id),
-                text='The limits on our Gemini AI API account have ended...',
+                text=text,
                 parse_mode="HTML",
             )
+
 
         except Exception as admin_err:
             logger.error(f'failed notify admin: {admin_err}')
@@ -157,7 +159,9 @@ async def gemini_limits(message):
 
 
 async def send_message_little_longer(message):
+    text = await get_api_texts_limitation('new_attempt_recognise')
+
     await message.answer(
-        text='This voice message will be processed a little longer, please wait.',
+        text=text,
         parse_mode='HTML'
     )

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GeminiAPI, SelectedModels
+from .models import GeminiAPI, SelectedModels, TranscriptionMessageSettings
 from solo.admin import SingletonModelAdmin
 from bot.logger import logger
 
@@ -22,4 +22,10 @@ admin.site.register(GeminiAPI)
 
 @admin.register(SelectedModels)
 class SelectedModels(NativeSingletonAdmin):
+    pass
+
+
+
+@admin.register(TranscriptionMessageSettings)
+class TranscriptionErrors(NativeSingletonAdmin):
     pass

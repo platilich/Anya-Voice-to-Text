@@ -42,6 +42,7 @@ class BaseSingletonMessage(SingletonModel):
             logger.info(f'failed format {field_name} | {cls.__name__}: {e}')
             raise
 
+
     class Meta:
         abstract = True
 
@@ -58,6 +59,7 @@ class StartMessages(BaseSingletonMessage):
 
         verbose_name='Start Message Text'
     )
+
 
     start_text_invited_user = models.TextField(
         default=(
@@ -76,6 +78,8 @@ class StartMessages(BaseSingletonMessage):
 
     def __str__(self):
         return 'Start Command Texts'
+
+
 
     class Meta:
         verbose_name = 'Start Command'
@@ -105,6 +109,7 @@ class ProfileMessages(BaseSingletonMessage):
         default='🕓 Balance: {left_seconds} seconds',
         verbose_name='How much minutes used'
     )
+
 
     about_limits = models.TextField(
         max_length=255,
@@ -155,6 +160,8 @@ class LimitMessages(BaseSingletonMessage):
 
     def __str__(self):
         return 'Limit Texts'
+
+
 
     class Meta:
         verbose_name = 'Limit Text'
@@ -214,25 +221,6 @@ class Buttons(BaseSingletonMessage):
 
 class ErrorMessages(BaseSingletonMessage):
     # texts for errors and system notices
-
-    admin_no_groq_keys = models.TextField(
-        max_length=500,
-        default=(
-            "⚠️ I can’t process requests right now—my Groq API keys are invalid, blocked, or out of quota.\n"
-            "👉 <i>Please add or update a key in the admin area so I can get back to work!</i>"
-        ),
-        verbose_name='Groq API keys unavailable',
-    )
-
-    service_unavailable = models.TextField(
-        max_length=255,
-        default="😔 Oops, I can’t process audio right now. Please try again in a little while!",
-        verbose_name='Audio processing temporarily unavailable',
-
-    )
-
-
-
     failed_downloading = models.TextField(
         max_length=255,
         default='There was some error downloading the file.\nPlease send the voice message again.',
