@@ -10,6 +10,8 @@ from cachetools import TTLCache
 cache_messages = TTLCache(maxsize=1000, ttl=180)
 
 
+
+
 class BaseSingletonMessage(SingletonModel):
     """Base class for all single models with texts,
         to automatically support asynchronous field retrieval.
@@ -38,6 +40,8 @@ class BaseSingletonMessage(SingletonModel):
 
         try:
             return value.format(**kwargs)
+
+
         except Exception as e:
             logger.info(f'failed format {field_name} | {cls.__name__}: {e}')
             raise
@@ -45,46 +49,6 @@ class BaseSingletonMessage(SingletonModel):
 
     class Meta:
         abstract = True
-
-
-
-class StartMessages(BaseSingletonMessage):
-    # texts for /start command and welcome screen
-    start_text = models.TextField(
-        default=(
-            "👋 Hi, <b>{name}</b>! I’m <b>Anya</b> 😊\n\n"
-            "🔊 Voice messages and 📽️ videos, turned into text.\n\n"
-            "✨ Send one my way!"
-        ),
-
-        verbose_name='Start Message Text'
-    )
-
-
-    start_text_invited_user = models.TextField(
-        default=(
-            "👋 Hi, <b>{name}</b>! I’m <b>Anya</b> 😊\n\n"
-            "🔊 I’ll turn your voice messages into text;\n"
-            "📽️ and transcribe your Telegram videos.\n\n"
-            "🎁 You came through a friend’s link, so here are 3 bonus minutes!\n"
-            "⏱️ You now have <b>6 minutes</b> to use 💛\n\n"
-            "🚀 Send me a voice message or video, and I’ll get right on it! ✨"
-        ),
-
-        verbose_name='Start Message Text'
-    )
-
-
-
-    def __str__(self):
-        return 'Start Command Texts'
-
-
-
-    class Meta:
-        verbose_name = 'Start Command'
-        verbose_name_plural = 'Start Command'
-
 
 
 
@@ -237,25 +201,6 @@ class ErrorMessages(BaseSingletonMessage):
 
     def __str__(self):
         return 'Error Texts'
-
-
-
-
-class ReferenceTexts(BaseSingletonMessage):
-    ref_link_success_new_user = models.TextField(
-        max_length=255,
-        default='✨ Enjoy 3 free minutes-you’re here thanks to a friend! ✨',
-        verbose_name='Refund confirmation'
-
-    )
-
-
-    ref_link_success_owner = models.TextField(
-        max_length=255,
-        default='✨ Your friend, {name}, followed the link! You both get 3 minutes! ✨',
-        verbose_name='Refund confirmation'
-
-    )
 
 
 

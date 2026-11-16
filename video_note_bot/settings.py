@@ -88,6 +88,9 @@ INSTALLED_APPS = [
     'shop',
     'donations',
     'transcription',
+    'reference_links',
+    'handler_start',
+
 ]
 
 MIDDLEWARE = [
@@ -99,6 +102,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     # must stay last. It blocks a locked-out admin login.
     'axes.middleware.AxesMiddleware',
 ]

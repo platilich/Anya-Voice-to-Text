@@ -3,7 +3,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import FSInputFile
 
 
-from bot_messages.models import get_text, StartMessages
+from handler_start.models import get_text_for_start_message
 from bot.middlewares.filters import check_user
 from bot.logger import logger
 
@@ -41,7 +41,7 @@ async def cmd_start(message: types.Message, command: CommandObject):
     if status_user == 'new':
         logger.info('user is new and from ref link!')
 
-        text = await get_text(StartMessages, key='start_text_invited_user')
+        text = await get_text_for_start_message(key='start_text_invited_user')
 
         response = text.replace('{name}', html.escape(name))
 
@@ -66,7 +66,7 @@ async def cmd_start(message: types.Message, command: CommandObject):
 
 
     # --- path ---
-    text = await get_text(StartMessages, key='start_text')
+    text = await get_text_for_start_message(key='start_text')
 
     response = text.replace('{name}', html.escape(name))
 
