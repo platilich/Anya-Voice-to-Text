@@ -1,3 +1,5 @@
+from importlib.resources import path
+
 from aiogram import Router, F, Bot, types
 from aiogram.types import ReactionTypeEmoji, FSInputFile
 import asyncio
@@ -116,9 +118,15 @@ async def handle_video_note(message: types.Message, bot: Bot):
             await TelegramUser.spend_seconds(user_id, duration_voice_message)
 
 
-            # --- download the file ---
-            path = await download_file(bot, message, file_obj)
 
+            path = None
+
+            # --- download the file ---
+            try:
+                path = await download_file(bot, message, file_obj)
+
+            except:
+                pass
 
             if path is None:
                 try:
@@ -131,7 +139,6 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
             # --- calling the function to recognize audio. path to function recognize: bot/utils/audio_recogniation.py
-            print(path)
 
             result = str(await send_start_recognise(message, path))
 

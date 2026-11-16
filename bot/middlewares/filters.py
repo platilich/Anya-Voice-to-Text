@@ -5,7 +5,6 @@ from cachetools import TTLCache
 from pathlib import Path
 
 from bot.logger import logger
-from bot_messages.models import get_text
 
 from users.models import TelegramUser
 from core.models import Protection
@@ -32,7 +31,7 @@ async def anti_flood(user_id):
     rest_seconds = await Protection.get_rest_time()
     rest = timedelta(seconds=rest_seconds)
     now = datetime.now(timezone.utc)
-    last_message_time = rate_limit_cache.get(user_id)
+    last_message_time = rate_limit_cache[user_id]
 
     if last_message_time is not None and (now - last_message_time) < rest:
         return True
@@ -107,8 +106,8 @@ async def check_user(**kwargs):
 
         # --- add seconds new user, and friend which invited
 
-        seconds_for_user = get_count_minutes('count_minutes_new_user')
-        seconds_for_owner = get_count_minutes('count_minutes_for_owner_link')
+        seconds_for_user = await get_count_minutes('count_minutes_new_user')
+        seconds_for_owner = await get_count_minutes('count_minutes_for_owner_link')
 
 
 
@@ -125,7 +124,7 @@ async def check_user(**kwargs):
 
 
         # 2. your friend followed the link! Here are 3 minutes for you!
-        for_owner_url = await get_text(get_texts_for_reference, key='ref_link_success_owner')
+        for_owner_url = await get_texts_for_reference(key='ref_link_success_owner')
 
         response = for_owner_url.replace('{name}', html.escape(name))
 
