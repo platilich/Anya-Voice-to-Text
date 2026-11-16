@@ -56,7 +56,7 @@ async def shop(message: types.Message):
 
     # --- sending a photo ---
     project_root = Path(__file__).resolve().parent.parent
-    screen_file = project_root / "screens" / "package_three_minutes.jpeg"
+    screen_file = project_root /"screens" / "package_three_minutes.jpeg"
     photo = FSInputFile(screen_file)
 
     await message.answer_photo(photo=photo)

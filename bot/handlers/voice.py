@@ -1,5 +1,3 @@
-from importlib.resources import path
-
 from aiogram import Router, F, Bot, types
 from aiogram.types import ReactionTypeEmoji, FSInputFile
 import asyncio
@@ -15,7 +13,7 @@ from bot.middlewares.filters import check_user
 from bot.middlewares.permission_recognize import not_enough_minutes
 
 
-from messages.rejection_messages import (failed_downloaded_file,
+from bot.messages.rejection_messages import (failed_downloaded_file,
                                          failed_message,
                                          gemini_limits,
                                          send_message_little_longer,
@@ -78,8 +76,6 @@ async def send_start_recognise(message, path):
                 break
 
 
-
-
         await asyncio.sleep(10)
 
 
@@ -134,6 +130,10 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
                 except Exception as e:
                     logger.error(f'failed to reply to user: {e}')
+
+
+
+                await TelegramUser.add_seconds(user_id, duration_voice_message)
 
                 return
 

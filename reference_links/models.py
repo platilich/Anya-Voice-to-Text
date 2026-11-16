@@ -9,8 +9,8 @@ cache = TTLCache(maxsize=4, ttl=180)
 
 # Create your models here.
 class CountMinutes(SingletonModel):
-    count_minutes_new_user = models.IntegerField(default=3, verbose_name="Number of minutes - reward for clicking on a friend's link")
-    count_minutes_for_owner_link = models.IntegerField(default=6, verbose_name=f'Number of minutes - reward for inviting a friend')
+    count_minutes_new_user = models.IntegerField(default=180, verbose_name="Number of minutes - reward for clicking on a friend's link")
+    count_minutes_for_owner_link = models.IntegerField(default=360, verbose_name=f'Number of minutes - reward for inviting a friend')
 
 
 

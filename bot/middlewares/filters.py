@@ -12,7 +12,7 @@ from reference_links.models import get_texts_for_reference, get_count_minutes
 
 
 
-rate_limit_cache = TTLCache(maxsize=10000, ttl=60)
+rate_limit_cache = TTLCache(maxsize=100, ttl=180)
 pro_status = TTLCache(maxsize=1, ttl=180)
 
 
@@ -29,12 +29,12 @@ async def anti_bot(user_id, is_bot):
 
 async def anti_flood(user_id):
     rest_seconds = await Protection.get_rest_time()
-    rest = timedelta(seconds=rest_seconds)
     now = datetime.now(timezone.utc)
-    last_message_time = rate_limit_cache[user_id]
+    last_message_time = rate_limit_cache.get(user_id)
 
-    if last_message_time is not None and (now - last_message_time) < rest:
-        return True
+    if last_message_time is not None:
+        if (now - last_message_time).total_seconds() < rest_seconds:
+            return True
 
     rate_limit_cache[user_id] = now
     return False
