@@ -148,7 +148,7 @@ async def handle_video_note(message: types.Message, bot: Bot):
 
 
 
-                count_words = len(result)
+                count_words = len(result.split())
 
 
 

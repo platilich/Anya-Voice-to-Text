@@ -5,24 +5,9 @@ from datetime import datetime, time, timezone
 
 
 # Create your models here.
-def default_time():
-    return datetime.combine(
-        datetime.now(timezone.utc).date(),
-        time(9),
-        tzinfo=timezone.utc)
-
-
-
 class BroadcastTime(SingletonModel):
-    def_time = default_time()
-
-    scheduled_at = models.TimeField(
-        default=def_time,
-
-
-    verbose_name='Applies only after restart'
-    )
-
+    def_time = datetime.combine(datetime.now(timezone.utc).date(), time(9), tzinfo=timezone.utc)
+    scheduled_at = models.TimeField(default=def_time, verbose_name='Applies only after restart')
 
 
     class Meta:
@@ -30,20 +15,19 @@ class BroadcastTime(SingletonModel):
         verbose_name_plural = 'Broadcast scheduled'
 
 
+
     def __str__(self):
         return 'Broadcast scheduled'
 
 
 
-    @classmethod
-    async def get_time_broadcast(cls):
-        # --- getting a new value from the database ---
-        result, created = await cls.objects.aget_or_create(
-            defaults={'scheduled_at': False}
-        )
+async def get_time_broadcast():
+    # --- getting a new value from the database ---
+    result, created = await BroadcastTime.objects.aget_or_create()
 
 
-        return result.scheduled_at
+    return result.scheduled_at
+
 
 
 
@@ -65,16 +49,13 @@ class BroadcastTexts(SingletonModel):
         return 'Broadcast text message'
 
 
+async def get_broadcast_text():
+    # --- getting a new value from the database ---
+    result, created = await BroadcastTexts.objects.aget_or_create()
 
-    @classmethod
-    async def get_broadcast_text(cls):
-        # --- getting a new value from the database ---
-        def_time = default_time()
-        result, created = await cls.objects.aget_or_create(
-            defaults={'text': def_time}
-        )
+    return result.text
 
-        return result.text
+
 
 
 
@@ -93,12 +74,8 @@ class BroadcastStatus(SingletonModel):
         return 'Broadcast status'
 
 
+async def broadcast_not_work():
+    # --- getting a new value from the database ---
+    result, created = await BroadcastStatus.objects.aget_or_create()
 
-    @classmethod
-    async def broadcast_not_work(cls):
-        # --- getting a new value from the database ---
-        result, created = await cls.objects.aget_or_create(
-            defaults={'broadcast_turn_off': False}
-        )
-
-        return result.broadcast_turn_off
+    return result.broadcast_turn_off

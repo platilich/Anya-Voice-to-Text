@@ -3,7 +3,7 @@ import os
 
 from bot.logger import logger
 
-from utils.convert import conver_to_ogg
+from bot.utils.convert import conver_to_ogg
 
 
 # --- bot/handlers/this_file.py ---

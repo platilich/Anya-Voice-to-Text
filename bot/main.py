@@ -25,7 +25,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from users.models import TelegramUser
 from bot.handlers import register_all_handlers
 from bot.logger import logger
-from broadcast_manage.models import BroadcastTime, BroadcastStatus, BroadcastTexts
+from broadcast_manage.models import get_time_broadcast, get_broadcast_text, broadcast_not_work
 
 
 
@@ -47,17 +47,17 @@ if not token:
 
 
 async def broadcast_limits_updated(bot):
-    if await BroadcastStatus.broadcast_not_work():
+    if await broadcast_not_work():
         return
 
 
     users_id = await TelegramUser.get_all_users()
 
-    time_updated = await BroadcastTexts.get_broadcast_text()
+    time_updated = await get_broadcast_text()
 
 
     project_root = Path(__file__).resolve().parent.parent
-    screen_file = project_root / "screens" / "free_minutes.jpeg"
+    screen_file = project_root / 'bot' /"screens" / "free_minutes.jpeg"
     photo = FSInputFile(screen_file)
 
 
@@ -94,7 +94,7 @@ async def main():
     scheduler = AsyncIOScheduler(timezone="UTC")
 
 
-    scheduled_at = await BroadcastTime.get_time_broadcast()
+    scheduled_at = await get_time_broadcast()
 
 
     scheduler.add_job(

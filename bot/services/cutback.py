@@ -1,4 +1,4 @@
-from services.system_prompt import SYSTEM_PROMPT
+from bot.services.system_prompt import SYSTEM_PROMPT
 from transcription.models import get_api_keys, get_selected_models
 
 from google import genai
