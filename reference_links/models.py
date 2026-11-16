@@ -32,9 +32,9 @@ async def get_count_minutes(key):
 
     result, created = await CountMinutes.objects.aget_or_create()
 
-    cache[key] = getattr(result, key)
+    cache[key] = int(getattr(result, key))
 
-    return cache[key]
+    return int(cache[key])
 
 
 

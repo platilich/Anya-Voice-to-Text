@@ -52,7 +52,7 @@ class BaseSingletonMessage(SingletonModel):
 
 
 
-class StartMessageSettings(SingletonModel):
+class StartMessageSettings(BaseSingletonMessage):
     # texts for /start command and welcome screen
     start_text = models.TextField(
         default=(

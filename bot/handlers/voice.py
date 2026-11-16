@@ -53,7 +53,7 @@ async def send_start_recognise(message, path):
 
 
         if status is not False:
-            return result
+            return result[0]
 
 
         if code == 429:

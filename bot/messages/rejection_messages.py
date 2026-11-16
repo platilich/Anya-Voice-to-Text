@@ -5,6 +5,7 @@ import os
 from aiogram.types import ReactionTypeEmoji
 import html
 
+
 from transcription.models import get_api_texts_limitation
 
 

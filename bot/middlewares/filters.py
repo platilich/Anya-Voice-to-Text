@@ -5,11 +5,11 @@ from cachetools import TTLCache
 from pathlib import Path
 
 from bot.logger import logger
-from bot_messages.models import get_text, ReferenceTexts
+from bot_messages.models import get_text
 
-from users.models import ReferenceLinks, TelegramUser
+from users.models import TelegramUser
 from core.models import Protection
-
+from reference_links.models import get_texts_for_reference, get_count_minutes
 
 
 
@@ -96,19 +96,25 @@ async def check_user(**kwargs):
         if changed_fields:
             await user.asave(update_fields=changed_fields)
 
-    if created:
-        await ReferenceLinks.create_new_link(user_id)
-
 
     # --- if the user is new and arrived via a referral link ---
     if friend_id is not None and created:
         logger.info(f"We issue: {user_id}, {friend_id} monthly subscriptions")
 
-        await ReferenceLinks.increase_invited_users(friend_id)
+        await TelegramUser.increase_invited_users(friend_id)
+
+
 
         # --- add seconds new user, and friend which invited
-        await TelegramUser.add_seconds(user_id, seconds=180)
-        await TelegramUser.add_seconds(friend_id, seconds=360)
+
+        seconds_for_user = get_count_minutes('count_minutes_new_user')
+        seconds_for_owner = get_count_minutes('count_minutes_for_owner_link')
+
+
+
+
+        await TelegramUser.add_seconds(user_id, seconds=int(seconds_for_user))
+        await TelegramUser.add_seconds(friend_id, seconds=int(seconds_for_owner))
 
 
 
@@ -119,7 +125,7 @@ async def check_user(**kwargs):
 
 
         # 2. your friend followed the link! Here are 3 minutes for you!
-        for_owner_url = await get_text(ReferenceTexts, key='ref_link_success_owner')
+        for_owner_url = await get_text(get_texts_for_reference, key='ref_link_success_owner')
 
         response = for_owner_url.replace('{name}', html.escape(name))
 
