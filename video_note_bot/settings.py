@@ -89,8 +89,6 @@ INSTALLED_APPS = [
     'donations',
     'transcription',
     'reference_links',
-    'handler_start',
-
 ]
 
 MIDDLEWARE = [
